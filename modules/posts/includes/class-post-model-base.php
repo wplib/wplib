@@ -110,7 +110,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
-	 * Internal function to retrieve the value of a field and to provide a default value if no _post is set.
+	 * Retrieve the value of a field and to provide a default value if no _post is set.
 	 *
 	 * @param string $field_name
 	 * @param mixed  $default
@@ -211,7 +211,21 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
-	 * @return array
+	 * Saves the global values set by setup_postdata(), calls setup_postdata() and returns the saved values.
+	 *
+	 * The global variables include:
+	 *
+	 *      $id
+	 *      $authordata
+	 *      $currentday
+	 *      $currentmonth
+	 *      $page
+	 *      $pages
+	 *      $multipage
+	 *      $more
+	 *      $numpages
+	 *
+	 * @return array An associative array containing each of the global variables lists above which the var name as the array index.
 	 */
 	function setup_postdata() {
 

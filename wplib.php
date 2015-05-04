@@ -194,7 +194,7 @@ class WPLib {
 	 *
 	 * @see http://stackoverflow.com/a/1320156/102699
 	 */
-	static function _flatten_array( array $array ) {
+	private static function _flatten_array( array $array ) {
 
 		$return = array();
 
@@ -312,7 +312,7 @@ class WPLib {
 	}
 
 	/**
-	 * Scan registered mustload files, by priority
+	 * Scan registered autoload files, by priority
 	 */
 	private static function _find_autoload_files() {
 		static $class_count = 0;

@@ -47,15 +47,15 @@ class WPLib_Posts extends WPLib_Module_Base {
 		 * Use this base class' name used to find the templates.
 		 */
 		self::$_default_labels = array(
-			'add_new_item'       => __( 'Add New %s',            'wplib' ),
-			'new_item'           => __( 'New %s',                'wplib' ),
-			'edit_item'          => __( 'Edit %s',               'wplib' ),
-			'view_item'          => __( 'View %s',               'wplib' ),
-			'all_items'          => __( 'All %s',                'wplib' ),
-			'search_items'       => __( 'Search %s',             'wplib' ),
-			'parent_item_colon'  => __( 'Parent %s:',            'wplib' ),
-			'not_found'          => __( 'No %s found.',          'wplib' ),
-			'not_found_in_trash' => __( 'No %s found in Trash.', 'wplib' ),
+			'add_new_item'       => _x( 'Add New %s',            'posts', 'wplib' ),
+			'new_item'           => _x( 'New %s',                'posts', 'wplib' ),
+			'edit_item'          => _x( 'Edit %s',               'posts', 'wplib' ),
+			'view_item'          => _x( 'View %s',               'posts', 'wplib' ),
+			'all_items'          => _x( 'All %s',                'posts', 'wplib' ),
+			'search_items'       => _x( 'Search %s',             'posts', 'wplib' ),
+			'parent_item_colon'  => _x( 'Parent %s:',            'posts', 'wplib' ),
+			'not_found'          => _x( 'No %s found.',          'posts', 'wplib' ),
+			'not_found_in_trash' => _x( 'No %s found in Trash.', 'posts', 'wplib' ),
 		);
 
 		self::add_class_action( 'init' );
@@ -272,47 +272,39 @@ class WPLib_Posts extends WPLib_Module_Base {
 	}
 
 	/**
-	 * Get child posts of the post
+	 * Query the posts.  Equivalent to creating a new WP_Query which both instantiates and queries the DB.
 	 *
 	 * @param array $args
-	 * @param object|bool $object Object with a $query_name property
-	 * @param string|bool $query_name Property of $object to accept the name of the queried object.
 	 * @return WP_Post[]
 	 */
-	static function query_posts( $args = array(), $object = false, $query_name = false ) {
+	static function get_query( $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
-			'post_type'   => 'any',
+			'post_type'      => 'any',
+			'post_status'    => 'publish',
 			'posts_per_page' => self::MAX_POSTS_PER_PAGE,
-			'index_by' => false,
+			'index_by'       => false,
+			'orderby'        => 'menu_order',
+			'order'          => 'ASC',
+			'no_found_rows'  => true,
 		));
 
 		$query = new WPLib_Query( $args );
 
-		if ( ! preg_match( '#^(post_id|post_name)$#', $args[ 'index_by' ] ) ) {
+		if ( $args[ 'index_by' ] && preg_match( '#^(post_(id|name)|id|name)$#', $args[ 'index_by' ], $match ) ) {
 
-			$posts = $query->posts;
-
-		} else {
-
+			$index_field = 'id' == $match[ 1 ] ? 'ID' : 'post_name';
 			$posts = array();
 			foreach( $query->posts as $post ) {
 
-				$posts[ $post->{$args[ 'index_by' ]} ] = $post;
+				$posts[ $post->$index_field ] = $post;
 
 			}
+			$query->posts = $posts;
 
 		}
 
-		if ( $object && $query_name ) {
-			/*
-			 * This is how we return a value back when we can't use pass-by-reference.
-			 */
-			$object->$query_name = $query;
-
-		}
-
-		return $posts;
+		return $query;
 	}
 
 }

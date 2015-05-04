@@ -68,26 +68,8 @@ abstract class WPLib_Post_Base extends WPLib_Entity_Base {
 
 			/**
 			 * For the calling class, merge the templates and with the singular and plural post type names.
-			 *
-			 * @example: In this code 'DBP_Video' is the calling class:
-			 *
-			 *      DBP_Video::initialize_labels(
-			 *          'name'           => __( 'Videos', 'dbp' ),
-			 *            'singular_name'  => __( 'Video', 'dbp' ),
-			 *      );
-			 *
 			 */
-			$args = wp_parse_args( $args, array(
-				'add_new_item'       => sprintf( $labels['add_new_item'], $args['singular_name'] ),
-				'new_item'           => sprintf( $labels['new_item'], $args['singular_name'] ),
-				'edit_item'          => sprintf( $labels['edit_item'], $args['singular_name'] ),
-				'view_item'          => sprintf( $labels['view_item'], $args['singular_name'] ),
-				'all_items'          => sprintf( $labels['all_items'], $args['name'] ),
-				'search_items'       => sprintf( $labels['search_items'], $args['name'] ),
-				'parent_item_colon'  => sprintf( $labels['parent_item_colon'], $args['singular_name'] ),
-				'not_found'          => sprintf( $labels['not_found'], $args['name'] ),
-				'not_found_in_trash' => sprintf( $labels['not_found_in_trash'], $args['name'] ),
-			));
+			$args = wp_parse_args( $args, $labels );
 
 			WPLib_Posts::set_post_type_labels( $post_type_slug, $args );
 		}
@@ -155,29 +137,6 @@ abstract class WPLib_Post_Base extends WPLib_Entity_Base {
 	}
 
 	/**
-	 * @param array $args
-	 * @return WPLib_Query
-	 */
-	static function get_query( $args = array() ) {
-
-		$args = wp_parse_args( $args, array(
-
-			'post_status'    => 'publish',
-			'orderby'        => 'menu_order',
-			'order'          => 'ASC',
-			'posts_per_page' => 999,
-			'no_found_rows'  => true,
-
-		));
-
-		$args[ 'post_type' ] = ! is_null( static::POST_TYPE ) ? static::POST_TYPE : 'any';
-
-		$query = new WPLib_Query( $args );
-
-		return $query;
-	}
-
-	/**
 	 * @param array|string|WPLib_Query $query
 	 * @param array $args
 	 * @return WPLib_Post_List
@@ -226,47 +185,27 @@ abstract class WPLib_Post_Base extends WPLib_Entity_Base {
 	}
 
 	/**
-	 * Get child posts of the post
+	 * Query the posts.  Equivalent to creating a new WP_Query which both instantiates and queries the DB.
 	 *
 	 * @param array $args
-	 * @param object|bool $object Object with a $query_name property
-	 * @param string|bool $query_name Property of $object to accept the name of the queried object.
 	 * @return WP_Post[]
 	 */
-	static function query_posts( $args = array(), $object = false, $query_name = false ) {
+	function get_query( $args = array() ) {
 
-		$args = wp_parse_args( $args, array(
-			'post_type'   => 'any',
-			'posts_per_page' => WPLib_Posts::MAX_POSTS_PER_PAGE,
-			'index_by' => false,
-		));
+		$args = wp_parse_args( $args );
 
-		$query = new WPLib_Query( $args );
+		if ( ! is_null( static::POST_TYPE ) ) {
 
-		if ( ! preg_match( '#^(post_id|post_name)$#', $args[ 'index_by' ] ) ) {
-
-			$posts = $query->posts;
-
-		} else {
-
-			$posts = array();
-			foreach( $query->posts as $post ) {
-
-				$posts[ $post->{$args[ 'index_by' ]} ] = $post;
-
-			}
+			$args['post_type'] = static::POST_TYPE;
 
 		}
+		/**
+		 * Query the posts and set the $this->_query with the query used.
+		 */
+		$query = WPLib_Posts::get_query( array_filter( $args ) );
 
-		if ( $object && $query_name ) {
-			/*
-			 * This is how we return a value back when we can't use pass-by-reference.
-			 */
-			$object->$query_name = $query;
-
-		}
-
-		return $posts;
+		return $query;
 	}
+
 
 }

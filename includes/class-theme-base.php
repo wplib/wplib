@@ -99,13 +99,13 @@ abstract class WPLib_Theme_Base extends WPLib {
 	}
 
 	/**
-	 * Creates a JS variable NewClarity.ajaxurl
+	 * Creates a JS variable WPLib.ajaxurl
 	 *
 	 *  Priority 0 ONLY so that this static function does not conflict with the instance method in child classes
 	 */
 	static function _wp_enqueue_scripts_0() {
 
-		wp_localize_script( 'newclarity-script', 'WPLib', array(
+		wp_localize_script( 'wplib-script', 'WPLib', array(
 
 			'ajaxurl' => admin_url( 'admin-ajax.php' ),
 

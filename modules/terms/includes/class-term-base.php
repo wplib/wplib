@@ -58,13 +58,17 @@ abstract class WPLib_Term_Base extends WPLib_Entity_Base {
 				'singular_name'  => $args['name'],
 				'menu_name'      => $args['name'],
 				'name_admin_bar' => $args['name'],
-				'add_new'        => _x( 'Add New', 'term type', 'wplib' ),
 			) );
 
 			/*
 			 * Get the label templates defaults.
 			 */
-			$labels = WPLib_Terms::default_term_type_labels();
+			$labels = WPLib_Terms::default_taxonomy_labels();
+
+			/**
+			 * For the calling class, merge the templates and with the singular term name, etc.
+			 */
+			$args = wp_parse_args( $args, $labels );
 
 			/**
 			 * For the calling class, merge the templates and with the singular and plural term type names.
@@ -77,19 +81,8 @@ abstract class WPLib_Term_Base extends WPLib_Entity_Base {
 			 *      );
 			 *
 			 */
-			$args = wp_parse_args( $args, array(
-				'add_new_item'       => sprintf( $labels['add_new_item'], $args['singular_name'] ),
-				'new_item'           => sprintf( $labels['new_item'], $args['singular_name'] ),
-				'edit_item'          => sprintf( $labels['edit_item'], $args['singular_name'] ),
-				'view_item'          => sprintf( $labels['view_item'], $args['singular_name'] ),
-				'all_items'          => sprintf( $labels['all_items'], $args['name'] ),
-				'search_items'       => sprintf( $labels['search_items'], $args['name'] ),
-				'parent_item_colon'  => sprintf( $labels['parent_item_colon'], $args['singular_name'] ),
-				'not_found'          => sprintf( $labels['not_found'], $args['name'] ),
-				'not_found_in_trash' => sprintf( $labels['not_found_in_trash'], $args['name'] ),
-			));
 
-			WPLib_Terms::set_term_type_labels( $taxonomy, $args );
+			WPLib_Terms::set_taxonomy_labels( $taxonomy, $args );
 		}
 
 		return (object)WPLib_Terms::get_taxonomy_labels( $taxonomy );
@@ -135,38 +128,38 @@ abstract class WPLib_Term_Base extends WPLib_Entity_Base {
 
 	}
 
-//	/**
-//	 * @param array|string|WPLib_Query $query
-//	 * @param array $args
-//	 * @return WPLib_Term_List
-//	 */
-//	static function get_list( $query = array(), $args = array() ) {
-//
-//		$element_class = get_called_class();
-//
-//		if ( ! class_exists( $list_class = "{$element_class}_List" ) ) {
-//
-//			$list_class = 'WPLib_Term_List';
-//
-//		}
-//
-//		$args = wp_parse_args( $args, array(
-//
-//			'element_class' => $element_class,
-//
-//			'list_class'    => $list_class,
-//
-//			'query'         => wp_parse_args( $query ),
-//
-//		));
-//
-//		$list_class = $args[ 'list_class' ];
-//
-//		unset( $args[ 'list_class' ] );
-//
-//		$list = new $list_class( $args );
-//
-//		return $list;
-//	}
+	/**
+	 * @param array|string|WPLib_Query $query
+	 * @param array $args
+	 * @return WPLib_Term_List
+	 */
+	static function get_list( $query = array(), $args = array() ) {
+
+		$element_class = get_called_class();
+
+		if ( ! class_exists( $list_class = "{$element_class}_List" ) ) {
+
+			$list_class = 'WPLib_Term_List';
+
+		}
+
+		$args = wp_parse_args( $args, array(
+
+			'element_class' => $element_class,
+
+			'list_class'    => $list_class,
+
+			'query'         => wp_parse_args( $query ),
+
+		));
+
+		$list_class = $args[ 'list_class' ];
+
+		unset( $args[ 'list_class' ] );
+
+		$list = new $list_class( $args );
+
+		return $list;
+	}
 
 }

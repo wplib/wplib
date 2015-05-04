@@ -223,7 +223,7 @@ class WPLib_List_Base
 
 		$cache_key = "wplib_template[{$template}][" . md5( serialize( $args ) ) . ']';
 
-		if ( ! ( $output = NewClarity::cache_get( $cache_key ) ) ) {
+		if ( ! ( $output = WPLib::cache_get( $cache_key ) ) ) {
 
 			ob_start();
 
@@ -242,7 +242,7 @@ class WPLib_List_Base
 
 			}
 
-			NewClarity::cache_set( $cache_key, $output = ob_get_clean() );
+			WPLib::cache_set( $cache_key, $output = ob_get_clean() );
 
 		}
 		return $output;

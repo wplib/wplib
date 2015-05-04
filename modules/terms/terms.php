@@ -48,21 +48,22 @@ class WPLib_Terms extends WPLib_Module_Base {
 		 * Use this base class' name used to find the templates.
 		 */
 		self::$_default_labels = array(
-			'all_items'                  => __( 'All %s', 'wplib' ),
-			'edit_item'                  => __( 'Edit %s', 'wplib' ),
-			'new_item'                   => __( 'New %s', 'wplib' ),
-			'view_item'                  => __( 'View %s', 'wplib' ),
-			'update_item'                => __( 'Update %s', 'wplib' ),
-			'add_new_item'               => __( 'Add New %s', 'wplib' ),
-			'new_item_name'              => __( 'New %s Name', 'wplib' ),
-			'parent_item'                => __( 'Parent %s', 'wplib' ),
-			'parent_item_colon'          => __( 'Parent %s:', 'wplib' ),
-			'search_items'               => __( 'Search %s', 'wplib' ),
-			'popular_items'              => __( 'Popular %s', 'wplib' ),
-			'separate_items_with_commas' => __( 'Separate %s with commas', 'wplib' ),
-			'add_or_remove_items'        => __( 'Add or remove %s', 'wplib' ),
-			'choose_from_most_used'      => __( 'Choose from most used %s', 'wplib' ),
-			'not_found'                  => __( 'No %s found.', 'wplib' ),
+			'add_new'                    => _x( 'Add New',                  'terms', 'wplib' ),
+			'all_items'                  => _x( 'All %s',                   'terms', 'wplib' ),
+			'edit_item'                  => _x( 'Edit %s',                  'terms', 'wplib' ),
+			'new_item'                   => _x( 'New %s',                   'terms', 'wplib' ),
+			'view_item'                  => _x( 'View %s',                  'terms', 'wplib' ),
+			'update_item'                => _x( 'Update %s',                'terms', 'wplib' ),
+			'add_new_item'               => _x( 'Add New %s',               'terms', 'wplib' ),
+			'new_item_name'              => _x( 'New %s Name',              'terms', 'wplib' ),
+			'parent_item'                => _x( 'Parent %s',                'terms', 'wplib' ),
+			'parent_item_colon'          => _x( 'Parent %s:',               'terms', 'wplib' ),
+			'search_items'               => _x( 'Search %s',                'terms', 'wplib' ),
+			'popular_items'              => _x( 'Popular %s',               'terms', 'wplib' ),
+			'separate_items_with_commas' => _x( 'Separate %s with commas',  'terms', 'wplib' ),
+			'add_or_remove_items'        => _x( 'Add or remove %s',         'terms', 'wplib' ),
+			'choose_from_most_used'      => _x( 'Choose from most used %s', 'terms', 'wplib' ),
+			'not_found'                  => _x( 'No %s found.',             'terms', 'wplib' ),
 		);
 
 		self::add_class_action( 'init' );
@@ -182,7 +183,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	/**
 	 * @return array
 	 */
-	static function default_term_type_labels() {
+	static function default_taxonomy_labels() {
 
 		return self::$_default_labels;
 
