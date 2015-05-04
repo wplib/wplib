@@ -277,6 +277,9 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 * @param $src
 	 * @param array $deps
 	 * @param bool $in_footer
+	 *
+	 * @todo https://github.com/wplib/wplib/issues/2
+	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026274
 	 */
 	function enqueue_external( $handle, $src, $deps = array(), $in_footer = false ) {
 
@@ -303,7 +306,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 		}
 
-		if ( static::is_script_debug() && ! $absolute ) {
+		if ( ! static::is_script_debug() && ! $absolute ) {
 			/**
 			 * If script debug and not absolute URL
 			 * then prefix extensions 'js' and 'css' with 'min.'

@@ -261,6 +261,9 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 * Check if a post is published
 	 *
 	 * @return bool
+	 *
+	 * @todo https://github.com/wplib/wplib/issues/5
+	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026544
 	 */
 	function is_published() {
 

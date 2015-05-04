@@ -4,6 +4,12 @@
  * Class WPLib - Core class
  *
  * @mixin WPLib_Posts
+ *
+ * @todo Utility Modules: https://github.com/wplib/wplib/issues/6
+ *
+ * @todo PHPDoc - https://github.com/wplib/wplib/issues/8
+ * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11027141
+ *
  */
 class WPLib {
 
@@ -106,7 +112,7 @@ class WPLib {
 	 *
 	 * Recognize a path with a leading slash as an absolute, a no leading slash or starting with '~/' as relative.
 	 *
-	 * @todo Make work for Windows
+	 * @todo Make work for Windows - https://github.com/wplib/wplib/issues/9
 	 *
 	 * @param string $filepath
 	 * @param bool|string $dir
@@ -515,6 +521,9 @@ class WPLib {
 	 * If runmode is development or SCRIPT_DEBUG
 	 *
 	 * @return string
+	 *
+	 * @todo https://github.com/wplib/wplib/issues/7
+	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026829
 	 */
 	static function is_script_debug() {
 
