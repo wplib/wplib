@@ -3,7 +3,38 @@
 /**
  * Class WPLib - Core class
  *
+ * Plugin Name: WPLib
+ * Plugin URI:  http://wordpress.org/plugins/wplib/
+ * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
+ * Version:     0.1-alpha
+ * Author:      The WPLib Team
+ * Author URI:  https://github.com/wplib/
+ * Text Domain: wplib
+ * License:     GPLv2 or later
+ *
+ * Copyright 2015 NewClarity Consulting LLC <wplib@newclarity.net>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  * @mixin WPLib_Posts
+ * @mixin WPLib_Terms
+ *
+ * @todo Utility Modules: https://github.com/wplib/wplib/issues/6
+ *
+ * @todo PHPDoc - https://github.com/wplib/wplib/issues/8
+ * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11027141
+ *
  */
 class WPLib {
 
@@ -42,9 +73,9 @@ class WPLib {
 	private static $_modules = array();
 
 	/**
-	 * @var array List of files that must be loaded on every page load.
+	 * @var array List of classes that must be loaded on every page load.
 	 */
-	private static $_mustload_files = array( 10 => array() );
+	private static $_mustload_classes = array();
 
 	/**
 	 * @var array List of classes (as key) and filepaths (as value) to autoload.
@@ -77,8 +108,9 @@ class WPLib {
 		self::register_module( 'post-tags' );
 		self::register_module( 'people' );
 
-		self::add_class_action( 'muplugins_loaded', 11 );
+		self::add_class_action( 'plugins_loaded', 11 );
 		self::add_class_action( 'after_setup_theme' );
+		self::add_class_action( 'after_setup_theme', 11 );
 		self::add_class_action( 'xmlrpc_call' );
 
 	}
@@ -106,7 +138,7 @@ class WPLib {
 	 *
 	 * Recognize a path with a leading slash as an absolute, a no leading slash or starting with '~/' as relative.
 	 *
-	 * @todo Make work for Windows
+	 * @todo Make work for Windows - https://github.com/wplib/wplib/issues/9
 	 *
 	 * @param string $filepath
 	 * @param bool|string $dir
@@ -135,9 +167,9 @@ class WPLib {
 	}
 
 	/**
-	 * Load all necessary files. This includes items, and mustload files.
+	 * Load all necessary files. This finds autoloading files and loads modules.
 	 */
-	static function _muplugins_loaded_11() {
+	static function _plugins_loaded_11() {
 
 		self::_load_necessary_files();
 
@@ -153,13 +185,26 @@ class WPLib {
 	}
 
 	/**
-	 * Load all necessary files, i.e. modules and mustload files.
+	 * Load all necessary files, i.e. modules and finds all autoloading files.
+	 *
+	 * This is called twice; (1) On 'plugins_loaded' and (2) on 'after_setup_theme'.
+	 *
 	 */
 	private static function _load_necessary_files() {
 
+		/**
+		 * Find all autoloading files from components that have been loaded by (1) plugins or (2) the theme.
+		 */
 		self::_find_autoload_files();
+
+		/**
+		 * Load the modules defined in (1) the plugins or (2) the theme.
+		 */
 		self::_load_modules();
-		self::_load_mustload_files();
+
+		/**
+		 * Find all autoloading files defined by modules specified by (1) plugins or (2) the theme.
+		 */
 		self::_find_autoload_files();
 
 	}
@@ -188,52 +233,6 @@ class WPLib {
 	}
 
 	/**
-	 * @param array $array
-	 *
-	 * @return array
-	 *
-	 * @see http://stackoverflow.com/a/1320156/102699
-	 */
-	private static function _flatten_array( array $array ) {
-
-		$return = array();
-
-		array_walk_recursive( $array, function( $a ) use ( &$return ) { $return[] = $a; } );
-
-		return $return;
-
-	}
-
-	/**
-	 * Load all registered mustload files, by priority
-	 */
-	private static function _load_mustload_files() {
-
-		static::_find_mustload_files();
-
-		ksort( self::$_mustload_files );
-
-		self::$_mustload_files = apply_filters( 'wplib_mustload_files', self::$_mustload_files );
-
-		foreach ( self::$_mustload_files as $priority ) {
-
-			foreach ( $priority as $dir => $files ) {
-
-				foreach ( $files as $file ) {
-
-					require_once static::_maybe_make_absolute( $file, $dir );
-
-				}
-
-			}
-
-		}
-
-		self::$_mustload_files = array( 10 => array() );
-
-	}
-
-	/**
 	 * Returns the list of "Component" classes.  A Component is one of Lib, Site, App, Theme, Module.
 	 *
 	 * @return array
@@ -257,62 +256,12 @@ class WPLib {
 	}
 
 	/**
-	 * Scan directory of mustload files
-	 */
-	private static function _find_mustload_files() {
-		static $classes = array();
-
-		$classes = array_diff( static::component_classes(), $classes );
-
-		$class_key = implode( '|', $classes );
-
-		$class_key = WPLib::is_production() ? md5( $class_key ) : $class_key;
-
-		if ( ! ( $new_files = static::cache_get( $cache_key = "mustload_files[{$class_key}]" ) ) ) {
-
-			$mustload_files = array();
-
-			foreach( $classes as $class_name ) {
-
-				/**
-				 * Scan the includes directory for all files.
-				 */
-				$found_files = glob( $mustload_dir = static::get_root_dir( 'core', $class_name ) . '/*.php' );
-
-				if ( 0 == count( $found_files ) ) {
-
-					continue;
-
-				}
-
-				$mustload_files += $found_files;
-
-			}
-			/**
-			 * Flatten array of mustload files; get rid of priority so we can have a complete list to compare.
-			 */
-			$added_files = static::_flatten_array( self::$_mustload_files );
-
-			/**
-			 * Diff the manually added files with the new ones scanned to get new files.
-			 */
-			$new_files = array_diff( $mustload_files, $added_files );
-
-			/**
-			 * Now stuff into cache
-			 */
-			static::cache_set( 'mustload_files', $new_files );
-
-		}
-		/**
-		 * Add these new files to the list of files to mustload at the default priority.
-		 */
-		self::$_mustload_files[ 10 ] = array_merge( self::$_mustload_files[ 10 ], $new_files );
-
-	}
-
-	/**
 	 * Scan registered autoload files, by priority
+	 *
+	 * This will get called 4 times.
+	 *
+	 *      1 & 2: Find all autoloading files from components that have been loaded by (1) plugins or (2) the theme.
+	 *      3 & 4: Find all autoloading files defined by modules specified by (1) plugins or (2) the theme.
 	 */
 	private static function _find_autoload_files() {
 		static $class_count = 0;
@@ -410,6 +359,11 @@ class WPLib {
 			if ( isset( $autoload_files ) ) {
 
 				/**
+				 * Set the mustload classes based on on_load() ordered by parent/child classes.
+				 */
+				self::_set_mustload_classes( $autoload_files );
+
+				/**
 				 * Add these new files to the list of files to autoload at the default priority.
 				 */
 				self::$_autoload_files = array_merge( self::$_autoload_files, $autoload_files );
@@ -421,39 +375,140 @@ class WPLib {
 	}
 
 	/**
-	 * Capture status of DOING_XMLRPC
+	 *
+	 *
+	 * This will get called 4 times.
+	 *
+	 *      1 & 2: Finding all autoloading files from components that have been loaded by (1) plugins or (2) the theme.
+	 *      3 & 4: Finding all autoloading files defined by modules specified by (1) plugins or (2) the theme.
+	 *
+	 * Each time it is called it will have values added to self::$_mustload_classes.
+	 *
+	 * @param array $autoload_files
 	 */
-	static function _xmlrpc_call() {
+	static function _set_mustload_classes( $autoload_files ) {
 
-		self::$_doing_xmlrpc = true;
+		if ( $mustload_classes = static::cache_get( $cache_key = "mustload_classes" ) ) {
+
+			self::$_mustload_classes = $mustload_classes;
+
+		} else {
+
+			foreach ( array_keys( $autoload_files ) as $class_name ) {
+
+				if ( is_callable( array( $class_name, 'on_load' ) ) ) {
+
+					self::$_mustload_classes[ $class_name ] = get_parent_class( $class_name );
+
+				}
+
+			}
+		}
 
 	}
 
 	/**
-	 * Register all files that must be loaded on page load
+	 * Determine and then load the "mustload" classes
+	 * They are the classes with an on_load() method.
+ 	 */
+	static function _after_setup_theme_11() {
+
+		$mustload_classes = self::_ordered_mustload_classes();
+
+		self::_load_mustload_classes( $mustload_classes );
+
+	}
+
+	/**
+	 * Loads the "mustload" classes on every page load.
 	 *
-	 * @param string[] $mustload_files Simple array of files to load where value is relative filepath.
-	 * @param int $priority
+	 * Mustload classes are classes with an on_load() method.
+	 *
+	 * @param string[] $mustload_classes
 	 */
-	static function register_mustload_files( $mustload_files, $priority = 10 ) {
+	private static function _load_mustload_classes( $mustload_classes ) {
 
-		foreach ( $mustload_files as $mustload_file ) {
+		foreach( $mustload_classes as $mustload_class ) {
 
-			self::register_mustload_file( $mustload_file, $priority );
+			/**
+			 * This will autoload the class file if it does not already exist.
+			 */
+			class_exists( $mustload_class );
 
 		}
 
 	}
 
 	/**
-	 * Register a file that must be loaded on page load
+	 * Orders the Mustload classes in order of least dependency.
 	 *
-	 * @param string $mustload_file File path to load; filepath should be relative to
-	 * @param int $priority Priority of file to load.
+	 * Mustload classes are classes with an on_load() method.
+	 *
+	 * @return array
 	 */
-	static function register_mustload_file( $mustload_file, $priority = 10 ) {
+	private static function _ordered_mustload_classes() {
 
-		self::$_mustload_files[ $priority ][] = $mustload_file;
+		if ( ! static::cache_get( $cache_key = "mustload_classes" ) ) {
+
+			$mustload_classes = array();
+
+			do {
+				reset( self::$_mustload_classes );
+				$key = key( self::$_mustload_classes );
+				self::_flatten_array_dependency_order( self::$_mustload_classes[ $key ], $key, self::$_mustload_classes, $mustload_classes );
+
+			} while ( count( self::$_mustload_classes ) );
+
+			static::cache_set( $cache_key, $mustload_classes );
+
+		}
+		return $mustload_classes;
+	}
+
+	/**
+	 * Flatten an array containing parent class names with array.
+	 *
+	 * Very specifically used for mustload classes. Uses recursion.
+	 *
+	 * Mustload classes are classes with an on_load() method.
+	 *
+	 * @param string $parent_class
+	 * @param string $child_class
+	 * @param array $mustload_classes
+	 * @param string[] $ordered_classes
+	 *
+	 * @return array
+	 */
+	private static function _flatten_array_dependency_order( $parent_class, $child_class, &$mustload_classes, &$ordered_classes ) {
+
+		if ( isset( $mustload_classes[ $parent_class ] ) ) {
+
+			$child_class = $parent_class;
+
+			$parent_class = $mustload_classes[ $parent_class ];
+
+			self::_flatten_array_dependency_order( $parent_class, $child_class, $mustload_classes, $ordered_classes );
+
+		}
+		if (  ! class_exists( $parent_class, false ) ) {
+
+			$ordered_classes[] = $parent_class;
+
+		}
+
+		$ordered_classes[] = $child_class;
+
+		unset( $mustload_classes[ $child_class ] );
+
+	}
+
+
+	/**
+	 * Capture status of DOING_XMLRPC
+	 */
+	static function _xmlrpc_call() {
+
+		self::$_doing_xmlrpc = true;
 
 	}
 
@@ -515,6 +570,9 @@ class WPLib {
 	 * If runmode is development or SCRIPT_DEBUG
 	 *
 	 * @return string
+	 *
+	 * @todo https://github.com/wplib/wplib/issues/7
+	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026829
 	 */
 	static function is_script_debug() {
 
@@ -551,7 +609,7 @@ class WPLib {
 	static function remove_class_action( $action, $priority = 10 ) {
 
 		$hook = "_{$action}" . ( 10 != $priority ? "_{$priority}" : '' );
-		remove_action( $action, array( get_called_class(), $hook ), $priority, 99 );
+		remove_action( $action, array( get_called_class(), $hook ), $priority );
 
 	}
 
@@ -562,7 +620,7 @@ class WPLib {
 	static function remove_class_filter( $filter, $priority = 10 ) {
 
 		$hook = "_{$filter}" . ( 10 != $priority ? "_{$priority}" : '' );
-		remove_filter( $filter, array( get_called_class(), $hook ), $priority, 99 );
+		remove_filter( $filter, array( get_called_class(), $hook ), $priority );
 
 	}
 

@@ -2,6 +2,9 @@
 
 /**
  * Class WPLib_List_Base
+ *
+ * @todo https://github.com/wplib/wplib/issues/4
+ * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026937
  */
 class WPLib_List_Base
 	extends WPLib_Base

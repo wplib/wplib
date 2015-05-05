@@ -276,6 +276,9 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 *
 	 * @param array $args
 	 * @return WP_Post[]
+	 *
+	 * @todo https://github.com/wplib/wplib/issues/3
+	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026403
 	 */
 	static function get_query( $args = array() ) {
 
