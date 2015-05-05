@@ -11,9 +11,9 @@ A Foundation Library for Agency and Corporate Developers.
 
 
 == Description ==
-WPLib is a plugin designed to be used as a Must-Use plugin or to be embedded in a theme to enable the developer of complex yet robust and performant WordPress applications and websites.
+WPLib is a plugin designed to be used as a Must-Use plugin or to be embedded in a theme to enable the development of complex yet robust and performant WordPress applications and websites.
 
-WPLib is NOT for end-users but instead of professional PHP developers who are tasked with building specific applications or sites on the WordPress platform by their company or their clients.  WPLib is an MV* foundation upon which robust applications can be developed.
+WPLib is an MV* foundation upon which robust applications can be developed. WPLib is NOT intended for use by end-users but instead for professional PHP developers who are tasked with building specific applications or sites on the WordPress platform by their company or their clients.
 
 The WPLib source code is hosted and development occurs [on GitHub](https://github.com/wplib/wplib/) and the documentation site is located at [wplib.org](https://wplib.org).
 
