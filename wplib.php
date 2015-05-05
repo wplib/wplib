@@ -3,7 +3,32 @@
 /**
  * Class WPLib - Core class
  *
+ * Plugin Name: WPLib
+ * Plugin URI:  http://wordpress.org/plugins/wplib/
+ * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
+ * Version:     0.1-alpha
+ * Author:      The WPLib Team
+ * Author URI:  https://github.com/wplib/
+ * Text Domain: wplib
+ * License:     GPLv2 or later
+ *
+ * Copyright 2015 NewClarity Consulting LLC <wplib@newclarity.net>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  * @mixin WPLib_Posts
+ * @mixin WPLib_Terms
  *
  * @todo Utility Modules: https://github.com/wplib/wplib/issues/6
  *
