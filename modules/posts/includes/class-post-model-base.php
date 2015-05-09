@@ -271,4 +271,28 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 	}
 
+	/**
+	 * @param string $method_name
+	 * @param array $args
+	 *
+	 * @return array|mixed|null
+	 */
+	function __call( $method_name, $args ) {
+
+		if ( $this->has_post() && (
+			property_exists( $this->_post, $method_name ) ||
+			property_exists( $this->_post, $method_name = "post_{$method_name}" ) ) ) {
+
+			$value = $this->_post->$method_name;
+
+		} else {
+
+		 	$value = parent::__call( $method_name, $args );
+
+		}
+
+		return $value;
+
+	}
+
 }
