@@ -16,39 +16,34 @@ class WPLib_Module_Base extends WPLib {
 	static function __callStatic( $method_name, $args ) {
 
 		/**
-		 * See if module has an INSTANCE_CLASS constant defined.
+		 * Get the instance class for this module
 		 */
-		if ( ! ( $instance_class = static::constant( 'INSTANCE_CLASS' ) ) ) {
-			/**
-			 * If the module class name ends in 's' they strip it and check for such a class name.
-			 */
-
-			$instance_class = preg_replace( '#^(.+)s$#', '$1', get_called_class() );
-
-		}
-
-		/**
-		 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
-		 */
-		if ( ! is_callable( array( $instance_class, $method_name ) ) ) {
+		if ( $instance_class = static::instance_class() ) {
 
 			/**
 			 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
-			 * If no, delegate to parent
 			 */
-			$instance_class = null;
+			if ( ! is_callable( array( $instance_class, $method_name ) ) ) {
 
-		} else {
-
-			/**
-			 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
-			 * If yes verify it is a static method.
-			 */
-			$reflector = new ReflectionMethod( $instance_class, $method_name );
-
-			if ( ! $reflector->isStatic() ) {
-
+				/**
+				 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
+				 * If no, delegate to parent
+				 */
 				$instance_class = null;
+
+			} else {
+
+				/**
+				 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
+				 * If yes verify it is a static method.
+				 */
+				$reflector = new ReflectionMethod( $instance_class, $method_name );
+
+				if ( ! $reflector->isStatic() ) {
+
+					$instance_class = null;
+
+				}
 
 			}
 
@@ -70,6 +65,26 @@ class WPLib_Module_Base extends WPLib {
 		}
 
 		return $value;
+
+	}
+
+	/**
+	 * @return mixed|null
+	 */
+	static function instance_class() {
+		/**
+		 * See if module has an INSTANCE_CLASS constant defined.
+		 */
+		if ( ! ( $instance_class = static::constant( 'INSTANCE_CLASS' ) ) ) {
+			/**
+			 * If the module class name ends in 's' they strip it and check for such a class name.
+			 */
+
+			$instance_class = preg_replace( '#^(.+)s$#', '$1', get_called_class() );
+
+		}
+
+		return $instance_class;
 
 	}
 
