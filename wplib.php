@@ -1020,17 +1020,36 @@ class WPLib {
 	 */
 	static function __callStatic( $method, $args ) {
 
+		return self::call_helper( get_called_class(), $method, $args );
+
+	}
+
+	/**
+	 * @param string $method
+	 * @param array  $args
+	 *
+	 * @return mixed
+	 */
+	function __call( $method, $args ) {
+
 		$value = null;
 
-		$class_name = get_called_class();
+		if ( preg_match( '#^the_#', $method ) && is_callable( array( $this, $method ) ) ) {
 
-		if ( preg_match( '#^the_#', $method ) && is_callable( array( $class_name, $method ) ) ) {
-
-			$value = static::do_the_methods( $class_name, $class_name, $method, $args );
+			$value = static::do_the_methods( $this, $this, $method, $args );
 
 		} else {
 
-			$value = self::call_helper( $class_name, $method, $args );
+			/*
+			 * Oops. No method was found.  Output an error message.
+			 */
+			$message = sprintf(
+				__( 'ERROR: There is no method %s() for class %s. ', 'wplib' ),
+				$method,
+				get_class( $this )
+			);
+
+			self::trigger_error( $message, E_USER_ERROR );
 
 		}
 
