@@ -1159,5 +1159,109 @@ class WPLib {
 
 	}
 
+	/**
+	 * @param string|object $view
+	 * @param string|object $model
+	 * @param string $method_name
+	 * @param array $args
+	 *
+	 * @return mixed
+	 */
+	static function do_the_methods( $view, $model, $method_name, $args ) {
+
+		if ( preg_match( '#^the_(.+)_template$#', $method_name, $match ) ) {
+
+			/*
+			 * Put the $template name at the beginning of the $args array
+			 */
+			array_unshift( $args, str_replace( '_', '-', $match[1] ) );
+
+			/**
+			 * Now call 'the_template' with $template as first element in $args
+			 */
+			$value = call_user_func_array( array( $view, 'the_template' ), $args );
+
+			if ( preg_match( '#^<\{WPLib:(.+)\}>#', $value, $match ) ) {
+				/**
+				 * Check to see if their is a content type indicator
+				 */
+				switch ( $match[1] ) {
+
+					case 'JSON':
+						$suffix = '_json';
+						break;
+
+					case 'HTML':
+					default:
+						$suffix = '_html';
+						/*
+						 * Indicate that this content need not be run through wp_kses_post()
+						 * since it was loaded by a template which can be reviewed for security.
+						 */
+						$has_html_suffix = true;
+						break;
+				}
+			}
+
+		} else if ( preg_match( '#^the_(.+?)(_attr|_url|_html|_link)?$#', $method_name, $match ) ) {
+
+			$method_name = $match[ 1 ];
+			$suffix = 3 == count( $match ) ? $match[ 2 ] : false;
+			$has_html_suffix = preg_match( '#^_(html|link)$#', $suffix );
+
+
+			if ( is_callable( $callable = array( $model, $method_name ) ) ) {
+
+				/*
+				 * Check $model to see if the method exist.
+				 */
+				$value = call_user_func_array( $callable, $args );
+
+			} else {
+
+				/*
+				 * Not found, throw an error.
+				 * $match[0] should have original $method_name
+				 */
+				$class_name = is_object( $view ) ? get_class( $view ) : $view;
+
+				$message = sprintf( __( 'Method %s not found for class %s.', 'wplib' ), $match[ 0 ], $class_name );
+
+				WPLib::trigger_error( $message, E_USER_ERROR );
+
+			}
+
+		}
+
+		/**
+		 * Auto-escape output
+		 */
+		switch ( $suffix ) {
+
+			case '_attr':
+
+				echo $value = esc_attr( $value );
+				break;
+
+			case '_url':
+
+				echo $value = esc_url( $value );
+				break;
+
+			case '_html':
+			case '_link':
+
+				echo $has_html_suffix ? $value : wp_kses_post( $value );
+				break;
+
+			default:
+
+				echo $value = esc_html( $value );
+
+		}
+
+
+	}
+
 }
 WPLib::on_load();
