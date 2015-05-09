@@ -2,6 +2,8 @@
 
 /**
  * Class WPLib_Theme_Base
+ *
+ * @method void the_sitename()
  */
 abstract class WPLib_Theme_Base extends WPLib {
 
