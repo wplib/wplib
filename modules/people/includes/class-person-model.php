@@ -1,10 +1,10 @@
 <?php
 
 /**
- * Class WPLib_Person_Data
+ * Class WPLib_Person_Model
  *
  */
-class WPLib_Person_Data extends WPLib_Post_Model_Base {
+class WPLib_Person_Model extends WPLib_Post_Model_Base {
 
 
 }
