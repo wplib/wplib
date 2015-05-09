@@ -882,7 +882,7 @@ class WPLib {
 	 */
 	static function register_module( $module, $priority = 10 ) {
 
-		self::$_modules[ $priority ][] = static::root_dir() . "/modules/{$module}/{$module}.php";
+		self::$_modules[ $priority ][] = static::get_root_dir( "modules/{$module}/{$module}.php" );
 
 	}
 
