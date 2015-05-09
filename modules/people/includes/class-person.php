@@ -15,17 +15,19 @@ class WPLib_Person extends WPLib_Post_Base {
 	static function on_load() {
 
 		$labels = self::register_post_type_labels( self::POST_TYPE, array(
-			'name'      => __( 'People', 'wplib' ),
-			'menu_name' => __( 'People', 'wplib' ),
+			'name'          => __( 'People', 'wplib' ),
+			'singular_name' => __( 'Person', 'wplib' ),
+			'menu_name'     => __( 'People', 'wplib' ),
 		));
 
 		self::register_post_type( self::POST_TYPE, array(
 			'label'         => __( 'Person', 'wplib' ),
 			'labels'        => $labels,
 			'public'        => true,
-			'menu_icon'     => 'dashicons-groups',
+			'menu_icon'     => 'dashicons-admin-users',
 			'menu_position' => 32,
 			'supports'      => array(
+				'title',
 				'editor',
 			),
 		));
