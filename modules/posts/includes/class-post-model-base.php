@@ -20,6 +20,24 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	const POST_TYPE = null;
 
 	/**
+	 * @param WP_Post|object|null $post
+	 * @param array               $args
+	 */
+	function __construct( $post, $args = array() ) {
+
+		/*
+		 * Find the post if possible
+		 */
+		$this->_post = WPLib::get_post( $post );
+
+		/*
+		 * Let our parent class capture whatever properties where passed in as $args
+		 */
+		parent::__construct( $args );
+
+	}
+
+	/**
 	 * @param array $args
 	 *
 	 * @return WPLib_Post_Model_Base

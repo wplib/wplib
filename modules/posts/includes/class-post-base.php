@@ -168,21 +168,23 @@ abstract class WPLib_Post_Base extends WPLib_Entity_Base {
 
 		}
 
+		$query = wp_parse_args( $query, array(
+
+			'post_type' => static::constant( 'POST_TYPE', $element_class ),
+
+		));
+
 		$args = wp_parse_args( $args, array(
 
 			'element_class' => $element_class,
 
 			'list_class'    => $list_class,
 
-			'query'         => wp_parse_args( $query ),
-
 		));
 
 		$list_class = $args[ 'list_class' ];
 
-		unset( $args[ 'list_class' ] );
-
-		$list = new $list_class( $args );
+		$list = new $list_class( $query, $args );
 
 		return $list;
 	}
