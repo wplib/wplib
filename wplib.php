@@ -803,6 +803,12 @@ class WPLib {
 	 */
 	static function get_root_dir( $filepath, $class_name = false ) {
 
+		if ( ! $class_name ) {
+
+			$class_name = get_called_class();
+
+		}
+
 		$filepath = '/' . ltrim( $filepath, '/' );
 
 		$reflector = new ReflectionClass( $class_name );
