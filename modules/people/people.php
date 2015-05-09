@@ -8,7 +8,7 @@
  */
 class WPLib_People extends WPLib_Module_Base {
 
-	const MAIN_CLASS = 'WPLib_Person';
+	const INSTANCE_CLASS = 'WPLib_Person';
 
 	static function on_load() {
 
