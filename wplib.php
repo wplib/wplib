@@ -222,6 +222,12 @@ class WPLib {
 
 			foreach ( $priority as $filepath ) {
 
+				if ( WPLib::is_development() && ! is_file( $filepath ) ) {
+
+					WPLib::trigger_error( sprintf( __( "Required file not found: %s", 'wplib' ), $filepath ) );
+
+				}
+
 				require_once $filepath;
 
 			}
