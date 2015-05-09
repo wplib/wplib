@@ -66,6 +66,27 @@ abstract class WPLib_Term_Base extends WPLib_Entity_Base {
 			$labels = WPLib_Terms::default_taxonomy_labels();
 
 			/**
+			 * Now apply the postname to the defaults and merge with the registered $args
+			 */
+			$labels = wp_parse_args( $args, array(
+				'all_items'                  => sprintf( $labels['all_items'],                  $args['name'] ),
+				'edit_item'                  => sprintf( $labels['edit_item'],                  $args['name'] ),
+				'new_item'                   => sprintf( $labels['new_item'],                   $args['singular_name'] ),
+				'view_item'                  => sprintf( $labels['view_item'],                  $args['singular_name'] ),
+				'update_item'                => sprintf( $labels['update_item'],                $args['singular_name'] ),
+				'add_new_item'               => sprintf( $labels['add_new_item'],               $args['singular_name'] ),
+				'new_item_name'              => sprintf( $labels['new_item_name'],              $args['singular_name'] ),
+				'parent_item'                => sprintf( $labels['parent_item'],                $args['singular_name'] ),
+				'parent_item_colon'          => sprintf( $labels['parent_item_colon'],          $args['singular_name'] ),
+				'search_items'               => sprintf( $labels['search_items'],               $args['name'] ),
+				'popular_items'              => sprintf( $labels['popular_items'],              $args['name'] ),
+				'separate_items_with_commas' => sprintf( $labels['separate_items_with_commas'], $args['name'] ),
+				'add_or_remove_items'        => sprintf( $labels['add_or_remove_items'],        $args['name'] ),
+				'choose_from_most_used'      => sprintf( $labels['choose_from_most_used'],      $args['name'] ),
+				'not_found'                  => sprintf( $labels['not_found'],                  $args['name'] ),
+			));
+
+			/**
 			 * For the calling class, merge the templates and with the singular term name, etc.
 			 */
 			$args = wp_parse_args( $args, $labels );

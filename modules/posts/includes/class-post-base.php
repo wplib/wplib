@@ -67,6 +67,21 @@ abstract class WPLib_Post_Base extends WPLib_Entity_Base {
 			$labels = WPLib_Posts::default_post_type_labels();
 
 			/**
+			 * Now apply the postname to the defaults and merge with the registered $args
+			 */
+			$labels = wp_parse_args( $args, array(
+				'add_new_item'       => sprintf( $labels['add_new_item'],       $args['singular_name'] ),
+				'new_item'           => sprintf( $labels['new_item'],           $args['singular_name'] ),
+				'edit_item'          => sprintf( $labels['edit_item'],          $args['singular_name'] ),
+				'view_item'          => sprintf( $labels['view_item'],          $args['singular_name'] ),
+				'all_items'          => sprintf( $labels['all_items'],          $args['name'] ),
+				'search_items'       => sprintf( $labels['search_items'],       $args['name'] ),
+				'parent_item_colon'  => sprintf( $labels['parent_item_colon'],  $args['singular_name'] ),
+				'not_found'          => sprintf( $labels['not_found'],          $args['name'] ),
+				'not_found_in_trash' => sprintf( $labels['not_found_in_trash'], $args['name'] ),
+			));
+
+			/**
 			 * For the calling class, merge the templates and with the singular and plural post type names.
 			 */
 			$args = wp_parse_args( $args, $labels );
