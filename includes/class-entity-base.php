@@ -30,74 +30,60 @@ abstract class WPLib_Entity_Base extends WPLib_Base {
 		 */
 		foreach ( array( 'model', 'view' ) as $property_name ) {
 
-
-			/*
-			 * Default class name appends '_Model' or '_View' to object name.
-			 */
-			$contained_class_name = get_class( $this ) . '_' . ucfirst( $property_name );
-
-			if ( ! class_exists( $contained_class_name ) ) {
-
-				/*
-				 * Get the default contained class name:
-				 *
-				 *      i.e. "{__CLASS__}_Model" or "{__CLASS__}_View"
-				 *
-				 */
-				$contained_class_name = __CLASS__ . '_' . ucfirst( $property_name );
-
-			}
-
-			if ( ! isset( $args[ $property_name ] ) ) {
-
-				/*
-				 * If no model or view class was specified then use the default.
-				 */
-				$args[ $property_name ] = $contained_class_name;
-
-			}
-
-			if ( is_string( $args[ $property_name ] ) ) {
-
-				/**
-				 * It's a class name thus needs no $args
-				 */
-				$class_name    = $args[ $property_name ];
-				$property_args = array();
-
-			} else if ( is_array( $args[ $property_name ] ) ) {
-
-				/**
-				 * It's an array of args, so use the default class name
-				 */
-				$class_name    = $contained_class_name;
-				$property_args = $args[ $property_name ];
-
-			}
-
 			if ( is_object( $args[ $property_name ] ) ) {
 				/*
 				 * If it was an object, just assign is.
 				 */
 				$this->{$property_name} = $args[ $property_name ];
 
-			} else if ( method_exists( $class_name, 'make_new' ) ) {
-				/*
-				 * If this class has a make_new() method.
-				 * A Class::make_new() method is needed when the class constructor has more than 1 parameter of $args.
-				 */
-				$this->{$property_name} = call_user_func( array( $class_name, 'make_new' ), $property_args );
-
-			} else if ( class_exists( $class_name ) ) {
-
-				/*
-				 * If an array or string, instantiate the class.
-				 */
-				$this->{$property_name} = new $class_name( $property_args );
-
 			} else {
 
-				$this->{$property_name} = null;
+				if ( ! isset( $args[ $property_name ] ) ) {
+
+					/*
+					 * If no model or view class was specified then use the default.
+					 */
+					$args[ $property_name ] = $this->_get_property_class( $property_name );
+
+				}
+
+				if ( is_string( $args[ $property_name ] ) ) {
+
+					/**
+					 * It's a class name thus needs no $args
+					 */
+					$class_name    = $args[ $property_name ];
+					$property_args = array();
+
+				} else if ( is_array( $args[ $property_name ] ) ) {
+
+					/**
+					 * It's an array of args, so use the default class name
+					 */
+					$class_name    = $this->_get_property_class( $property_name );
+					$property_args = $args[ $property_name ];
+
+				}
+
+				if ( method_exists( $class_name, 'make_new' ) ) {
+					/*
+					 * If this class has a make_new() method.
+					 * A Class::make_new() method is needed when the class constructor has more than 1 parameter of $args.
+					 */
+					$this->{$property_name} = call_user_func( array( $class_name, 'make_new' ), $property_args );
+
+				} else if ( class_exists( $class_name ) ) {
+
+					/*
+					 * If an array or string, instantiate the class.
+					 */
+					$this->{$property_name} = new $class_name( $property_args );
+
+				} else {
+
+					$this->{$property_name} = null;
+
+				}
 
 			}
 
@@ -193,6 +179,60 @@ abstract class WPLib_Entity_Base extends WPLib_Base {
 		}
 
 		return $value;
+
+	}
+
+	/**
+	 * Find the right Model and View class based on current class and property name
+	 *
+	 * @param string $property_name
+	 *
+	 * @return string
+	 */
+	private function _get_property_class( $property_name ) {
+
+		$class_name = get_class( $this );
+
+		$property_name = ucfirst( $property_name );
+
+		do {
+			/**
+			 * Strip the _Base off.
+			 */
+			$baseless_class = preg_replace( '#^(.*)_Base$#', '$1', $class_name );
+
+			/*
+			 * Default class name appends '_Model' or '_View' to object name.
+			 */
+			$property_class = "{$baseless_class}_{$property_name}";
+
+
+			if ( $class_name != $baseless_class ) {
+				/**
+				 * If it had '_Base' suffix add '_Default' suffix
+				 */
+				$property_class .= "_Default";
+			}
+
+			if ( $property_class && class_exists( $property_class ) ) {
+
+					break;
+
+			}
+
+			$class_name = get_parent_class( $class_name );
+
+		} while ( $class_name );
+
+		if ( ! class_exists( $property_class ) ) {
+
+			/*
+			 * Get the default contained class name:
+			 */
+			$property_class = "WPLib_{$property_name}";
+
+		}
+		return $property_class;
 
 	}
 
