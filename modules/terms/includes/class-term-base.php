@@ -33,14 +33,14 @@ abstract class WPLib_Term_Base extends WPLib_Entity_Base {
 	}
 
 	/**
-	 * REgister the labels used for this term_type.
+	 * REgister the labels used for this taxonomy.
 	 *
 	 * @param string $taxonomy
 	 * @param array $args
 	 *
 	 * @return object
 	 */
-	static function register_term_type_labels( $taxonomy, $args = array() ) {
+	static function register_taxonomy_labels( $taxonomy, $args = array() ) {
 
 		if ( ! isset( $args['name'] ) ) {
 			/**
@@ -95,7 +95,7 @@ abstract class WPLib_Term_Base extends WPLib_Entity_Base {
 	 * @param string $taxonomy
 	 * @param array $args
 	 *
-	 * @link  http://codex.wordpress.org/Function_Reference/register_term_type#Parameters
+	 * @link  http://codex.wordpress.org/Function_Reference/register_taxonomy#Parameters
 	 */
 	static function register_taxonomy( $taxonomy, $args = array() ) {
 

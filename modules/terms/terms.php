@@ -97,7 +97,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	}
 
 	/**
-	 * The $args saved early to later be passed to register_term_type().
+	 * The $args saved early to later be passed to register_taxonomy().
 	 * @return array
 	 */
 	static function taxonomy_args() {
@@ -107,7 +107,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	}
 
 	/**
-	 * Save $args for later passing to register_term_type().
+	 * Save $args for later passing to register_taxonomy().
 	 *
 	 * @param string $taxonomy
 	 * @param array $args
