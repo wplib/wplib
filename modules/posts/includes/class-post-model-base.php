@@ -138,6 +138,62 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
+	 * Returns the absolute URL for the represented post, or if not contained post object null.
+	 *
+	 * @see url()   permalink() is alias of url()
+	 *
+	 * @return int
+	 */
+	function permalink() {
+
+		return $this->url();
+
+	}
+
+	/**
+	 * Returns the absolute URL for the represented post, or if not contained post object null.
+	 *
+	 * @see permalink()   url() is preferred alias of permalink().
+	 *
+	 * @return string
+	 */
+	function url() {
+
+		if ( ! $this->has_post() ) {
+
+			$url = null;
+
+		} else {
+
+			switch ( $this->post_type() ) {
+
+				case 'post':
+
+					$url = get_permalink( $this->_post->ID );
+					break;
+
+				case 'page':
+
+					$url = get_page_link( $this->_post->ID );
+					break;
+
+				default:
+
+					$url = get_post_permalink( $this->_post->ID );
+
+			}
+
+		}
+
+		return $url;
+
+	}
+
+	/**
+	 * Return the post type as defined by the class.
+	 *
+	 * Validate against the current post if there is a current post.
+	 *
 	 * @return string|null
 	 */
 	function post_type() {
