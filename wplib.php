@@ -29,6 +29,7 @@
  *
  * @mixin WPLib_Posts
  * @mixin WPLib_Terms
+ * @mixin _WPLib_Html_Helpers
  *
  * @todo Utility Modules: https://github.com/wplib/wplib/issues/6
  *
@@ -107,6 +108,7 @@ class WPLib {
 		self::register_module( 'categories' );
 		self::register_module( 'post-tags' );
 		self::register_module( 'people', 11 );
+		self::register_module( 'html-helpers', 0 );
 
 		self::add_class_action( 'plugins_loaded', 11 );
 		self::add_class_action( 'after_setup_theme' );
