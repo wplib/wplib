@@ -101,14 +101,19 @@ class WPLib {
 
 		spl_autoload_register( array( __CLASS__, '_autoloader' ) );
 
-		self::register_module( 'posts' );
-		self::register_module( 'terms' );
-		self::register_module( 'post-posts' );
-		self::register_module( 'page-posts' );
-		self::register_module( 'categories' );
-		self::register_module( 'post-tags' );
-		self::register_module( 'people', 11 );
+		self::register_module( 'posts', 0 );
+		self::register_module( 'terms', 0 );
+		self::register_module( 'post-posts', 0 );
+		self::register_module( 'page-posts', 0 );
+		self::register_module( 'categories', 0 );
+		self::register_module( 'post-tags', 0 );
 		self::register_module( 'html-helpers', 0 );
+
+		/**
+		 * Load People after Posts since it extends
+		 */
+		self::register_module( 'people', 5 );
+
 
 		self::add_class_action( 'plugins_loaded', 11 );
 		self::add_class_action( 'after_setup_theme' );
