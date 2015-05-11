@@ -1,6 +1,9 @@
 <?php
 
-class WPLib_Post_Module_Base extends WPLib_Module_Base {
+/**
+ * Class WPLib_Post_Module_Base
+ */
+abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 
 	/**
 	 * @param array|string|WPLib_Query $query

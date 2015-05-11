@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Module_Base
  */
-class WPLib_Module_Base extends WPLib {
+abstract class WPLib_Module_Base extends WPLib {
 
 	/**
 	 * Delegate calls to an instance class if the class has a INSTANCE_CLASS constant or plural name adds 's', otherwise delegate to WPLib.
