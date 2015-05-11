@@ -4,9 +4,11 @@
  * Class WPLib_People
  *
  * @mixin WPLib_Person
- * @static WPLib_Post_List get_list()
+ * @static WPLib_Post_List_Base get_list()
  */
 class WPLib_People extends WPLib_Post_Module_Base {
+
+	const POST_TYPE = 'wplib_person';
 
 	const INSTANCE_CLASS = 'WPLib_Person';
 
@@ -14,14 +16,32 @@ class WPLib_People extends WPLib_Post_Module_Base {
 
 		self::register_helper( __CLASS__, 'WPLib' );
 
+		$labels = self::register_post_type_labels( array(
+			'name'          => __( 'People', 'wplib' ),
+			'singular_name' => __( 'Person', 'wplib' ),
+			'menu_name'     => __( 'People', 'wplib' ),
+		));
+
+		self::register_post_type( array(
+			'label'         => __( 'Person', 'wplib' ),
+			'labels'        => $labels,
+			'public'        => true,
+			'menu_icon'     => 'dashicons-admin-users',
+			'menu_position' => 32,
+			'supports'      => array(
+				'title',
+				'editor',
+			),
+		));
+
 	}
 
 	/**
-	 * @return WPLib_Post_List
+	 * @return WPLib_Post_List_Base
 	 */
 	static function get_person_list() {
 
-		return WPLib_Person::get_list( $query, $args );
+		return static::get_list( $query, $args );
 
 	}
 

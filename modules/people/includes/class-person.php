@@ -10,29 +10,6 @@
  */
 class WPLib_Person extends WPLib_Post_Base {
 
-	const POST_TYPE = 'wplib_person';
-
-	static function on_load() {
-
-		$labels = self::register_post_type_labels( self::POST_TYPE, array(
-			'name'          => __( 'People', 'wplib' ),
-			'singular_name' => __( 'Person', 'wplib' ),
-			'menu_name'     => __( 'People', 'wplib' ),
-		));
-
-		self::register_post_type( self::POST_TYPE, array(
-			'label'         => __( 'Person', 'wplib' ),
-			'labels'        => $labels,
-			'public'        => true,
-			'menu_icon'     => 'dashicons-admin-users',
-			'menu_position' => 32,
-			'supports'      => array(
-				'title',
-				'editor',
-			),
-		));
-
-	}
+	const POST_TYPE = WPLib_People::POST_TYPE;
 
 }
-WPLib_Person::on_load();
