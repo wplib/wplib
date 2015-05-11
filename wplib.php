@@ -1284,12 +1284,20 @@ class WPLib {
 			$has_html_suffix = preg_match( '#^_(html|link)$#', $suffix );
 
 
-			if ( is_callable( $callable = array( $model, $method_name ) ) ) {
+			if ( is_callable( $callable = array( $view, "{$method_name}{$suffix}" ) ) ) {
+
+				/*
+				 * Check $view to see if the suffixed method exist.
+				 */
+				$value = call_user_func_array( $callable, $args );
+
+			} else if ( is_callable( $callable = array( $model, $method_name ) ) ) {
 
 				/*
 				 * Check $model to see if the method exist.
 				 */
 				$value = call_user_func_array( $callable, $args );
+
 
 			} else {
 
