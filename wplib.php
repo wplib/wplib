@@ -89,6 +89,11 @@ class WPLib {
 	private static $_doing_xmlrpc = false;
 
 	/**
+	 * @var bool|string Flag to hold filename currently loading. Used by _shutdown() to report if a file failed to load.
+	 */
+	private static $_file_loading = false;
+
+	/**
 	 *
 	 */
 	static function on_load() {
@@ -119,6 +124,7 @@ class WPLib {
 		self::add_class_action( 'after_setup_theme' );
 		self::add_class_action( 'after_setup_theme', 11 );
 		self::add_class_action( 'xmlrpc_call' );
+		self::add_class_action( 'shutdown' );
 
 	}
 
@@ -234,7 +240,12 @@ class WPLib {
 
 				}
 
+				/**
+				 * Set self::$_file_loading so 'shutdown' hook can report which file caused the load error.
+				 */
+				self::$_file_loading = $filepath;
 				require_once $filepath;
+				self::$_file_loading = false;
 
 				/**
 				 * Find all autoloading files defined by the above module.
@@ -246,6 +257,20 @@ class WPLib {
 		}
 
 		self::$_modules = array();
+
+	}
+
+	/**
+	 * Throw error if site failed to load because of a module failing to load.
+	 */
+	static function _shutdown() {
+
+		if ( self::$_file_loading ) {
+
+			$message = __( 'File failed to load: %s.', 'wplib' );
+			self::trigger_error( sprintf( $message, self::$_file_loading ), E_USER_ERROR, true );
+
+		}
 
 	}
 
@@ -335,7 +360,9 @@ class WPLib {
 					 */
 					foreach( $new_files as $filepath ) {
 
+						self::$_file_loading = $filepath;
 						require( $filepath );
+						self::$_file_loading = false;
 
 					}
 
@@ -1073,12 +1100,21 @@ class WPLib {
 	 *
 	 * @param string $error_msg
 	 * @param int $error_type
+	 * @param bool $echo If true use 'echo', if false use trigger_error().
 	 */
-	static function trigger_error( $error_msg, $error_type = E_USER_NOTICE ) {
+	static function trigger_error( $error_msg, $error_type = E_USER_NOTICE, $echo = false ) {
 
 		if ( ! static::doing_ajax() && ! static::doing_xmlrpc() && ! static::doing_cron() ) {
 
-			trigger_error( $error_msg, $error_type );
+			if ( $echo ) {
+
+				echo "{$error_msg} [{$error_type}] ";
+
+			} else {
+
+				trigger_error( $error_msg, $error_type );
+
+			}
 
 		} else if ( static::is_development() || static::do_log_errors() ) {
 
@@ -1089,7 +1125,7 @@ class WPLib {
 			 *
 			 * For runmode() == WPLib::DEVELOPMENT define( 'WPLIB_RUNMODE', 0 ) in /wp-config.php.
 			 */
-			error_log( "[{$error_type}] {$error_msg}" );
+			error_log( "{$error_msg} [{$error_type}]" );
 
 		}
 
@@ -1179,7 +1215,9 @@ class WPLib {
 
 			ob_start();
 
+			self::$_file_loading = $filepath;
 			require( $template->filename );
+			self::$_file_loading = false;
 
 			$output = ob_get_clean();
 
