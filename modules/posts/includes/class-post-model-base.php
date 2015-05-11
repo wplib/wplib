@@ -6,7 +6,26 @@
  * The Model Base Class for Posts
  *
  * @property WPLib_Post_Base $owner
+ *
+ * @method int ID()
+ * @method int comment_count()
+ * @method int menu_order()
+ *
+ * @method string date()
+ * @method string date_gmt()
+ * @method string modified()
+ * @method string modified_gmt()
+ *
+ * @method string author()
+ * @method string title()
+ * @method string status()
+ * @method string comment_status()
+ * @method string ping_status()
+ * @method string password()
+ * @method string to_ping()
+ * @method string pinged()
  */
+
 abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 	/**
@@ -297,15 +316,116 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function __call( $method_name, $args ) {
 
-		if ( $this->has_post() && (
-			property_exists( $this->_post, $method_name ) ||
-			property_exists( $this->_post, $method_name = "post_{$method_name}" ) ) ) {
+		if ( ! $this->has_post() ) {
 
-			$value = $this->_post->$method_name;
+			$value = parent::__call( $method_name, $args );
 
 		} else {
+			/**
+			 * Capture methods that identify WP_Post field names.
+			 *
+			 * Strip 'post_' as a prefix and recognize methods as accessing WP_Post properties.
+			 *
+			 * 'name' is too generic so 'post_name' is accessed via slug():
+			 *
+			 *       $this->slug()              => return $this->_post->post_name
+			 *
+			 * 'post_type' is too iconic so post_type() is used vs. type():
+			 *
+			 * 'post_parent' is accessed by parent_id():
+			 *
+			 *       $this->parent_id()         => return $this->_post->post_parent
+			 *
+			 * Others are accessed as method name sans 'post_' prefix, i.e.
+			 *
+			 *       $this->ID()                => return $this->_post->ID
+			 *       $this->menu_order()        => return $this->_post->menu_order
+			 *       $this->date()              => return $this->_post->post_date
+			 *       $this->date_gmt()          => return $this->_post->post_date_gmt
+			 *       $this->modified()          => return $this->_post->post_modified
+			 *       $this->modified_gmt()      => return $this->_post->post_modified_gmt
+			 *       $this->title()             => return $this->_post->post_title
+			 *       $this->password()          => return $this->_post->password
+			 *       $this->comment_count()     => return $this->_post->comment_count
+			 *       $this->pinged()            => return $this->_post->pinged
+			 *       $this->to_ping()           => return $this->_post->to_ping
+			 *       $this->ping_status()       => return $this->_post->ping_status
+			 *       $this->comment_status()    => return $this->_post->comment_status
+			 *
+			 * Lastly 'post_type', 'post_content' and 'post_excerpt' are accessed via more functions, so:
+			 *
+			 *       $this->post_type()         !=> return $this->_post->post_type
+			 *       $this->content()           !=> return $this->_post->post_content
+			 *       $this->excerpt()           !=> return $this->_post->post_excerpt
+			 *
+			 */
 
-		 	$value = parent::__call( $method_name, $args );
+			switch ( preg_replace( '#^post_(.+)$#', '$1', $method_name ) ) {
+
+				case 'ID':
+				case 'menu_order';
+				case 'comment_count':
+
+					$data_type     = 'int';
+					$property_name = $method_name;
+					break;
+
+				case 'date':
+				case 'date_gmt':
+				case 'modified':
+				case 'modified_gmt':
+
+					$data_type     = 'date';
+					$property_name = "post_{$method_name}";
+					break;
+
+				case 'author':
+				case 'title':
+				case 'status':
+				case 'password':
+
+					$data_type     = 'string';
+					$property_name = "post_{$method_name}";
+					break;
+
+				case 'comment_status':
+				case 'ping_status':
+				case 'to_ping':
+				case 'pinged':
+					$data_type     = 'string';
+					$property_name = $method_name;
+					break;
+
+			}
+
+			if ( ! $property_name ) {
+
+				$value = parent::__call( $method_name, $args );
+
+			} else {
+
+				$value = $this->_post->$property_name;
+
+				switch ( $data_type ) {
+					case 'int':
+
+						$value = intval( $value );
+						break;
+
+					case 'date':
+						/**
+						 * @todo Verify that this is what we want to standardize on.
+						 */
+						$value = mysql2date( DATE_W3C, $value );
+
+					default:
+						/*
+						 * No need to do anything for a string.
+						 */
+
+				}
+
+			}
 
 		}
 
