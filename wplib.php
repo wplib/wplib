@@ -736,7 +736,7 @@ class WPLib {
 					 * Loop through each of the helper classes to see
 					 * if the method exists in that helper class
 					 */
-					if ( is_callable( $callable = array( $helper, $helper_method ) ) ) {
+					if ( method_exists( $helper, $helper_method ) && is_callable( $callable = array( $helper, $helper_method ) ) ) {
 
 						/*
 						 * If helper method found in helper class, set $callable and cache it.
@@ -1270,6 +1270,12 @@ class WPLib {
 						break;
 				}
 			}
+		} else if ( method_exists( $view, $method_name ) && is_callable( $callable = array( $view, $method_name ) ) ) {
+
+			/**
+			 * Call the view method directly.
+			 */
+			$value = call_user_func_array( $callable, $args );
 
 		} else if ( preg_match( '#^the_(.+?)(_attr|_url|_html|_link)?$#', $method_name, $match ) ) {
 
