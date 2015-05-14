@@ -25,6 +25,144 @@ class WPLib_Users extends WPLib_Module_Base {
 	}
 
 	/**
+	 * Register all the default roles.
+	 */
+	static function _wp_loaded() {
+
+		self::register_role( WPLib_Administrator::ROLE, __( 'Administrator', 'newclarity' ), array(
+
+			'activate_plugins',
+			'add_users',
+			'create_roles',
+			'create_users',
+			'delete_others_pages',
+			'delete_others_posts',
+			'delete_pages',
+			'delete_plugins',
+			'delete_posts',
+			'delete_private_pages',
+			'delete_private_posts',
+			'delete_published_posts',
+			'delete_roles',
+			'delete_themes',
+			'delete_users',
+			'edit_dashboard',
+			'edit_files',
+			'edit_others_pages',
+			'edit_others_posts',
+			'edit_pages',
+			'edit_plugins',
+			'edit_posts',
+			'edit_private_pages',
+			'edit_published_pages',
+			'edit_published_posts',
+			'edit_roles',
+			'edit_theme_options',
+			'edit_themes',
+			'edit_users',
+			'export',
+			'import',
+			'install_plugins',
+			'install_themes',
+			'list_roles',
+			'list_users',
+			'manage_categories',
+			'manage_links',
+			'manage_options',
+			'moderate_comments',
+			'promote_users',
+			'publish_pages',
+			'publish_posts',
+			'read',
+			'read_private_pages',
+			'read_private_posts',
+			'remove_users',
+			'restrict_content',
+			'switch_themes',
+			'unfiltered_html',
+			'unfiltered_upload',
+			'update_core',
+			'update_plugins',
+			'update_themes',
+			'upload_files',
+
+		));
+
+		self::register_role( WPLib_Editor::ROLE, __( 'Editor', 'newclarity' ),array(
+
+			'delete_others_pages',
+			'delete_others_posts',
+			'delete_pages',
+			'delete_posts',
+			'delete_private_pages',
+			'delete_private_posts',
+			'delete_published_pages',
+			'delete_published_posts',
+			'edit_others_pages',
+			'edit_others_posts',
+			'edit_pages',
+			'edit_posts',
+			'edit_private_pages',
+			'edit_private_posts',
+			'edit_published_pages',
+			'edit_published_posts',
+			'manage_categories',
+			'manage_links',
+			'moderate_comments',
+			'publish_pages',
+			'publish_posts',
+			'read',
+			'read_private_pages',
+			'read_private_posts',
+			'unfiltered_html',
+			'upload_files',
+
+		));
+
+		self::register_role( WPLib_Author::ROLE, __( 'Author', 'newclarity' ),array(
+
+			'delete_posts',
+			'delete_published_pages',
+			'edit_posts',
+			'edit_private_posts',
+			'publish_posts',
+			'read',
+			'upload_files',
+
+		));
+
+		self::register_role( WPLib_Contributor::ROLE, __( 'Contributor', 'newclarity' ),array(
+
+			'delete_posts',
+			'edit_posts',
+			'read',
+
+		));
+
+		self::register_role( WPLib_Subscriber::ROLE, __( 'Subscriber', 'newclarity' ),array(
+
+			'read',
+
+		));
+
+	}
+
+
+
+	/**
+	 * @param bool|string $role_slug
+	 * @param string $display_name
+	 * @param string[] $capabilities
+	 */
+	static function register_role( $role_slug, $display_name, $capabilities ) {
+
+		WPLib_User_Base::set_role_name( $display_name, $role_slug );
+
+		WPLib_User_Base::add_role_capabilities( $capabilities, $role_slug );
+
+	}
+
+	/**
 	 * Checks an object to see if it has all the user-specific properties.
 	 *
 	 * If it does we can be almost sure it's a user.  Good enough for 99.9% of use-cases, anyway.
@@ -64,7 +202,7 @@ class WPLib_Users extends WPLib_Module_Base {
 			case 'class':
 			case 'class_name':
 
-				$role_slug = static::get_constant( 'ROLE', $user_class );
+				$role_slug = static::get_constant( 'ROLE', $role );
 				break;
 
 			case 'name':
@@ -104,7 +242,7 @@ class WPLib_Users extends WPLib_Module_Base {
 
 			foreach( get_declared_classes() as $user_class ){
 
-			  if ( ! is_a( $user_class, 'WPLib_User_Base' ) ) {
+			  if ( ! is_subclass_of( $user_class, 'WPLib_User_Base' ) ) {
 
 			    continue;
 
@@ -126,7 +264,7 @@ class WPLib_Users extends WPLib_Module_Base {
 
 	/**
 	 * @param string|int|object $user
-	 * @return bool|WP_User
+	 * @return WP_User
 	 */
 	static function get_user( $user ) {
 
@@ -160,7 +298,7 @@ class WPLib_Users extends WPLib_Module_Base {
 
 		}
 
-		return $wp_user ? static::make_user( $wp_user ) : null;
+		return $wp_user ;
 
 	}
 
@@ -171,15 +309,15 @@ class WPLib_Users extends WPLib_Module_Base {
 	 */
 	static function make_user( $wp_user ) {
 
-		if ( ! ( $role_name = self::get_assigned_role_name( $wp_user ) ) ) {
+		if ( ! ( $role_slug = self::get_assigned_role_slug( $wp_user ) ) ) {
 
 			$user = null;
 
 		} else {
 
-			$role_class = self::get_role_class( self::get_role_slug_by( 'role_name', $role_name ) );
+			$role_class = self::get_role_class( $role_slug );
 
-			$user = call_user_func( array( $role_class, 'make_new', array( 'user' => $wp_user ) ) );
+			$user = new $role_class( $wp_user );
 		}
 
 		return $user;
@@ -192,19 +330,19 @@ class WPLib_Users extends WPLib_Module_Base {
 	 * @param WP_User $wp_user
 	 * @return string|null
 	 */
-	static function get_assigned_role_name( $wp_user ) {
+	static function get_assigned_role_slug( $wp_user ) {
 
 		if ( ! property_exists( $wp_user, 'roles' ) || ! is_array( $wp_user->roles ) ) {
 
-			$role_name = null;
+			$role_slug = null;
 
 		} else {
 
-			$role_name = reset( $wp_user->roles );
+			$role_slug = reset( $wp_user->roles );
 
 		}
 
-	 	return $role_name;
+	 	return $role_slug;
 
 	}
 

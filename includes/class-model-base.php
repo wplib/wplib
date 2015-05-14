@@ -18,4 +18,21 @@ abstract class WPLib_Model_Base extends WPLib_Base {
 
 	}
 
+	/**
+	 * @param string $constant
+	 *
+	 * @return mixed|null
+	 */
+	function get_constant( $constant ) {
+
+		if ( is_null( $value = parent::get_constant( $constant ) ) ) {
+
+			$value = $this->owner->get_constant( $constant );
+
+		}
+
+		return $value;
+
+	}
+
 }

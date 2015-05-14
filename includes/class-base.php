@@ -61,14 +61,14 @@ abstract class WPLib_Base {
 	}
 
 	/**
-	 * Return a class constant for the called instance.
+	 * Return a class get_constant for the called instance.
 	 *
 	 * @param string $constant_name
 	 * @param string $class_name
 	 *
 	 * @return mixed|null
 	 */
-	function constant( $constant_name, $class_name = null ) {
+	function get_constant( $constant_name, $class_name = null ) {
 
 		if ( is_null( $class_name ) ) {
 
@@ -109,7 +109,7 @@ abstract class WPLib_Base {
 	static function remove_class_action( $action, $priority = 10 ) {
 
 		$hook = "_{$action}" . ( 10 != $priority ? "_{$priority}" : '' );
-		remove_action( $action, array( get_called_class(), $hook ), $priority, 99 );
+		remove_action( $action, array( get_called_class(), $hook ), $priority );
 
 	}
 
@@ -120,7 +120,7 @@ abstract class WPLib_Base {
 	static function remove_class_filter( $filter, $priority = 10 ) {
 
 		$hook = "_{$filter}" . ( 10 != $priority ? "_{$priority}" : '' );
-		remove_filter( $filter, array( get_called_class(), $hook ), $priority, 99 );
+		remove_filter( $filter, array( get_called_class(), $hook ), $priority );
 
 	}
 

@@ -6,11 +6,6 @@
 class WPLib_Posts extends WPLib_Module_Base {
 
 	/**
-	 * Limit posts per page to keep from overloading memory.
-	 */
-	const MAX_POSTS_PER_PAGE = 999;
-
-	/**
 	 * The default post type labels for those labels not set for a post type.
 	 *
 	 * @var array
@@ -272,6 +267,93 @@ class WPLib_Posts extends WPLib_Module_Base {
 	}
 
 	/**
+	 * @param array|string|WPLib_Query $query
+	 * @param array $args
+	 * @return WPLib_User_List
+	 */
+	static function get_list( $query = array(), $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+
+			'list_owner'    => get_called_class(),
+
+		));
+
+		$query = wp_parse_args( $query, array(
+
+			'post_type' => WPLib::get_constant( 'POST_TYPE', $try_class = $args[ 'list_owner' ] ),
+
+		));
+
+		unset( $args[ 'list_owner' ] );
+
+		$args = wp_parse_args( $args, array(
+
+			'list_class'    => "{$try_class}_List",
+
+			'default_list'  => 'WPLib_List_Default',
+
+		));
+
+		if ( ! class_exists( $args['list_class'] ) ) {
+
+			do {
+				/*
+				 * Check first to see if it already exists. Maybe it was passed in and thus does?
+				 */
+				if ( class_exists( $args['list_class'] ) ) {
+					break;
+				}
+
+				/*
+				 * Add '_Default' to last list class checked, i.e. WPLib_Posts_List_Default for WPLib_Posts::get_list()
+				 */
+				$args['list_class'] = "{$args[ 'list_class' ]}_Default";
+				if ( class_exists( $args['list_class'] ) ) {
+					break;
+				}
+
+				$args['list_class'] = false;
+
+				$try_class = preg_replace( '#^(.+)_Base$#', '$1', get_parent_class( $try_class ) );
+
+				if ( ! $try_class ) {
+					break;
+				}
+
+				/*
+				 * Add '_List' to element class, i.e. WPLib_Posts_List for WPLib_Posts::get_list()
+				 */
+				$args['list_class'] = "{$try_class}_List";
+				if ( class_exists( $args['list_class'] ) ) {
+					break;
+				}
+
+			} while ( $try_class );
+
+		}
+
+		if ( ! $args[ 'list_class' ] ) {
+			/*
+			 * Give up and use default, i.e. WPLib_List_Default
+			 */
+			$args['list_class'] = $args['list_default'];
+
+		}
+
+		$list_class = $args[ 'list_class' ];
+
+		unset( $args[ 'list_class' ], $args[ 'list_default' ] );
+
+		$query = WPLib_Posts::get_query( $query );
+
+		$list = isset( $query->posts ) ? new $list_class( $query->posts, $args ) : null;
+
+		return $list;
+	}
+
+
+	/**
 	 * Query the posts.  Equivalent to creating a new WP_Query which both instantiates and queries the DB.
 	 *
 	 * @param array $args
@@ -282,32 +364,127 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 */
 	static function get_query( $args = array() ) {
 
-		$args = wp_parse_args( $args, array(
-			'post_type'      => 'any',
-			'post_status'    => 'publish',
-			'posts_per_page' => self::MAX_POSTS_PER_PAGE,
-			'index_by'       => false,
-			'orderby'        => 'menu_order',
-			'order'          => 'ASC',
-			'no_found_rows'  => true,
-		));
+		if ( $args instanceof WP_Query ) {
 
-		$query = new WPLib_Query( $args );
+			$query = $args;
 
-		if ( $args[ 'index_by' ] && preg_match( '#^(post_(id|name)|id|name)$#', $args[ 'index_by' ], $match ) ) {
+		} else {
 
-			$index_field = 'id' == $match[ 1 ] ? 'ID' : 'post_name';
-			$posts = array();
-			foreach( $query->posts as $post ) {
+			$args = wp_parse_args( $args, array(
+				'post_type'      => 'any',
+				'post_status'    => 'publish',
+				'posts_per_page' => WPLib::max_posts_per_page(),
+				'index_by'       => false,
+				'orderby'        => 'menu_order',
+				'order'          => 'ASC',
+				'no_found_rows'  => true,
+			) );
 
-				$posts[ $post->$index_field ] = $post;
+			if ( ! empty( $args['post__not_in'] ) && ! is_array( $args['post__not_in'] ) ) {
+
+				$args['post__not_in'] = array( $args['post__not_in'] );
 
 			}
-			$query->posts = $posts;
+
+			$query = new WPLib_Query( $args );
+
+			if ( $args['index_by'] && preg_match( '#^(post_(id|name)|id|name)$#', $args['index_by'], $match ) ) {
+
+				$index_field = 'id' == $match[1] ? 'ID' : 'post_name';
+				$posts       = array();
+				foreach ( $query->posts as $post ) {
+
+					$posts[ $post->$index_field ] = $post;
+
+				}
+				$query->posts = $posts;
+
+			}
 
 		}
 
 		return $query;
+	}
+
+	/**
+	 * Create new Instance of a Post MVE
+	 *
+	 * @param WP_Post | $post
+	 *
+	 * @return mixed
+	 */
+	static function make_new_entity( $post ) {
+
+		$post_entity_class = self::get_post_type_class( $post->post_type );
+
+		return new $post_entity_class( $post );
+
+	}
+
+
+	/**
+	 * Get a list of post types that support a specific named feature.
+	 *
+	 * @param string $feature
+	 *
+	 * @return array
+	 */
+	static function get_post_types_supporting( $feature ) {
+
+		global $_wp_post_type_features;
+
+		$post_types = array_keys(
+
+			wp_filter_object_list( $_wp_post_type_features, array( $feature => true ) )
+
+		);
+
+		return $post_types;
+	}
+
+
+	/**
+	 * @param string $post_type
+	 *
+	 * @return string|null
+	 */
+	static function get_post_type_class( $post_type ) {
+
+		$classes = self::get_post_type_classes();
+
+		return ! empty( $classes[ $post_type ] ) ? $classes[ $post_type ] : null;
+
+	}
+
+	/**
+	 * @return array
+	 *
+	 * @todo Enhance this to support multiple classes per post type
+	 */
+	static function get_post_type_classes() {
+
+		if ( ! ( $post_type_classes = WPLib::cache_get( $cache_key = 'post_type_classes' ) ) ) {
+
+			WPLib::autoload_all_classes();
+
+			$post_type_classes = array();
+
+			foreach ( array_reverse( get_declared_classes() ) as $class_name ) {
+
+				if ( is_subclass_of( $class_name, 'WPLib_Entity_Base' )  && $post_type = WPLib::get_constant( 'POST_TYPE', $class_name ) ) {
+
+					$post_type_classes[ $post_type ] = $class_name;
+
+				}
+
+			}
+
+			WPLib::cache_set( $cache_key, $post_type_classes );
+
+		}
+
+		return $post_type_classes;
+
 	}
 
 }

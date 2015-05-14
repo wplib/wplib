@@ -75,16 +75,7 @@ abstract class WPLib_Module_Base extends WPLib {
 		/**
 		 * See if module has an INSTANCE_CLASS constant defined.
 		 */
-		if ( ! ( $instance_class = static::constant( 'INSTANCE_CLASS' ) ) ) {
-			/**
-			 * If the module class name ends in 's' they strip it and check for such a class name.
-			 */
-
-			$instance_class = preg_replace( '#^(.+)s$#', '$1', get_called_class() );
-
-		}
-
-		return $instance_class;
+		return static::get_constant( 'INSTANCE_CLASS' );
 
 	}
 

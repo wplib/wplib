@@ -17,13 +17,7 @@ class WPLib_Contributor extends WPLib_User_Base {
 
 	static function on_load() {
 
-		self::register_role( __( 'Contributor', 'newclarity' ),array(
 
-			'delete_posts',
-			'edit_posts',
-			'read',
-
-		));
 
 	}
 

@@ -226,4 +226,20 @@ abstract class WPLib_User_Model_Base extends WPLib_Model_Base {
 
 	}
 
+
+	/**
+	 * @param array $args
+	 * @return static
+	 */
+	static function make_new( $args ) {
+
+		$user = ! empty( $args[ 'user' ] ) ? $args[ 'user' ] : null;
+
+		unset( $args[ 'user' ] );
+
+		return new static( $user, $args );
+
+	}
+
+
 }

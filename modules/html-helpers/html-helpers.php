@@ -41,7 +41,7 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 	 * @return string
 	 */
 
-	static function get_html_link( $href, $link_text, $args = array() ) {
+	static function get_link( $href, $link_text, $args = array() ) {
 		$html = false;
 		if ( $href ) {
 			$args = wp_parse_args( $args, array(

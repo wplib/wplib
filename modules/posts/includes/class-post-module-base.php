@@ -10,45 +10,6 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 	const INSTANCE_CLASS = null;
 
 	/**
-	 * @param array|string|WPLib_Query $query
-	 * @param array $args
-	 * @return WPLib_Post_List_Base
-	 */
-	static function get_list( $query = array(), $args = array() ) {
-
-		$element_class = static::instance_class();
-
-		$list_base = preg_replace( '#^(.+)_Default$#', '$1', $element_class );
-
-		if ( ! class_exists( $list_class = "{$list_base}_List" ) ) {
-
-			$list_class = 'WPLib_Post_List_Default';
-
-		}
-
-		$query = wp_parse_args( $query, array(
-
-			'post_type' => static::POST_TYPE,
-
-		));
-
-		$args = wp_parse_args( $args, array(
-
-			'element_class' => $element_class,
-
-			'list_class'    => $list_class,
-
-		));
-
-		$list_class = $args[ 'list_class' ];
-
-		$list = new $list_class( $query, $args );
-
-		return $list;
-	}
-
-
-	/**
 	 * Query the posts.  Equivalent to creating a new WP_Query which both instantiates and queries the DB.
 	 *
 	 * @param array $args
@@ -201,4 +162,89 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 
 	}
 
+	/**
+	 * @param array|string|WPLib_Query $query
+	 * @param array $args
+	 * @return WPLib_User_List
+	 */
+	static function get_list( $query = array(), $args = array() ) {
+
+		$query = wp_parse_args( $query );
+
+		if ( $post_type = static::get_constant( 'POST_TYPE' ) ) {
+
+			$query[ 'post_type' ] = $post_type;
+
+		}
+
+		$args = wp_parse_args( $args, array(
+
+			'list_class' => static::post_type_list_class(),
+
+		));
+
+		return WPLib_Posts::get_list( $query, $args );
+
+	}
+
+	/**
+	 * @return mixed|null
+	 */
+	static function instance_class() {
+
+		do {
+			/**
+			 * See if module has an INSTANCE_CLASS constant defined.
+			 */
+			if ( $instance_class = parent::instance_class() ) {
+				break;
+			}
+
+			/**
+			 * See if module has a POST_TYPE constant defined.
+			 */
+			if ( $instance_class = static::post_type_list_class() ) {
+			 	break;
+			}
+
+			$instance_class = 'WPLib_Post_Default';
+
+		} while ( false );
+
+		return $instance_class;
+
+	}
+
+	/**
+	 * @return string
+	 */
+	static function post_type_list_class() {
+
+		$called_class = get_called_class();
+
+		if ( ! ( $post_type_list_class = WPLib::cache_get( $cache_key = "list_post_type_class[{$called_class}]" ) ) ) {
+
+			foreach ( WPLib::app_classes() as $class_name ) {
+
+				if ( is_subclass_of( $class_name, 'WPLib_Post_List_Base' ) && $post_type = static::get_constant( 'POST_TYPE', $class_name ) ) {
+
+					$post_type_list_class = $class_name;
+
+				}
+
+			}
+
+			if ( ! $post_type_list_class ) {
+
+				$post_type_list_class = 'WPLib_Post_List_Default';
+
+			}
+
+			WPLib::cache_get( $cache_key, $post_type_list_class );
+
+		}
+
+		return $post_type_list_class;
+
+	}
 }

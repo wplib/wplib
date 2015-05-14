@@ -19,11 +19,6 @@ class WPLib_Subscriber extends WPLib_User_Base {
 	 */
 	static function on_load() {
 
-		self::register_role( __( 'Subscriber', 'newclarity' ),array(
-
-			'read',
-
-		));
 
 	}
 

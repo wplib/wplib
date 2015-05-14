@@ -16,17 +16,6 @@ class WPLib_Author extends WPLib_User_Base {
 
 	static function on_load() {
 
-		self::register_role( __( 'Author', 'newclarity' ),array(
-
-			'delete_posts',
-			'delete_published_pages',
-			'edit_posts',
-			'edit_private_posts',
-			'publish_posts',
-			'read',
-			'upload_files',
-
-		));
 
 	}
 }

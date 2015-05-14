@@ -16,14 +16,15 @@
  * @method string modified()
  * @method string modified_gmt()
  *
- * @method string author()
- * @method string title()
  * @method string status()
  * @method string comment_status()
  * @method string ping_status()
  * @method string password()
  * @method string to_ping()
  * @method string pinged()
+ *
+ * @method void the_iso8601_date()
+ * @method void the_datetime()
  */
 
 abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
@@ -120,6 +121,15 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
+	 * @return null|string
+	 */
+	function title() {
+
+		return $this->has_post() ? get_the_title( $this->_post->ID ) : null;
+
+	}
+
+	/**
 	 * @return bool
 	 */
 	function has_parent() {
@@ -204,7 +214,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		} else {
 
-			$post_type = $this->owner->constant( 'POST_TYPE' );
+			$post_type = $this->owner->get_constant( 'POST_TYPE' );
 
 		}
 
@@ -218,6 +228,18 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		return $post_type;
 
 	}
+
+	/**
+	 * Determine if this is a $post_type == 'post'
+	 *
+	 * @return bool
+	 */
+	function is_blog_post() {
+
+		return WPLib_Post::POST_TYPE == $this->post_type();
+
+	}
+
 
 	/**
 	 * Retrieve the value of a field and to provide a default value if no _post is set.
@@ -377,9 +399,98 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function is_published() {
 
-		return $this->has_post() && 'publish' == $this->_post->post_status;
+		return $this->has_post() && 'publish' == $this->status();
 
 	}
+
+	/**
+	 * @return bool
+	 */
+	function is_attachment() {
+
+		/**
+		 * @todo Implement WPLib_Attachment and use WPLib_Attachment::POST_TYPE here.
+		 */
+	 	return 'attachment' == $this->post_type();
+
+	}
+
+	/**
+	 * @return WP_Post
+	 */
+	function parent_post() {
+
+		return $this->has_post() ? get_post( $this->parent_id() ) : null;
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function get_adjacent_post( $args = array() ) {
+
+		if ( ! $this->has_post() )  {
+
+			$adjacent_post = null;
+
+		} else {
+
+			global $post;
+
+			$args = wp_parse_args( $args, array(
+				'in_same_term'   => false,
+				'excluded_terms' => '',
+				'taxonomy'       => 'category',
+				'previous'       => null,
+			) );
+
+			$save_post = $post;
+
+			$post = $this->_post;
+
+			$adjacent_post = get_adjacent_post(
+				$args['in_same_term'],
+				$args['excluded_terms'],
+				$args['previous'],
+				$args['taxonomy']
+			);
+
+			$post = $save_post;
+
+		}
+
+		return $adjacent_post;
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function get_previous_post( $args = array() ) {
+
+		$args = wp_parse_args( $args );
+		$args[ 'previous' ] = true;
+		return $this->get_adjacent_post( $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function get_next_post( $args = array() ) {
+
+		$args = wp_parse_args( $args );
+		$args[ 'previous' ] = false;
+		return $this->get_adjacent_post( $args );
+
+	}
+
 
 	/**
 	 * @param string $method_name
@@ -417,7 +528,6 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 			 *       $this->date_gmt()          => return $this->_post->post_date_gmt
 			 *       $this->modified()          => return $this->_post->post_modified
 			 *       $this->modified_gmt()      => return $this->_post->post_modified_gmt
-			 *       $this->title()             => return $this->_post->post_title
 			 *       $this->password()          => return $this->_post->password
 			 *       $this->comment_count()     => return $this->_post->comment_count
 			 *       $this->pinged()            => return $this->_post->pinged
@@ -452,8 +562,6 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 					$property_name = "post_{$method_name}";
 					break;
 
-				case 'author':
-				case 'title':
 				case 'status':
 				case 'password':
 
@@ -503,6 +611,236 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		}
 
 		return $value;
+
+	}
+
+	/**
+	 *  Determine if post
+	 */
+	function has_adjacent_posts() {
+
+		$previous = $this->is_attachment() ? $this->parent_post() : $this->get_previous_post();
+
+		return $previous || $this->get_next_post();
+
+	}
+
+	/**
+	 * Determine if post has been modified since first published.
+	 *
+	 * @return bool True if modified since first published.
+	 */
+	function is_modified() {
+
+		return $this->unix_timestamp() !== $this->modified_unix_timestamp();
+
+	}
+
+	/**
+	 *
+	 */
+	function is_single() {
+
+		return is_single();
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function unix_timestamp() {
+
+		return $this->has_post()
+			? get_post_time( 'U', false, $this->_post, false )
+			: 0;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function unix_timestamp_gmt() {
+
+		return $this->has_post()
+			? get_post_time( 'U', true, $this->_post, false )
+			: 0;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function modified_unix_timestamp() {
+
+		return $this->has_post()
+			? get_post_modified_time( 'U', false, $this->_post, false )
+			: 0;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function modified_unix_timestamp_gmt() {
+
+		return $this->has_post()
+			? get_post_modified_time( 'U', true, $this->_post, false )
+			: 0;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function iso8601_date() {
+
+		return $this->has_post()
+			? get_post_time( 'c', false, $this->_post, false )
+			: false;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function iso8601_date_gmt() {
+
+		return $this->has_post()
+			? get_post_time( 'c', true, $this->_post, false )
+			: false;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function iso8601_modified_date() {
+
+		return $this->has_post()
+			? get_post_modified_time( 'c', false, $this->_post, false )
+			: false;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function iso8601_modified_date_gmt() {
+
+		return $this->has_post()
+			? get_post_modified_time( 'c', true, $this->_post, false )
+			: false;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function datetime() {
+
+		return $this->has_post()
+			? get_post_time( get_option( 'date_format' ), false, $this->_post, true )
+			: false;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function modified_datetime() {
+
+		return $this->has_post()
+			? get_post_modified_time( get_option( 'date_format' ), true, $this->_post, true )
+			: false;
+
+	}
+
+	function posted_on_values() {
+
+		return $this->has_post() ? (object) array(
+
+			'iso8601_date'          => $this->iso8601_date(),
+			'iso8601_modified_date' => $this->iso8601_modified_date(),
+			'datetime'              => $this->iso8601_date(),
+			'modified_datetime'     => $this->iso8601_modified_date(),
+
+		) : false;
+
+	}
+
+	/**
+	 * Return post's author ID
+	 *
+	 * @note Does not use get_the_author_meta( 'ID' ) and thus does not fire 'get_the_author_ID' hook
+	 * @todo Discuss if it should?  Or is this way more not robust?
+	 *
+	 * @return int|bool
+	 */
+	function author_id() {
+
+		return $this->has_post() ? intval( $this->_post->post_author ) : false;
+
+	}
+
+	/**
+	 * @return null|WPLib_User_Base
+	 */
+	function author() {
+
+		if ( ! ( $author_id = $this->author_id() ) ) {
+
+		 	$author = null;
+
+		} else {
+
+			$author = WPLib::get_user_by( 'id', $author_id );
+
+		}
+
+		return $author;
+
+	}
+
+	/**
+	 * Whether the post has been password protected.
+	 *
+	 * @note This is NOT the same as post_password_required() because it checks current state of cookie.
+	 *       Use with
+	 *
+	 * @return bool|null
+	 */
+	function password_required() {
+
+		$password = $this->has_post() ? $this->password() : false;
+
+		return ! empty( $password );
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function comments_open() {
+
+		return comments_open( $this->_post->ID );
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function comments_number() {
+
+		return get_comments_number( $this->_post->ID );
+
+	}
+
+	/**
+	 * @return mixed|null
+	 */
+	function format_slug() {
+
+		return $this->has_post() ? get_post_format( $this->_post->ID ) : null;
 
 	}
 

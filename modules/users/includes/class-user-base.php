@@ -19,6 +19,11 @@ abstract class WPLib_User_Base extends WPLib_Entity_Base {
 	const ROLE = null;
 
 	/**
+	 * @var WPLib_User_Base
+	 */
+	private $_user;
+
+	/**
 	 * @var array
 	 */
 	private static $_capabilities = array();
@@ -33,6 +38,8 @@ abstract class WPLib_User_Base extends WPLib_Entity_Base {
 	 * @param array $args
 	 */
 	function __construct( $user, $args = array() ) {
+
+		$this->_user = $user;
 
 		$args = wp_parse_args( $args, array(
 			'model' => array( 'user' => $user ),

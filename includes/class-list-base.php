@@ -208,6 +208,25 @@ abstract class WPLib_List_Base
 	}
 
 	/**
+	 */
+	function clear_elements() {
+
+		$this->_elements = array();
+
+	}
+
+	/**
+	 *
+	 * @param array $elements
+	 *
+	 */
+	function set_elements( $elements ) {
+
+		$this->_elements = $elements;
+
+	}
+
+	/**
 	 * @param string $template
 	 * @param array $args
 	 */

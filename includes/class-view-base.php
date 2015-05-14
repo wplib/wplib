@@ -44,6 +44,23 @@ abstract class WPLib_View_Base extends WPLib_Base {
 	}
 
 	/**
+	 * @param string $constant
+	 *
+	 * @return mixed|null
+	 */
+	function get_constant( $constant ) {
+
+		if ( is_null( $value = parent::get_constant( $constant ) ) ) {
+
+			$value = $this->owner->get_constant( $constant );
+
+		}
+
+		return $value;
+
+	}
+
+	/**
 	 * @param string $template
 	 * @param array $_template_vars
 	 * @return string
@@ -63,39 +80,6 @@ abstract class WPLib_View_Base extends WPLib_Base {
 
 		WPLib::the_template( $template, $_template_vars, $this->owner );
 
-	}
-
-
-	/**
-	 * Do a context controlled version of get_header()
-	 *
-	 * @param string $name The name of the specialised header.
-	 */
-	function the_header_html( $name = null ) {
-		/**
-		 * @future  Add context save and set
-		 *          (current code does not need it, but future code will be more robust)
-		 */
-		get_header();
-		/**
-		 * @future  Add context reset
-		 */
-	}
-
-	/**
-	 * Do a context controlled version of get_footer()
-	 *
-	 * @param string $name The name of the specialised header.
-	 */
-	function the_footer_html( $name = null ) {
-		/**
-		 * @future  Add context save and set
-		 *          (current code does not need it, but future code will be more robust)
-		 */
-		get_footer();
-		/**
-		 * @future  Add context reset
-		 */
 	}
 
 	/**

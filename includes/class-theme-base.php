@@ -8,6 +8,11 @@
 abstract class WPLib_Theme_Base extends WPLib {
 
 	/**
+	 * Used by the_template() to assign an instance of this class to variable with this name.
+	 */
+	const VAR_NAME = 'theme';
+
+	/**
 	 * @var static
 	 */
 	private static $_theme;
@@ -36,7 +41,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 			$message = __( '<p>No template file found. You may have deleted the current theme or renamed the theme directory?</p>' .
 				'<p>If you are a site admin <a href="%s">click here</a> to verify and possibly correct.</p>', 'wplib' );
 
-			echo sprintf( $message, site_url( '/wp-admin/themes.php') );
+			echo sprintf( $message, esc_url( site_url( '/wp-admin/themes.php') ) );
 
 		} else {
 
@@ -63,10 +68,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 		if ( ! isset( static::$_theme ) ) {
 
-			/**
-			 * @maybe Cache this information? But we can wait to see if it is slow enough to matter.
-			 */
-			foreach( get_declared_classes() as $class_name ) {
+			foreach( WPLib::app_classes() as $class_name ) {
 
 				if ( is_subclass_of( $class_name, __CLASS__ )  ) {
 
@@ -234,11 +236,27 @@ abstract class WPLib_Theme_Base extends WPLib {
 		global $wp_query;
 
 		/*
-		 * Make $theme visible inside header.php
+		 * Make $theme visible inside footer.php
 		 */
 		$wp_query->set( 'theme', self::$_theme );
 
 		get_footer( $name );
+
+	}
+
+	function the_sidebar_html( $name = null ) {
+
+		/**
+		 * @var WP_Query $wp_query
+		 */
+		global $wp_query;
+
+		/*
+		 * Make $theme visible inside sidebar.php
+		 */
+		$wp_query->set( 'theme', self::$_theme );
+
+		get_sidebar( $name );
 
 	}
 
@@ -348,5 +366,410 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
+	/**
+	 * Can user comments?
+	 *
+	 * Yes if no password or password provided and comments are open.
+	 *
+	 * @param WPLib_Post_Base $post
+	 * @return bool
+	 */
+	function user_can_comment( $post ) {
+
+		return ! post_password_required( $post ) && $post->comments_open();
+
+	}
+
+	/**
+	 * Can user see comments?
+	 *
+	 * Yes if no password or password provided and comments are either open or at least one comment exists.
+	 *
+	 * @param WPLib_Post_Base|WP_Post $post
+	 *
+*@return bool
+	 */
+	function user_can_see_comments( $post ) {
+
+		if ( ! is_a( $post, 'WP_Post' ) && method_exists( $post, 'post' ) ) {
+
+			$post = $post->post();
+
+		}
+
+		return ! post_password_required( $post ) && ( $post->comments_open() || $post->comments_number() );
+
+	}
+
+	/**
+	 *
+	 */
+	function the_comments_popup_link() {
+
+		echo $this->get_comments_popup_link();
+	}
+
+	/**
+	 * @return string
+	 */
+	function get_comments_popup_link() {
+
+		$args = wp_parse_args( $args, array(
+
+			'zero' => __( 'Leave a comment', 'wplib' ),
+			'one'  => __( '1 Comment', 'wplib' ),
+			'more' => __( '% Comments', 'wplib' ),
+
+		));
+
+		ob_start();
+
+		comments_popup_link(
+			esc_html( $args[ 'zero' ] ),
+			esc_html( $args[ 'one' ] ),
+			esc_html( $args[ 'more' ] )
+		);
+
+		return ob_get_clean();
+
+	}
+
+	/**
+	 * Return true if the site uses any categories on posts.
+	 *
+	 * @note Ignores 'Uncategorized'
+	 *
+	 * @return int|mixed
+	 */
+	function has_categories_in_use() {
+
+		return 0 < $this->in_use_category_count();
+
+	}
+
+	/**
+	 * Return number of is use categories on posts.
+	 *
+	 * @note Ignores 'Uncategorized'
+	 *
+	 * @return int|mixed
+	 */
+	function in_use_category_count() {
+
+		$category_count = WPLib::cache_get( $cache_key = 'in_use_category_count' );
+
+		if ( false === $category_count ) {
+			/*
+			 * Get array of all categories are attached to posts.
+			 */
+			$categories = get_categories( 'fields=ids&hide_empty=1' );
+
+			set_transient( $cache_key, $category_count = count( $categories ) );
+		}
+
+		return intval( $category_count ) - 1;
+
+	}
+
+	/**
+	 * @return WP_Query
+	 */
+	function query() {
+		global $wp_the_query;
+
+		return $wp_the_query;
+	}
+
+	/**
+	 * @return WP_Post[]
+	 */
+	function posts() {
+
+		return $this->has_posts() ? $this->query()->posts : array();
+
+	}
+
+	/**
+	 * @return WP_Post
+	 */
+	function post() {
+
+		return $this->has_posts() ? $this->query()->post : null;
+
+	}
+
+	/**
+	 * @return WPLib_Entity_Base
+	 *
+	 * @todo Make work for non-posts?
+	 */
+	function entity() {
+
+		return $this->has_posts() ? WPLib_Posts::make_new_entity( $this->post() ) : new WPLib_Post_Default( null );
+
+	}
+
+	/**
+	 * @return WPLib_Page
+	 */
+	function page_entity() {
+
+		return new WPLib_Page( $this->post() );
+
+	}
+
+	/**
+	 * @return WPLib_Post
+	 */
+	function post_entity() {
+
+		return new WPLib_Post( $this->post() );
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function has_posts() {
+
+		return 0 < $this->post_count();
+	}
+
+	/**
+	 * @return bool
+	 */
+	function post_count() {
+
+		$q = $this->query();
+
+		return isset( $q->posts ) && is_array( $q->posts ) ? count( $q->posts ) : 0;
+
+	}
+
+	/**
+	 * Returns a list of objects based on the queried object from $wp_the_query
+	 *
+	 * @param array $args
+	 * @return WPLib_Post_List_Default|WPLib_Post_Base[]
+	 */
+	function get_post_entity_list( $args = array() ) {
+
+		return new WPLib_Post_List_Default( $this->posts() );
+
+	}
+
+	/**
+	 * @param array $args
+	 * @return string
+	 */
+	function search_query( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+
+			'escaped' => true
+
+		));
+
+		return get_search_query( $args[ 'escaped' ] );
+
+	}
+
+	function is_home() {
+
+		global $wp_the_query;
+
+		return (bool) $wp_the_query->is_home;
+
+	}
+
+//	/**
+//	 * @return string
+//	 */
+//	function query_type() {
+//
+//		if ( ! ( $queried_object = $wp_the_query->get_queried_object() ) ) {
+//
+//			if ( 'posts' == self::front_page_query_type() && self::is_home() ) {
+//
+//				$query_type = 'posts';
+//
+//			} else if ( 'page' == self::front_page_query_type() && self::is_page_on_front() ) {
+//
+//				$query_type = 'posts';
+//
+//			} else {
+//
+//				$query_type = null;
+//
+//			}
+//
+//		} else if ( property_exists( $queried_object, 'posts' ) && is_array( $queried_object->posts ) ) {
+//
+//			$query_type = null;
+//
+//		}
+//
+//		return $query_type;
+//
+//	}
+
+	/**
+	 * @return mixed|void
+	 */
+	function front_page_query_type() {
+
+		return 'posts' == get_option( 'show_on_front' ) ? 'posts' : 'page';
+
+	}
+
+	/**
+	 * Is the Front Page configured to display a $post_type='page'?
+	 *
+	 * @return bool
+	 */
+	function is_page_on_front() {
+
+		return $front_page_id = self::front_page_id() && WPLib::is_page( $front_page_id );
+
+	}
+
+	/**
+	 * Is the Front Page configured to display a $post_type='page'?
+	 *
+	 * @return bool
+	 */
+	function front_page_id() {
+
+		return intval( get_option( 'page_on_front' ) );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function the_previous_posts_link( $args = array() ) {
+
+		echo get_previous_posts_link( $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function the_next_posts_link( $args = array() ) {
+
+		echo $this->get_next_posts_link( $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function get_previous_posts_link( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+			'format'    => '<div class="nav-previous">%link</div>',
+			'link_text' => esc_html__( 'Newer posts', 'wplib' ),
+		) );
+
+		$link = get_previous_posts_link( $args[ 'label' ] );
+
+		return $link ? str_replace( '%link', $link, $args[ 'format' ] ) : '';
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function get_next_posts_link( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+			'format'    => '<div class="nav-next">%link</div>',
+			'link_text' => esc_html__( 'Older posts', 'wplib' ),
+			'max_page'  => 0,
+		) );
+
+		$link = get_next_posts_link( $args[ 'label' ], $args[ 'max_page' ] );
+
+		return $link ? str_replace( '%link', $link, $args[ 'format' ] ) : '';
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return bool
+	 */
+
+	function has_next_posts( $args = array() ) {
+
+		return (bool) $this->get_next_posts_link( $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return bool
+	 */
+	function has_previous_posts( $args = array() ) {
+
+		return (bool) $this->get_previous_posts_link( $args );
+
+	}
+
+	/**
+	 * @param string $template
+	 * @param array|string $_template_vars
+	 * @param WPLib_Entity_Base|object $entity
+	 */
+	static function the_template( $template, $_template_vars = array(), $entity = null ) {
+
+	 	parent::the_template( $template, $_template_vars, self::instance() );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+	function the_labeled_search_query( $args = array() ) {
+
+		echo $this->get_labeled_search_query( $args  );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+	function get_labeled_search_query( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+
+			'label'         => __( 'Search Results for: %s', 'wplib' ),
+			'before_query'  => '<span>',
+			'after_query'   => '</span>',
+
+		));
+
+		$labeled_search_query = esc_html( sprintf( $args[ 'label' ], $this->search_query() ) );
+
+		return "{$labeled_search_query}{$args[ 'before_query' ]}{$search_query}{$args[ 'after_query' ]}";
+
+	}
+
+
 }
 WPLib_Theme_Base::on_load();
+

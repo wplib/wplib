@@ -29,7 +29,9 @@
  *
  * @mixin WPLib_Posts
  * @mixin WPLib_Terms
+ * @mixin WPLib_Users
  * @mixin _WPLib_Html_Helpers
+ * @mixin _WPLib_WP_Helpers
  *
  * @todo Utility Modules: https://github.com/wplib/wplib/issues/6
  *
@@ -94,6 +96,16 @@ class WPLib {
 	private static $_file_loading = false;
 
 	/**
+	 * @var array Files to autoload in the find_autoload files.
+	 */
+	private static $_new_files;
+
+	/**
+	 * @var int
+	 */
+	private static $_non_app_class_count = 0;
+
+	/**
 	 *
 	 */
 	static function on_load() {
@@ -108,11 +120,13 @@ class WPLib {
 
 		self::register_module( 'posts', 0 );
 		self::register_module( 'terms', 0 );
+		self::register_module( 'users', 0 );
 		self::register_module( 'post-posts', 0 );
 		self::register_module( 'page-posts', 0 );
 		self::register_module( 'categories', 0 );
 		self::register_module( 'post-tags', 0 );
 		self::register_module( 'html-helpers', 0 );
+		self::register_module( 'wp-helpers', 0 );
 
 		/**
 		 * Load People after Posts since it extends
@@ -125,6 +139,40 @@ class WPLib {
 		self::add_class_action( 'after_setup_theme', 11 );
 		self::add_class_action( 'xmlrpc_call' );
 		self::add_class_action( 'shutdown' );
+
+		/**
+		 * Set a marker to ignore classes declared before this class.
+		 */
+		self::$_non_app_class_count = count( get_declared_classes() ) - 1;
+
+	}
+
+	/**
+	 * Return the list of classes declared after WPLib first loads.
+	 * @return array
+	 *
+	 * @todo Add a warning when this is called because it can autoload all classes.
+	 */
+	static function app_classes() {
+
+		if ( ! ( $app_classes = WPLib::cache_get( $cache_key = 'app_classes' ) ) ) {
+
+			/**
+			 * Make sure we have all classes loaded.
+			 */
+			WPLib::autoload_all_classes();
+			$app_classes = array_reverse( array_slice( get_declared_classes(), self::$_non_app_class_count ) );
+			$app_classes = array_filter( $app_classes, function( $element ) {
+				/*
+				 * Strip out WordPress core classes
+				 */
+				return ! preg_match( '#^(WP|wp)_#', $element );
+			});
+			WPLib::cache_set( $cache_key, $app_classes );
+
+		}
+
+		return $app_classes;
 
 	}
 
@@ -205,6 +253,9 @@ class WPLib {
 	 */
 	private static function _load_necessary_files() {
 
+		spl_autoload_register( $autoloader = array( __CLASS__, '_find_files_autoloader' ), true, true );
+
+
 		/**
 		 * Find all autoloading files from components that have been loaded by (1) plugins or (2) the theme.
 		 */
@@ -219,6 +270,36 @@ class WPLib {
 		 * Find all autoloading files defined by modules specified by (1) plugins or (2) the theme.
 		 */
 		self::_find_autoload_files();
+
+		spl_autoload_unregister( $autoloader );
+
+	}
+
+	/**
+	 * Special autoloader to run only for conflicts.
+	 *
+	 * @param $class_name
+	 */
+	static function _find_files_autoloader( $class_name ) {
+
+		$dirpath = dirname( self::$_file_loading );
+
+		$parts = explode( '_', strtolower( $class_name ) );
+		array_shift( $parts );
+		$filename = implode( '-', $parts );
+
+		$filepath = "{$dirpath}/class-{$filename}.php";
+
+		if ( is_file( $filepath ) ) {
+
+			require( $filepath );
+
+			$new_files = array_flip( self::$_new_files );
+			unset( $new_files[$filepath] );
+			self::$_new_files = array_flip( $new_files );
+
+		}
+
 	}
 
 	/**
@@ -320,7 +401,7 @@ class WPLib {
 
 			$class_key = WPLib::is_production() ? md5( $class_key ) : $class_key;
 
-			if ( ! ( $new_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" ) ) ) {
+			if ( ! ( self::$_new_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" ) ) ) {
 
 				$autoload_files = array();
 
@@ -353,18 +434,17 @@ class WPLib {
 					/**
 					 * Diff the manually added files with the new ones scanned to get new files.
 					 */
-					$new_files = array_diff( $found_files, $added_files );
+					self::$_new_files = array_diff( $found_files, $added_files );
 
 					/**
 					 * Load all the scanned files from the /include/ directory
 					 */
-					foreach( $new_files as $filepath ) {
-
-						self::$_file_loading = $filepath;
-						require( $filepath );
+					do {
+						self::$_file_loading = array_shift( self::$_new_files );
+						require( self::$_file_loading );
 						self::$_file_loading = false;
 
-					}
+					} while ( count( self::$_new_files ) );
 
 					/**
 					 * Find the newly declared classes by comparing what was declared before with what is declared now.
@@ -417,6 +497,20 @@ class WPLib {
 		}
 
 	}
+
+	/**
+	 * Force loading of all classes if needed to find all classes with a specific constant.
+	 */
+	static function autoload_all_classes() {
+
+		foreach ( array_keys( self::$_autoload_files ) as $autoload_class ) {
+
+			self::_autoloader( $autoload_class );
+
+		}
+
+	}
+
 
 	/**
 	 *
@@ -545,7 +639,6 @@ class WPLib {
 		unset( $mustload_classes[ $child_class ] );
 
 	}
-
 
 	/**
 	 * Capture status of DOING_XMLRPC
@@ -1044,6 +1137,15 @@ class WPLib {
 	/**
 	 * @return bool
 	 */
+	static function doing_autosave() {
+
+		return defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE;
+
+	}
+
+	/**
+	 * @return bool
+	 */
 	static function do_log_errors() {
 
 		return defined( 'WPLIB_LOG_ERRORS' ) && WPLIB_LOG_ERRORS;
@@ -1139,7 +1241,7 @@ class WPLib {
 	 *
 	 * @return mixed|null
 	 */
-	static function constant( $constant_name, $class_name = false ) {
+	static function get_constant( $constant_name, $class_name = false ) {
 
 		if ( ! $class_name ) {
 
@@ -1153,8 +1255,13 @@ class WPLib {
 
 	/**
 	 * @param string $template
-	 * @param array $_template_vars
+	 * @param array|string $_template_vars
 	 * @param WPLib_Entity_Base|object $entity
+	 *
+	 * @note This is called via an instance as well as
+	 *       If this becomes deprecated we can prefix with an '_' and then
+	 *       use __call() and __callStatic() to allow it to be invoked.
+	 * @see  http://stackoverflow.com/a/7983863/102699
 	 */
 	static function the_template( $template, $_template_vars = array(), $entity = null ) {
 
@@ -1163,26 +1270,61 @@ class WPLib {
 
 		$template = new stdClass();
 		$template->dir = get_stylesheet_directory();
-		$template->filename = "{$template->dir}/{$_filename}";
+		$template->filename = "{$template->dir}/templates/{$_filename}";
 
-		if ( ! is_file( $template->filename )  ) {
+		if ( ! is_string( $_template_vars ) ) {
 
-			$template->dir = static::get_root_dir( 'templates' );
+			$_specialty = false;
 
-			$template->filename = "{$template->dir}/{$_filename}";
+			if ( false === $_template_vars || is_null( $_template_vars ) ) {
 
-			if ( ! is_file( $template->filename ) ) {
+				$_template_vars = array();
 
-				$template->filename = $template->dir = false;
+			} else if ( ! is_array( $_template_vars ) ) {
 
-				if ( ! WPLib::is_production() ) {
+				$message = __( 'Unexpected value for 2nd parameter passed to the_template(). Expected array, string, false or null but got %s.', 'wplib' );
+				WPLib::trigger_error( sprintf( $message, gettype( $_template_vars ) ) );
 
-					/**
-					 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
-					 */
-					echo "\n<!--[FAILED Tags Template File: {$template->filename} -->\n";
+			}
 
-				}
+		} else {
+
+			/**
+			 * If a string is passed assume it is for a more specific template and behave like get_template_part().
+			 */
+			$_specialty = esc_attr( $_template_vars );
+
+			$_template_vars	= array();
+
+			$_specialty = preg_replace( '#(\.php)$#', "-{$_specialty}$1", $template->filename );
+
+		}
+
+		if ( $_specialty && is_file( $_specialty )  ) {
+			/**
+			 * We found the special template before the general one.
+			 */
+			$template->filename = $_specialty;
+
+			$_specialty = true;
+
+		}
+
+
+		if ( true !== $_specialty && ! is_file( $template->filename )  ) {
+
+			/**
+			 * No speciality template and no template at all.
+			 */
+			$template->filename = $template->dir = false;
+
+			if ( ! WPLib::is_production() ) {
+
+				/**
+				 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
+				 */
+				echo "\n<!--[FAILED Tags Template File: {$template->filename} -->\n";
+
 			}
 
 		}
@@ -1201,7 +1343,7 @@ class WPLib {
 
 			extract( $_template_vars, EXTR_PREFIX_SAME, '_' );
 
-			if ( $entity && ( $_var_name = WPLib::constant( 'VAR_NAME', get_class( $entity ) ) ) ) {
+			if ( $entity && ( $_var_name = WPLib::get_constant( 'VAR_NAME', get_class( $entity ) ) ) ) {
 				/*
 				 * Assign the $entity's preferred variable name in addition to '$entity', i.e. '$brand'
 				 * This is a very controlled use of extract() i.e. I know what I am doing here.
@@ -1211,7 +1353,7 @@ class WPLib {
 
 			$template->vars = $_template_vars;
 
-			unset( $_template_vars, $_filename, $_cache_key, $_var_name );
+			unset( $_template_vars, $_filename, $_cache_key, $_var_name, $_specialty );
 
 			ob_start();
 
@@ -1342,6 +1484,15 @@ class WPLib {
 
 		}
 
+
+	}
+
+	/**
+	 * @return int
+	 */
+	static function max_posts_per_page() {
+
+		return 999;
 
 	}
 
