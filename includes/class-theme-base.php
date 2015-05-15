@@ -437,13 +437,15 @@ abstract class WPLib_Theme_Base extends WPLib {
 	/**
 	 * Return true if the site uses any categories on posts.
 	 *
+	 * @param array $args
+	 *
 	 * @note Ignores 'Uncategorized'
 	 *
 	 * @return int|mixed
 	 */
-	function has_categories_in_use() {
+	function has_categories( $args = array() ) {
 
-		return 0 < $this->in_use_category_count();
+		return 0 < $this->category_count( $args );
 
 	}
 
@@ -452,17 +454,25 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *
 	 * @note Ignores 'Uncategorized'
 	 *
+	 * @param array $args
+	 *
 	 * @return int|mixed
 	 */
-	function in_use_category_count() {
+	function category_count( $args = array() ) {
 
-		$category_count = WPLib::cache_get( $cache_key = 'in_use_category_count' );
+		$category_count = WPLib::cache_get( $cache_key = 'category_count' );
 
 		if ( false === $category_count ) {
-			/*
-			 * Get array of all categories are attached to posts.
-			 */
-			$categories = get_categories( 'fields=ids&hide_empty=1' );
+
+			$args = wp_parse_args( $args, array(
+				'fields'     => 'ids',
+				/*
+				 * Getonly categories are attached to posts.
+				 */
+				'hide_empty' => 1
+			));
+
+			$categories = get_categories( $args );
 
 			set_transient( $cache_key, $category_count = count( $categories ) );
 		}
@@ -742,9 +752,9 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *
 	 * @return string
 	 */
-	function the_labeled_search_query( $args = array() ) {
+	function the_labeled_search_query_html( $args = array() ) {
 
-		echo $this->get_labeled_search_query( $args  );
+		echo $this->get_labeled_search_query_html( $args  );
 
 	}
 
@@ -753,22 +763,143 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *
 	 * @return string
 	 */
-	function get_labeled_search_query( $args = array() ) {
+	function get_labeled_search_query_html( $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 
-			'label'         => __( 'Search Results for: %s', 'wplib' ),
-			'before_query'  => '<span>',
-			'after_query'   => '</span>',
+			'label'        => __( 'Search Results for: %s', 'wplib' ),
+			'before_query' => '<span>',
+			'after_query'  => '</span>',
 
-		));
+		) );
 
-		$labeled_search_query = esc_html( sprintf( $args[ 'label' ], $this->search_query() ) );
+		$labeled_search_query = esc_html( sprintf( $args['label'], $this->search_query() ) );
 
 		return "{$labeled_search_query}{$args[ 'before_query' ]}{$search_query}{$args[ 'after_query' ]}";
 
 	}
 
+	/**
+	 * Return HTML for an arbitrary widget.
+	 *
+	 * @param string $widget   The widget's PHP class name (see default-widgets.php).
+	 * @param array  $args {
+	 *     Optional. Array of arguments to configure the display of the widget.
+	 *
+	 *     @type array  $instance      The widget's instance settings. Default empty array.
+	 *     @type string $before_widget HTML content that will be prepended to the widget's HTML output.
+	 *                                 Default `<div class="widget %s">`, where `%s` is the widget's class name.
+	 *     @type string $after_widget  HTML content that will be appended to the widget's HTML output.
+	 *                                 Default `</div>`.
+	 *     @type string $before_title  HTML content that will be prepended to the widget's title when displayed.
+	 *                                 Default `<h2 class="widgettitle">`.
+	 *     @type string $after_title   HTML content that will be appended to the widget's title when displayed.
+	 *                                 Default `</h2>`.
+	 * }
+	 *
+	 * @return string
+	 */
+	function get_widget( $widget, $args = array() ) {
+
+		ob_start();
+
+		$this->get_widget( $widget, $args );
+
+		return ob_get_clean();
+
+	}
+
+	/**
+	 * Output an arbitrary widget.
+	 *
+	 * @param string $widget   The widget's PHP class name (see default-widgets.php).
+	 * @param array  $args {
+	 *     Optional. Array of arguments to configure the display of the widget.
+	 *
+	 *     @type array  $instance      The widget's instance settings. Default empty array.
+	 *     @type string $before_widget HTML content that will be prepended to the widget's HTML output.
+	 *                                 Default `<div class="widget %s">`, where `%s` is the widget's class name.
+	 *     @type string $after_widget  HTML content that will be appended to the widget's HTML output.
+	 *                                 Default `</div>`.
+	 *     @type string $before_title  HTML content that will be prepended to the widget's title when displayed.
+	 *                                 Default `<h2 class="widgettitle">`.
+	 *     @type string $after_title   HTML content that will be appended to the widget's title when displayed.
+	 *                                 Default `</h2>`.
+	 * }
+	 */
+	function the_widget( $widget,  $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+
+			'instance'        => array(),
+
+		));
+
+		$instance = wp_parse_args( $args[ 'instance' ] );
+
+		unset( $args[ 'instance' ] );
+
+		the_widget( $widget, $instance, $args );
+
+	}
+
+	function get_converted_smilies( $text ) {
+
+		return convert_smilies( $text );
+
+	}
+
+	function the_converted_smilies( $text ) {
+
+		echo $this->get_converted_smilies( $text );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+	function get_categories_html( $args = array() ) {
+
+		ob_start();
+
+		$this->the_categories_html( $args );
+
+		return ob_get_clean();
+
+	}
+
+	/**
+	 * @param array $args
+	 */
+	function the_categories_html( $args = array() ) {
+
+		$args = wp_parse_args( $args );
+
+		wp_list_categories( $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+	function get_search_form( $args = array() ) {
+
+		return get_search_form( false );
+
+	}
+
+	/**
+	 * @param array $args
+	 */
+	function the_search_form( $args = array() ) {
+
+		get_search_form( true );
+
+	}
 
 }
 WPLib_Theme_Base::on_load();
