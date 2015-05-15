@@ -5,6 +5,8 @@
  *
  * @todo Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
  *
+ * @method void the_site_name()
+ *
  */
 abstract class WPLib_Theme_Base extends WPLib {
 
@@ -157,9 +159,9 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *
 	 * @return string|void
 	 */
-	function the_site_description() {
+	function the_site_description_html() {
 
-		return $this->site_description();
+		return wp_kses_post( $this->site_description() );
 
 	}
 	/**
