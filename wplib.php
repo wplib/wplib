@@ -1496,5 +1496,14 @@ class WPLib {
 
 	}
 
+	/**
+	 * @return string
+	 */
+	static function new_post_url() {
+
+		return admin_url( 'post-new.php' );
+
+	}
+
 }
 WPLib::on_load();
