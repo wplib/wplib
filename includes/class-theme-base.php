@@ -3,7 +3,8 @@
 /**
  * Class WPLib_Theme_Base
  *
- * @method void the_sitename()
+ * @todo Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
+ *
  */
 abstract class WPLib_Theme_Base extends WPLib {
 
@@ -66,7 +67,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 */
 	static function instance() {
 
-		if ( ! isset( static::$_theme ) ) {
+		if ( ! isset( self::$_theme ) ) {
 
 			foreach( WPLib::app_classes() as $class_name ) {
 
@@ -117,14 +118,85 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
+
 	/**
 	 * Return the site name as configured.
 	 *
 	 * @return string|void
 	 */
-	function sitename() {
+	function the_site_url() {
+
+		return esc_url( $this->site_url() );
+
+	}
+
+	/**
+	 * Return the site name as configured.
+	 *
+	 * @return string|void
+	 */
+	function site_url() {
+
+		return home_url( '/' );
+
+	}
+
+	/**
+	 * Return the site name as configured.
+	 *
+	 * @return string|void
+	 */
+	function site_name() {
 
 		return get_bloginfo( 'name' );
+
+	}
+
+	/**
+	 * Return the site description as configured.
+	 *
+	 * @return string|void
+	 */
+	function the_site_description() {
+
+		return $this->site_description();
+
+	}
+	/**
+	 * Return the site description as configured.
+	 *
+	 * @return string|void
+	 */
+	function site_description() {
+
+		return get_bloginfo( 'description' );
+
+	}
+
+	/**
+	 * Return the site name as configured.
+	 *
+	 * @param array $args
+	 */
+	function the_site_name_link( $args = array() ) {
+
+		echo wp_kses_post( $this->site_name_link() );
+
+	}
+
+	/**
+	 * Return the site name as configured.
+	 *
+	 * @param array $args
+	 * @return string
+	 */
+	function site_name_link( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+			'rel' => 'home'
+		));
+
+		return $this->get_link( $this->site_url(), $this->site_name(), $args );
 
 	}
 
@@ -143,7 +215,37 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 */
 	function the_meta_charset_html() {
 
-		echo '<meta charset="' . get_bloginfo( 'charset' ) . '">';
+		echo '<meta charset="' . get_bloginfo( 'charset' ) . "\">\n";
+
+	}
+
+	/**
+	 * Output the HTML element <link rel="profile" ...>.
+	 * @param array $args
+	 */
+	function the_link_profile_html( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+			'href' => false,
+			'url'  => false,
+		));
+
+		if ( ! $args[ 'href' ] ) {
+
+			$args['href'] = $args[ 'url' ] ? $args['url'] : 'http://gmpg.org/xfn/11';
+
+		}
+
+		echo '<link rel="profile" href="' . $args[ 'href' ] . "\">\n";
+
+	}
+
+	/**
+	 * Output the HTML element <link rel="pingback" ...>.
+	 */
+	function the_link_pingback_html() {
+
+		echo '<link rel="pingback" href="' . get_bloginfo( 'pingback_url' ) . "\">\n";
 
 	}
 
@@ -155,6 +257,16 @@ abstract class WPLib_Theme_Base extends WPLib {
 		wp_head();
 
 	}
+
+
+	/**
+	 * Output the content for the wp_footer() method;
+	 */
+	function the_wp_footer_html() {
+
+		wp_footer();
+	}
+
 
 	/**
 	 * Output the attributes for the HTML <body> element
@@ -214,10 +326,11 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 * @param string $location  Defaults to 'primary' theme location.
 	 * @param array $args
 	 */
-	static function the_menu_html( $location = 'primary', $args = array() ) {
+	function the_menu_html( $location = 'primary', $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			'theme_location' => $location,
+			'menu_id'        => "{$location}-menu",
 			'container'      => false,
 			'menu_class'     => false,
 			'items_wrap'     => false,
@@ -227,6 +340,46 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
+	/**
+	 * Generate the HTML for a screen reader skip link.
+	 *
+	 * @param array $args
+	 */
+	function the_screen_reader_skip_link( $args = array() ) {
+
+		echo $this->get_screen_reader_skip_link( $args );
+
+	}
+
+	/**
+	 * Generate the HTML for a screen reader skip link.
+	 *
+	 * @param array $args
+	 * @return string
+	 */
+	function get_screen_reader_skip_link( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+			'href'       => false,
+			'url'        => false,
+			'class'      => 'skip-link screen-reader-text',
+			'link_text'  => __( 'Skip to content', 'underscores4wplib' ),
+			'is_html'    => false,
+		) );
+
+		if ( ! $args[ 'href' ] ) {
+
+			$args['href'] = $args[ 'url' ] ? $args['url'] : '#content';
+			unset( $args[ 'url' ] );
+
+		}
+		$href = $args['href'];
+		$link_text = $args['link_text'];
+		unset( $args['href'], $args['link_text'] );
+
+		return $this->get_link( $href, $link_text, $args );
+
+	}
 
 	function the_footer_html( $name = null ) {
 
@@ -264,12 +417,29 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 * Output the HTML element <meta name="viewport" content="...">.
 	 *
 	 * @param array $args
+	 * @return bool|string
 	 */
 	function the_meta_viewport_html( $args = array() ) {
 
+		echo $this->get_meta_viewport_html( $args );
+
+	}
+
+	/**
+	 * Get the HTML element <meta name="viewport" content="...">.
+	 *
+	 * @param array $args
+	 * @return bool|string
+	 */
+	function get_meta_viewport_html( $args = array() ) {
+
 		$args = wp_parse_args( $args );
 
-		if ( count( $args ) ) {
+		if ( 0 == count( $args ) ) {
+
+			$meta_viewport = false;
+
+		} else {
 
 			$attributes = esc_attr( implode( ',', array_map(
 
@@ -282,9 +452,10 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 			)));
 
-			echo "<meta name=\"viewport\" content=\"{$attributes}\" >";
+			$meta_viewport = "<meta name=\"viewport\" content=\"{$attributes}\">\n";
 
 		}
+		return $meta_viewport;
 
 	}
 
@@ -562,7 +733,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 * @param array $args
 	 * @return WPLib_Post_List_Default|WPLib_Post_Base[]
 	 */
-	function get_post_entity_list( $args = array() ) {
+	function get_post_list( $args = array() ) {
 
 		return new WPLib_Post_List_Default( $this->posts() );
 
@@ -584,11 +755,25 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
+	/**
+	 * @return bool
+	 */
 	function is_home() {
 
 		global $wp_the_query;
 
 		return (bool) $wp_the_query->is_home;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function doing_search() {
+
+		global $wp_the_query;
+
+		return (bool) $wp_the_query->is_search;
 
 	}
 
@@ -799,11 +984,11 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *
 	 * @return string
 	 */
-	function get_widget( $widget, $args = array() ) {
+	function get_widget_html( $widget, $args = array() ) {
 
 		ob_start();
 
-		$this->get_widget( $widget, $args );
+		$this->the_widget_html( $widget, $args );
 
 		return ob_get_clean();
 
@@ -827,7 +1012,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *                                 Default `</h2>`.
 	 * }
 	 */
-	function the_widget( $widget,  $args = array() ) {
+	function the_widget_html( $widget,  $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 
@@ -843,15 +1028,15 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
-	function get_converted_smilies( $text ) {
+	function get_converted_smilies_html( $text ) {
 
 		return convert_smilies( $text );
 
 	}
 
-	function the_converted_smilies( $text ) {
+	function the_converted_smilies_html( $text ) {
 
-		echo $this->get_converted_smilies( $text );
+		echo $this->get_converted_smilies_html( $text );
 
 	}
 
@@ -886,7 +1071,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *
 	 * @return string
 	 */
-	function get_search_form( $args = array() ) {
+	function get_search_form_html( $args = array() ) {
 
 		return get_search_form( false );
 
@@ -895,9 +1080,135 @@ abstract class WPLib_Theme_Base extends WPLib {
 	/**
 	 * @param array $args
 	 */
-	function the_search_form( $args = array() ) {
+	function the_search_form_html( $args = array() ) {
 
 		get_search_form( true );
+
+	}
+
+	/**
+	 * @param string $capability
+	 * @return bool
+	 */
+	function user_can( $capability ) {
+
+		return current_user_can( $capability );
+
+	}
+
+	/**
+	 * Output a hyperlink with URL, Link Text and optional title text.
+	 *
+	 * @param string $href
+	 * @param string $link_text
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+
+	static function the_link( $href, $link_text, $args = array() ) {
+
+		WPLib::the_link( $href, $link_text, $args );
+
+	}
+
+	/**
+	 * Create a hyperlink with URL, Link Text and optional title text.
+	 *
+	 * @param string $href
+	 * @param string $link_text
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+
+	static function get_link( $href, $link_text, $args = array() ) {
+
+		return WPLib::get_link( $href, $link_text, $args );
+
+	}
+
+	/**
+	 * @param int $index
+	 *
+	 * @return bool
+	 *
+	 * @todo Add a $this->is_active_sidebar() with a deprecated warning.
+	 */
+	function is_sidebar_active( $index ) {
+
+		return is_active_sidebar( $index );
+
+	}
+
+	/**
+	 * @param $index
+	 *
+	 * @todo Add a $this->dynamic_sidebar() with a deprecated warning.
+	 */
+	function the_widget_area_html( $index ) {
+
+		dynamic_sidebar( $index );
+
+	}
+
+	/**
+	 * @param array $args
+	 */
+	function the_archive_title( $args = array() ) {
+
+		echo $this->get_archive_title( $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 * @return string
+	 */
+	function get_archive_title( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+
+			'before' => '<h1 class="page-title">',
+			'after'  => '</h1>',
+
+		));
+
+		ob_start();
+
+		the_archive_title( $args[ 'before' ], $args[ 'after' ] );
+
+		return ob_get_clean();
+
+	}
+
+	/**
+	 * @param array $args
+	 */
+	function the_archive_description( $args = array() ) {
+
+		echo $this->get_archive_description( $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 * @return string
+	 */
+	function get_archive_description( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+
+			'before' => '<div class="taxonomy-description">',
+			'after'  => '</div>',
+
+		));
+
+		ob_start();
+
+		the_archive_description( $args[ 'before' ], $args[ 'after' ] );
+
+		return ob_get_clean();
 
 	}
 

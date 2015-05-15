@@ -10,6 +10,8 @@
  *
  * @property WPLib_Post_Base $owner
  * @method void the_ID()
+ *
+ * @todo Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
  */
 abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
@@ -52,15 +54,6 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	function the_title_html( $args = array() ) {
 
 		echo wp_kses_post( $this->get_title_html( $args ) );
-
-	}
-
-	/**
-	 * @return null|string
-	 */
-	function the_content_html() {
-
-		echo wp_kses_post( $this->content() );
 
 	}
 
@@ -633,6 +626,42 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 		}
 
 		return $comments_html;
+
+	}
+
+	/**
+	 *
+	 */
+	function the_content_html() {
+
+		echo wp_kses_post( $this->get_content_html() );
+
+	}
+
+	/**
+	 * @return string
+	 */
+	function get_content_html() {
+
+		return $this->model()->content();
+
+	}
+
+	/**
+	 *
+	 */
+	function the_excerpt_html() {
+
+		echo wp_kses_post( $this->get_excerpt_html() );
+
+	}
+
+	/**
+	 * @return string
+	 */
+	function get_excerpt_html() {
+
+		return $this->model()->excerpt();
 
 	}
 

@@ -32,6 +32,22 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 	}
 
 	/**
+	 * Output a hyperlink with URL, Link Text and optional title text.
+	 *
+	 * @param string $href
+	 * @param string $link_text
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+
+	static function the_link( $href, $link_text, $args = array() ) {
+
+		echo wp_kses_post( self::get_link( $href, $link_text, $args ) );
+
+	}
+
+	/**
 	 * Create a hyperlink with URL, Link Text and optional title text.
 	 *
 	 * @param string $href
@@ -58,6 +74,7 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 				'fragment'     => false,
 				'onclick'      => false,
 				'default_text' => false,
+				'rel'          => false,
 			) );
 
 			if ( empty( $link_text ) ) {
@@ -77,6 +94,10 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 			if ( $args['target'] ) {
 				$args['target'] = esc_attr( $args['target'] );
 				$args['target'] = " target=\"{$args['target']}\"";
+			}
+			if ( $args['rel'] ) {
+				$args['rel'] = esc_attr( $args['rel'] );
+				$args['rel'] = " rel=\"{$args['rel']}\"";
 			}
 			if ( ! is_array( $args['attributes'] ) ) {
 				parse_str( $args['attributes'], $args['attributes'] );
@@ -112,7 +133,7 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 			}
 
 			$html = <<<HTML
-{$args['before']}<a{$args['onclick']}{$args['target']}{$args['class']} href="{$href}{$args['fragment']}" {$args['title_text']}{$args['attributes']}>{$args['before_text']}{$link_text}{$args['after_text']}</a>{$args['after']}
+{$args['before']}<a{$args['onclick']}{$args['target']}{$args['class']}{$args['rel']} href="{$href}{$args['fragment']}" {$args['title_text']}{$args['attributes']}>{$args['before_text']}{$link_text}{$args['after_text']}</a>{$args['after']}
 HTML;
 		}
 
