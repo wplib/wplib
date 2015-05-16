@@ -27,6 +27,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ * @mixin WPLib_Theme
  * @mixin WPLib_Posts
  * @mixin WPLib_Terms
  * @mixin WPLib_Users
@@ -134,6 +135,7 @@ class WPLib {
 		self::register_module( 'post-tags', 0 );
 		self::register_module( 'html-helpers', 0 );
 		self::register_module( 'wp-helpers', 0 );
+		self::register_module( 'theme', 0 );
 
 		/**
 		 * Load People after Posts since it extends
