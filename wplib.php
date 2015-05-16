@@ -106,6 +106,11 @@ class WPLib {
 	private static $_non_app_class_count = 0;
 
 	/**
+	 * @var WPLib_Theme_Base|bool
+	 */
+	private static $_theme = false;
+
+	/**
 	 *
 	 */
 	static function on_load() {
@@ -115,6 +120,8 @@ class WPLib {
 			self::set_runmode( WPLIB_RUNMODE );
 
 		}
+
+		self::register_helper( 'posts' );
 
 		spl_autoload_register( array( __CLASS__, '_autoloader' ) );
 
@@ -1037,7 +1044,6 @@ class WPLib {
 	 */
 	static function cache_get( $key, $group = '' ) {
 
-		$cache = false;
 		if ( ! is_string( $key ) && ! is_int( $key ) && static::is_development() ) {
 
 			static::trigger_error( __( 'Cache key is not string or numeric.', 'wplib' ) );
@@ -1272,9 +1278,15 @@ class WPLib {
 		$template->dir = get_stylesheet_directory();
 		$template->filename = "{$template->dir}/templates/{$_filename}";
 
-		if ( ! is_string( $_template_vars ) ) {
+		if ( ! is_string( $_template_vars ) || false !== strpos( $_template_vars, '=' ) ) {
 
 			$_specialty = false;
+
+			if ( is_string( $_template_vars ) ) {
+
+				$_template_vars = wp_parse_args( $_template_vars );
+
+			}
 
 			if ( false === $_template_vars || is_null( $_template_vars ) ) {
 
@@ -1502,6 +1514,23 @@ class WPLib {
 	static function new_post_url() {
 
 		return admin_url( 'post-new.php' );
+
+	}
+
+	/**
+	 * @return WPLib_Theme_Base
+	 */
+	static function theme() {
+
+		return self::$_theme;
+
+	}
+	/**
+	 * @param WPLib_Theme_Base $theme
+	 */
+	static function set_theme( $theme ) {
+
+		self::$_theme = $theme;
 
 	}
 

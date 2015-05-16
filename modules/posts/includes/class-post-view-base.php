@@ -260,11 +260,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 		$globals = $this->_save_multipage_globals();
 
-		if ( false === $this->multipage ) {
-
-			$multipage = false;
-
-		} else {
+		if ( false !== $this->multipage ) {
 
 			$this->_set_multipage_globals();
 
@@ -617,7 +613,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 			$save_post = $post;
 
-			$post = $this->_post;
+			$post = $this->model()->post();
 
 			comments_template( $args[ 'template_file' ], $args[ 'group_by_type' ] );
 
@@ -664,6 +660,107 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 		return $this->model()->excerpt();
 
 	}
+
+	/**
+	 *
+	 */
+	function the_number_of_comments_html() {
+
+		return $this->get_number_of_comments_html();
+
+	}
+
+	/**
+	 * @return string
+	 */
+	function get_number_of_comments_html() {
+
+		return number_format_i18n( $this->model()->number_of_comments(), 0 );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function the_previous_comments_link( $args = array() ) {
+
+		echo get_previous_comments_link( $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function the_next_comments_link( $args = array() ) {
+
+		echo $this->get_next_comments_link( $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+	function get_previous_comments_link( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+			'format'    => '<div class="nav-previous">%link</div>',
+			'link_text' => esc_html__( 'Older Comments', 'wplib' ),
+		) );
+
+		$link = get_previous_comments_link( $args[ 'label' ] );
+
+		return $link ? str_replace( '%link', $link, $args[ 'format' ] ) : '';
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+	function get_next_comments_link( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+			'format'    => '<div class="nav-next">%link</div>',
+			'link_text' => esc_html__( 'Newer Comments', 'wplib' ),
+			'max_page'  => 0,
+		) );
+
+		$link = get_next_comments_link( $args[ 'label' ], $args[ 'max_page' ] );
+
+		return $link ? str_replace( '%link', $link, $args[ 'format' ] ) : '';
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 */
+	function the_comment_list_html( $args = array() ) {
+
+		wp_list_comments( $args, WPLib::theme()->query()->comments );
+
+	}
+
+	/**
+	 * @param array $args
+	 */
+	function the_comment_form_html( $args = array() ) {
+
+		if ( $this->has_post() ) {
+
+			comment_form( $args, $this->_post->ID );
+
+		}
+
+	}
+
 
 }
 

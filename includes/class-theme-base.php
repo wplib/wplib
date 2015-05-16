@@ -16,11 +16,6 @@ abstract class WPLib_Theme_Base extends WPLib {
 	const VAR_NAME = 'theme';
 
 	/**
-	 * @var static
-	 */
-	private static $_theme;
-
-	/**
 	 * Sets hooks required by all themes.
 	 */
 	static function on_load() {
@@ -69,7 +64,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 */
 	static function instance() {
 
-		if ( ! isset( self::$_theme ) ) {
+		if ( ! WPLib::theme() ) {
 
 			foreach( WPLib::app_classes() as $class_name ) {
 
@@ -79,7 +74,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 					 * Will create instance of FIRST class found that subclasses WPLib_Theme_Base.
 					 * That means sites should ONLY have ONE subclass of WPLib_Theme_Base.
 					 */
-					self::$_theme = new $class_name();
+					WPLib::set_theme( new $class_name() );
 					break;
 
 				}
@@ -88,7 +83,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 		}
 
-		return self::$_theme;
+		return WPLib::theme();
 
 	}
 
@@ -101,7 +96,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 */
 	static function set_mock_theme( $theme ) {
 
-		return static::$_theme = $theme;
+		WPLib::set_theme( $theme );
 
 	}
 
@@ -316,7 +311,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 		/*
 		 * Make $theme visible inside header.php
 		 */
-		$wp_query->set( 'theme', self::$_theme );
+		$wp_query->set( 'theme', WPLib::theme() );
 
 		get_header( $name );
 
@@ -393,7 +388,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 		/*
 		 * Make $theme visible inside footer.php
 		 */
-		$wp_query->set( 'theme', self::$_theme );
+		$wp_query->set( 'theme', WPLib::theme() );
 
 		get_footer( $name );
 
@@ -409,7 +404,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 		/*
 		 * Make $theme visible inside sidebar.php
 		 */
-		$wp_query->set( 'theme', self::$_theme );
+		$wp_query->set( 'theme', WPLib::theme() );
 
 		get_sidebar( $name );
 
@@ -540,41 +535,6 @@ abstract class WPLib_Theme_Base extends WPLib {
 	}
 
 	/**
-	 * Can user comments?
-	 *
-	 * Yes if no password or password provided and comments are open.
-	 *
-	 * @param WPLib_Post_Base $post
-	 * @return bool
-	 */
-	function user_can_comment( $post ) {
-
-		return ! post_password_required( $post ) && $post->comments_open();
-
-	}
-
-	/**
-	 * Can user see comments?
-	 *
-	 * Yes if no password or password provided and comments are either open or at least one comment exists.
-	 *
-	 * @param WPLib_Post_Base|WP_Post $post
-	 *
-*@return bool
-	 */
-	function user_can_see_comments( $post ) {
-
-		if ( ! is_a( $post, 'WP_Post' ) && method_exists( $post, 'post' ) ) {
-
-			$post = $post->post();
-
-		}
-
-		return ! post_password_required( $post ) && ( $post->comments_open() || $post->comments_number() );
-
-	}
-
-	/**
 	 *
 	 */
 	function the_comments_popup_link() {
@@ -682,7 +642,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 	}
 
 	/**
-	 * @return WPLib_Entity_Base
+	 * @return WPLib_Post_Base
 	 *
 	 * @todo Make work for non-posts?
 	 */
@@ -1211,6 +1171,74 @@ abstract class WPLib_Theme_Base extends WPLib {
 		the_archive_description( $args[ 'before' ], $args[ 'after' ] );
 
 		return ob_get_clean();
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function uses_threaded_comments() {
+
+		return (bool) get_option( 'thread_comments' );
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function uses_paged_comments() {
+
+		return (bool) get_option( 'page_comments' );
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function comments_per_page() {
+
+		return (int) get_option( 'comments_per_page' );
+
+	}
+
+	/**
+	 * @return array
+	 */
+	function comments() {
+
+		$comments = $this->query()->comments;
+
+		return is_array( $comments ) ? $comments : array();
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function number_of_comment_pages() {
+
+		if ( ! $this->uses_paged_comments() ) {
+
+			$number = 1;
+
+		} else {
+
+			global $wp_the_query;
+			global $wp_query;
+
+			$save_query = $wp_query;
+			$wp_query   = $wp_the_query;
+
+			get_comment_pages_count(
+				$this->comments(),
+				$this->comments_per_page(),
+				$this->uses_threaded_comments()
+			);
+
+			$wp_query = $save_query;
+
+		}
+		return $number;
 
 	}
 

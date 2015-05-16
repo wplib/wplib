@@ -89,6 +89,15 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
+	 * @return null|WPLib_Post_View_Base
+	 */
+	function view() {
+
+		return is_object( $this->owner ) ? $this->owner->view() : null;
+
+	}
+
+	/**
 	 * @return WP_Post|null
 	 */
 	function post() {
@@ -818,15 +827,6 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
-	 * @return bool
-	 */
-	function comments_open() {
-
-		return comments_open( $this->_post->ID );
-
-	}
-
-	/**
 	 * @return int
 	 */
 	function comments_number() {
@@ -843,5 +843,115 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		return $this->has_post() ? get_post_format( $this->_post->ID ) : null;
 
 	}
+
+	/**
+	 * Does this post have comments?
+	 *
+	 * @note Does not use have_comments() because that is specific to the wp_query and not to the post itself.
+	 *
+	 * @return bool
+	 *
+	 *
+	 */
+	function has_comments() {
+
+		return $this->has_post() ? $this->comment_count() > 0 : false;
+
+	}
+
+	/**
+	 *
+	 */
+	function number_of_comments() {
+
+		return $this->has_post() ? get_comments_number( $this->_post->ID ) : 0;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function comments_open() {
+
+		return $this->has_post() ? comments_open( $this->_post->ID ) : false;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function supports_comments() {
+
+		return post_type_supports( $this->post_type(), 'comments' );
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function comments_unavailable() {
+
+		return ! $this->comments_open() && 0 < $this->number_of_comments() && $this->supports_comments();
+
+	}
+
+
+	/**
+	 * @return int
+	 */
+	function number_of_comment_pages() {
+
+		$theme = WPLib::theme();
+
+		if ( ! $theme->uses_paged_comments() ) {
+
+			$number = $this->has_comments() ? 1 : 0;
+
+		} else {
+
+			$number = $this->has_post() ? $theme->number_of_comment_pages() : 0;
+
+		}
+		return $number;
+
+	}
+
+
+	/**
+	 * Can user comments?
+	 *
+	 * Yes if no password or password provided and comments are open.
+	 *
+	 * @todo We probably need to change this method. If confused info about $post with state of password entry
+	 *
+	 * @return bool
+	 */
+	function user_can_comment() {
+
+		$post = $this->post();
+
+		return $post && ! post_password_required( $post ) && $entity->comments_open();
+
+	}
+
+	/**
+	 * Can user see comments?
+	 *
+	 * Yes if no password or password provided and comments are either open or at least one comment exists.
+	 *
+	 * @todo We probably need to change this method. If confuses info about $post with state of password entry
+	 *
+	 * @return bool
+	 */
+	function user_can_see_comments() {
+
+		$post = $this->post();
+
+		return $post &&
+		       ! post_password_required( $post ) &&
+		       ( $this->comments_open() || $this->comments_number() );
+
+	}
+
 
 }

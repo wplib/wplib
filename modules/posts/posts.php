@@ -487,5 +487,37 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 	}
 
+	/**
+	 * @param $thing
+	 *
+	 * @return array
+	 */
+	static function get_post_and_entity( $thing ) {
+
+		if ( ! $thing ) {
+
+			$thing = WPLib::theme()->post();
+
+		}
+
+		if ( is_a( $thing, 'WP_Post' ) ) {
+
+			$entity = WPLib::make_new_entity( $post = $thing );
+
+		} else {
+
+			$entity = $thing;
+
+			if ( $thing instanceof WPLib_Post_Base ) {
+
+				$post = $thing->post();
+
+			}
+		}
+
+		return array( $post, $entity );
+
+	}
+
 }
 WPLib_Posts::on_load();
