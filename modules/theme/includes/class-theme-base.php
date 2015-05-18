@@ -15,7 +15,6 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 */
 	const VAR_NAME = 'theme';
 
-
 	/**
 	 * Return the site name as configured.
 	 *
@@ -59,6 +58,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 		return wp_kses_post( $this->site_description() );
 
 	}
+
 	/**
 	 * Return the site description as configured.
 	 *
@@ -155,7 +155,6 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
-
 	/**
 	 * Output the content for the wp_footer() method;
 	 */
@@ -163,7 +162,6 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 		wp_footer();
 	}
-
 
 	/**
 	 * Output the attributes for the HTML <body> element
@@ -187,6 +185,9 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
+	/**
+	 * @param null|string $name
+	 */
 	function the_header_html( $name = null ) {
 
 		/**
@@ -639,37 +640,6 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
-//	/**
-//	 * @return string
-//	 */
-//	function query_type() {
-//
-//		if ( ! ( $queried_object = $wp_the_query->get_queried_object() ) ) {
-//
-//			if ( 'posts' == self::front_page_query_type() && self::is_home() ) {
-//
-//				$query_type = 'posts';
-//
-//			} else if ( 'page' == self::front_page_query_type() && self::is_page_on_front() ) {
-//
-//				$query_type = 'posts';
-//
-//			} else {
-//
-//				$query_type = null;
-//
-//			}
-//
-//		} else if ( property_exists( $queried_object, 'posts' ) && is_array( $queried_object->posts ) ) {
-//
-//			$query_type = null;
-//
-//		}
-//
-//		return $query_type;
-//
-//	}
-
 	/**
 	 * @return mixed|void
 	 */
@@ -765,7 +735,6 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *
 	 * @return bool
 	 */
-
 	function has_next_posts( $args = array() ) {
 
 		return (bool) $this->get_next_posts_link( $args );
@@ -890,6 +859,11 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
+	/**
+	 * @param string $text
+	 *
+	 * @return string
+	 */
 	function get_converted_smilies_html( $text ) {
 
 		return convert_smilies( $text );
@@ -967,7 +941,6 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *
 	 * @return string
 	 */
-
 	static function the_link( $href, $link_text, $args = array() ) {
 
 		WPLib::the_link( $href, $link_text, $args );
@@ -983,7 +956,6 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *
 	 * @return string
 	 */
-
 	static function get_link( $href, $link_text, $args = array() ) {
 
 		return WPLib::get_link( $href, $link_text, $args );

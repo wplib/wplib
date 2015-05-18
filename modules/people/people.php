@@ -27,7 +27,6 @@ class WPLib_People extends WPLib_Post_Module_Base {
 			'labels'        => $labels,
 			'public'        => true,
 			'menu_icon'     => 'dashicons-admin-users',
-			'menu_position' => 32,
 			'supports'      => array(
 				'title',
 				'editor',
