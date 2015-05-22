@@ -1,5 +1,5 @@
 # WPLib
-A WordPress Application Foundation Library for Agency and Corporate Developers 
+A Foundation Library for Agency Developers Building Complex WordPress Sites 
 
 
 ##Status
