@@ -11,7 +11,7 @@
  */
 class WPLib_Post_Tag extends WPLib_Term_Base {
 
-  const TAXONOMY = 'post_tag';
+  const TAXONOMY = WPLib_Taxonomy_Post_Tags::TAXONOMY;
 
 }
 
