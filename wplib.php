@@ -1345,7 +1345,7 @@ class WPLib {
 				/**
 				 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
 				 */
-				echo "\n<!--[FAILED Tags Template File: {$template->filename} -->\n";
+				echo "\n<!--[FAILED Template File: {$template->filename} -->\n";
 
 			}
 
@@ -1359,7 +1359,7 @@ class WPLib {
 
 			if ( ! WPLib::doing_ajax() && ! WPLib::is_production() ) {
 
-				echo "\n<!--[Tags Template File: {$template->filename} -->\n";
+				echo "\n<!--[Template File: {$template->filename} -->\n";
 
 			}
 
