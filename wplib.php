@@ -1445,10 +1445,11 @@ class WPLib {
 
 			$method_name = $match[ 1 ];
 			$suffix = 3 == count( $match ) ? $match[ 2 ] : false;
-			$has_html_suffix = preg_match( '#^_(html|link)$#', $suffix );
 
 
 			if ( is_callable( $callable = array( $view, "{$method_name}{$suffix}" ) ) ) {
+
+				$has_html_suffix = preg_match( '#^_(html|link)$#', $suffix );
 
 				/*
 				 * Check $view to see if the suffixed method exist.
@@ -1462,6 +1463,7 @@ class WPLib {
 				 */
 				$value = call_user_func_array( $callable, $args );
 
+				$has_html_suffix = false;
 
 			} else {
 
@@ -1474,6 +1476,8 @@ class WPLib {
 				$message = sprintf( __( 'Method %s not found for class %s.', 'wplib' ), $match[ 0 ], $class_name );
 
 				WPLib::trigger_error( $message, E_USER_ERROR );
+
+				$has_html_suffix = false;
 
 			}
 
