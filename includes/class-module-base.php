@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Module_Base
  */
-class WPLib_Module_Base extends WPLib {
+abstract class WPLib_Module_Base extends WPLib {
 
 	/**
 	 * Delegate calls to an instance class if the class has a INSTANCE_CLASS constant or plural name adds 's', otherwise delegate to WPLib.
@@ -75,16 +75,7 @@ class WPLib_Module_Base extends WPLib {
 		/**
 		 * See if module has an INSTANCE_CLASS constant defined.
 		 */
-		if ( ! ( $instance_class = static::constant( 'INSTANCE_CLASS' ) ) ) {
-			/**
-			 * If the module class name ends in 's' they strip it and check for such a class name.
-			 */
-
-			$instance_class = preg_replace( '#^(.+)s$#', '$1', get_called_class() );
-
-		}
-
-		return $instance_class;
+		return static::get_constant( 'INSTANCE_CLASS' );
 
 	}
 

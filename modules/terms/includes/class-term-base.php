@@ -11,7 +11,7 @@
  * @property WPLib_Term_Model_Base $model
  * @property WPLib_Term_View_Base $view
  */
-abstract class WPLib_Term_Base extends WPLib_Entity_Base {
+abstract class WPLib_Term_Base extends WPLib_Item_Base {
 
 	/**
 	 * Child class should define a valid value for TAXONOMY
@@ -25,7 +25,7 @@ abstract class WPLib_Term_Base extends WPLib_Entity_Base {
 	function __construct( $term, $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
-			'data' => array( 'term' => $term ),
+			'model' => array( 'term' => $term ),
 		));
 
 		parent::__construct( $args );
@@ -111,7 +111,7 @@ abstract class WPLib_Term_Base extends WPLib_Entity_Base {
 	}
 
 	/**
-	 * Register the term type inside of an Entity classes' on_load() method.
+	 * Register the term type inside of an Item classes' on_load() method.
 	 *
 	 * @param string $taxonomy
 	 * @param array $args
@@ -147,40 +147,6 @@ abstract class WPLib_Term_Base extends WPLib_Entity_Base {
 		WPLib_Terms::_set_taxonomy_object_types( $taxonomy, null );
 
 
-	}
-
-	/**
-	 * @param array|string|WPLib_Query $query
-	 * @param array $args
-	 * @return WPLib_Term_List
-	 */
-	static function get_list( $query = array(), $args = array() ) {
-
-		$element_class = get_called_class();
-
-		if ( ! class_exists( $list_class = "{$element_class}_List" ) ) {
-
-			$list_class = 'WPLib_Term_List';
-
-		}
-
-		$args = wp_parse_args( $args, array(
-
-			'element_class' => $element_class,
-
-			'list_class'    => $list_class,
-
-			'query'         => wp_parse_args( $query ),
-
-		));
-
-		$list_class = $args[ 'list_class' ];
-
-		unset( $args[ 'list_class' ] );
-
-		$list = new $list_class( $args );
-
-		return $list;
 	}
 
 }

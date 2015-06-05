@@ -1,17 +1,19 @@
 # WPLib
-A Foundation Library for Agency Developers Building Complex WordPress Sites 
+**An MV\* Foundation Library for Building Custom WordPress Sites**
 
+WPLib was built for both agency and internal corporate developers who want their custom-developed WordPress sites to be both robust and easy to maintain as site complexity grows. 
 
 ##Status
-WPLib is currently in **alpha** phase but is being _actively_ developed with a goal to bring to stable beta as soon as possible.  
+WPLib is in beta status at version 0.1.0 in master.
 
-The latest bleeding edge development is currently happening in the [`mike` branch](https://github.com/wplib/wplib/tree/mike) and versioned by date to coordinate with the [Underscores4WPLib](https://github.com/wplib/underscores4wplib) and [LawPress](https://github.com/wplib/lawpress) demo theme releases, with _"approved"_ code merged to the [`develop` branch](https://github.com/wplib/wplib/tree/develop).
+We are actively working on it with a goal to develop stable beta versions that can be used in production, and then a 1.0.0 version when we are comfortable that the majority of the API will not need to change.
 
-We will be releasing a versioned beta on the [`master` branch](https://github.com/wplib/wplib/tree/master) as soon as we have working demo themes and a reasonable level of documentation on [wplib.org](http://wplib.org).
-
+##Demo Themes
+- [Underscores4WPLib](https://github.com/wplib/underscores4wplib) - A port of an [Underscores](http://underscores.me) starter theme that can be used as a starter theme but is intended more to allow for comparison between standard WordPress theming practices and using WPLib best practices instead.
+- [LawPress](https://github.com/wplib/lawpress) - A demo theme that will eventually be a full-fledged law firm CMS starter theme.
 
 ##History
-WPLib is based on at least 5 generations of code developed over 5 years and the concepts are now mature enough to release publicly.
+WPLib is based on at least five (5) generations of code developed over five (5) years and the concepts are now mature enough to release publicly.
 
 ##Core Committers
 
