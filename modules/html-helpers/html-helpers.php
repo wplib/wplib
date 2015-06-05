@@ -107,10 +107,7 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 			}
 
 			if ( $args['fragment'] ) {
-				/**
-				 * @TODO Verify that sanitize_key() is the correct method to use here for security.
-				 */
-				$args['fragment'] = '#' . sanitize_key( $args['fragment'] );
+				$href = "{$href}#{$args['fragment']}";
 			}
 
 			$href = esc_url( $href );
@@ -120,11 +117,11 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 			}
 
 			if ( $args['onclick'] ) {
-				$args['onclick'] = " onclick=\"{$args['onclick']}\"";
+				$args['onclick'] = ' onclick="' . esc_js( $args['onclick'] ) . '"';
 			}
 
 			$html = <<<HTML
-{$args['before']}<a{$args['onclick']}{$args['target']}{$args['class']}{$args['rel']} href="{$href}{$args['fragment']}" {$args['title_text']}{$args['attributes']}>{$args['before_text']}{$link_text}{$args['after_text']}</a>{$args['after']}
+{$args['before']}<a{$args['onclick']}{$args['target']}{$args['class']}{$args['rel']} href="{$href}" {$args['title_text']}{$args['attributes']}>{$args['before_text']}{$link_text}{$args['after_text']}</a>{$args['after']}
 HTML;
 		}
 
