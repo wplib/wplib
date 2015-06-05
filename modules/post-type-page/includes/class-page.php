@@ -20,7 +20,7 @@ class WPLib_Page extends WPLib_Post_Base {
 	 *
 	 * @var string
 	 */
-	const POST_TYPE = 'page';
+	const POST_TYPE = WPLib_Post_Type_Page::POST_TYPE;
 
 
 }
