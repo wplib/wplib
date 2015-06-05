@@ -3,32 +3,32 @@
 /**
  * Class WPLib_View_Base
  *
- * @property WPLib_Entity_Base $entity
- * @property WPLib_Entity_Base $owner
+ * @property WPLib_Item_Base $item
+ * @property WPLib_Item_Base $owner
  * @property WPLib_Model_Base $model
  * @mixin WPLib_Model_Base
  */
 abstract class WPLib_View_Base extends WPLib_Base {
 
 	/**
-	 * Use this to ease refactoring from $entity to $owner
+	 * Use this to ease refactoring from $item to $owner
 	 *
-	 * @return WPLib_Entity_Base
+	 * @return WPLib_Item_Base
 	 */
-	function entity() {
+	function item() {
 
 		return $this->owner;
 
 	}
 
 	/**
-	 * Use this to ease refactoring from $entity to $owner
+	 * Use this to ease refactoring from $item to $owner
 	 *
-	 * @param WPLib_Entity_Base $entity
+	 * @param WPLib_Item_Base $item
 	 */
-	function set_entity( $entity ) {
+	function set_item( $item ) {
 
-		$this->owner = $entity;
+		$this->owner = $item;
 
 	}
 

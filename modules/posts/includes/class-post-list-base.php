@@ -21,7 +21,7 @@ class WPLib_Post_List_Base extends WPLib_List_Base {
 
 			foreach ( $posts as $index => $post ) {
 
-				$posts[ $index ] = WPLib_Posts::make_new_entity( $post );
+				$posts[ $index ] = WPLib_Posts::make_new_item( $post );
 
 			}
 

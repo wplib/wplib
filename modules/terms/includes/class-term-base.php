@@ -11,7 +11,7 @@
  * @property WPLib_Term_Model_Base $model
  * @property WPLib_Term_View_Base $view
  */
-abstract class WPLib_Term_Base extends WPLib_Entity_Base {
+abstract class WPLib_Term_Base extends WPLib_Item_Base {
 
 	/**
 	 * Child class should define a valid value for TAXONOMY
@@ -111,7 +111,7 @@ abstract class WPLib_Term_Base extends WPLib_Entity_Base {
 	}
 
 	/**
-	 * Register the term type inside of an Entity classes' on_load() method.
+	 * Register the term type inside of an Item classes' on_load() method.
 	 *
 	 * @param string $taxonomy
 	 * @param array $args

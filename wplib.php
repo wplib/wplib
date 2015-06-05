@@ -1264,14 +1264,14 @@ class WPLib {
 	/**
 	 * @param string $template
 	 * @param array|string $_template_vars
-	 * @param WPLib_Entity_Base|object $entity
+	 * @param WPLib_Item_Base|object $item
 	 *
 	 * @note This is called via an instance as well as
 	 *       If this becomes deprecated we can prefix with an '_' and then
 	 *       use __call() and __callStatic() to allow it to be invoked.
 	 * @see  http://stackoverflow.com/a/7983863/102699
 	 */
-	static function the_template( $template, $_template_vars = array(), $entity = null ) {
+	static function the_template( $template, $_template_vars = array(), $item = null ) {
 
 
 		$_filename = preg_replace( '#(\.php)$#', '', ltrim( $template, '/' ) ) . '.php';
@@ -1357,12 +1357,12 @@ class WPLib {
 
 			extract( $_template_vars, EXTR_PREFIX_SAME, '_' );
 
-			if ( $entity && ( $_var_name = WPLib::get_constant( 'VAR_NAME', get_class( $entity ) ) ) ) {
+			if ( $item && ( $_var_name = WPLib::get_constant( 'VAR_NAME', get_class( $item ) ) ) ) {
 				/*
-				 * Assign the $entity's preferred variable name in addition to '$entity', i.e. '$brand'
+				 * Assign the $item's preferred variable name in addition to '$item', i.e. '$brand'
 				 * This is a very controlled use of extract() i.e. I know what I am doing here.
 				 */
-				extract( array( $_var_name => $entity ) );
+				extract( array( $_var_name => $item ) );
 			}
 
 			$template->vars = $_template_vars;

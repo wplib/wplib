@@ -547,16 +547,16 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 *
 	 * @todo Make work for non-posts?
 	 */
-	function entity() {
+	function item() {
 
-		return $this->has_posts() ? WPLib_Posts::make_new_entity( $this->post() ) : new WPLib_Post_Default( null );
+		return $this->has_posts() ? WPLib_Posts::make_new_item( $this->post() ) : new WPLib_Post_Default( null );
 
 	}
 
 	/**
 	 * @return WPLib_Page
 	 */
-	function page_entity() {
+	function page_item() {
 
 		return new WPLib_Page( $this->post() );
 
@@ -565,7 +565,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 	/**
 	 * @return WPLib_Post
 	 */
-	function post_entity() {
+	function post_item() {
 
 		return new WPLib_Post( $this->post() );
 
@@ -755,9 +755,9 @@ abstract class WPLib_Theme_Base extends WPLib {
 	/**
 	 * @param string $template
 	 * @param array|string $_template_vars
-	 * @param WPLib_Entity_Base|object $entity
+	 * @param WPLib_Item_Base|object $item
 	 */
-	static function the_template( $template, $_template_vars = array(), $entity = null ) {
+	static function the_template( $template, $_template_vars = array(), $item = null ) {
 
 	 	parent::the_template( $template, $_template_vars, WPLib_Theme::instance() );
 

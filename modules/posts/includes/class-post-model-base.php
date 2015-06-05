@@ -939,7 +939,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		$post = $this->post();
 
-		return $post && ! post_password_required( $post ) && $entity->comments_open();
+		return $post && ! post_password_required( $post ) && $item->comments_open();
 
 	}
 

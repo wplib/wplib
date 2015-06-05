@@ -3,7 +3,7 @@
 /**
  * Class WPLib_User_Default
  *
- * The Default Entity Class for Users
+ * The Default Item Class for Users
  *
  * @mixin WPLib_User_Model_Default
  * @mixin WPLib_User_View_Default

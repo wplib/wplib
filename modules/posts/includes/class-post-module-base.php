@@ -106,7 +106,7 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 	}
 
 	/**
-	 * Register the post type inside of an Entity classes' on_load() method.
+	 * Register the post type inside of an Item classes' on_load() method.
 	 *
 	 * @param array $args
 	 *

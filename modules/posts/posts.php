@@ -413,11 +413,11 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 *
 	 * @return mixed
 	 */
-	static function make_new_entity( $post ) {
+	static function make_new_item( $post ) {
 
-		$post_entity_class = self::get_post_type_class( $post->post_type );
+		$post_item_class = self::get_post_type_class( $post->post_type );
 
-		return new $post_entity_class( $post );
+		return new $post_item_class( $post );
 
 	}
 
@@ -471,7 +471,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 			foreach ( array_reverse( get_declared_classes() ) as $class_name ) {
 
-				if ( is_subclass_of( $class_name, 'WPLib_Entity_Base' )  && $post_type = WPLib::get_constant( 'POST_TYPE', $class_name ) ) {
+				if ( is_subclass_of( $class_name, 'WPLib_Item_Base' )  && $post_type = WPLib::get_constant( 'POST_TYPE', $class_name ) ) {
 
 					$post_type_classes[ $post_type ] = $class_name;
 
@@ -487,37 +487,37 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 	}
 
-	/**
-	 * @param $thing
-	 *
-	 * @return array
-	 */
-	static function get_post_and_entity( $thing ) {
-
-		if ( ! $thing ) {
-
-			$thing = WPLib::theme()->post();
-
-		}
-
-		if ( is_a( $thing, 'WP_Post' ) ) {
-
-			$entity = WPLib::make_new_entity( $post = $thing );
-
-		} else {
-
-			$entity = $thing;
-
-			if ( $thing instanceof WPLib_Post_Base ) {
-
-				$post = $thing->post();
-
-			}
-		}
-
-		return array( $post, $entity );
-
-	}
+//	/**
+//	 * @param $thing
+//	 *
+//	 * @return array
+//	 */
+//	static function get_post_and_item( $thing ) {
+//
+//		if ( ! $thing ) {
+//
+//			$thing = WPLib::theme()->post();
+//
+//		}
+//
+//		if ( is_a( $thing, 'WP_Post' ) ) {
+//
+//			$item = WPLib::make_new_item( $post = $thing );
+//
+//		} else {
+//
+//			$item = $thing;
+//
+//			if ( $thing instanceof WPLib_Post_Base ) {
+//
+//				$post = $thing->post();
+//
+//			}
+//		}
+//
+//		return array( $post, $item );
+//
+//	}
 
 }
 WPLib_Posts::on_load();

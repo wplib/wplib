@@ -3,7 +3,7 @@
 /**
  * Class WPLib_User_Base
  *
- * The Base Entity Class for Users
+ * The Base Item Class for Users
  *
  * @mixin WPLib_User_Model_Base
  * @mixin WPLib_User_View_Base
@@ -11,7 +11,7 @@
  * @property WPLib_User_Model_Base $model
  * @property WPLib_User_View_Base $view
  */
-abstract class WPLib_User_Base extends WPLib_Entity_Base {
+abstract class WPLib_User_Base extends WPLib_Item_Base {
 
 	/**
 	 * Child class should define a valid value for ROLE

@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Post_Default
  *
- * The Default Entity Class for Post Types
+ * The Default Item Class for Post Types
  *
  * @mixin WPLib_Post_Model_Default
  * @mixin WPLib_Post_View_Default

@@ -2,13 +2,13 @@
 
 
 /**
- * Class WPLib_Entity_Base
+ * Class WPLib_Item_Base
  *
  * @mixin WPLib_Model_Base
  * @mixin WPLib_View_Base
  *
  */
-abstract class WPLib_Entity_Base extends WPLib_Base {
+abstract class WPLib_Item_Base extends WPLib_Base {
 
 	/**
 	 * @var WPLib_Model_Base

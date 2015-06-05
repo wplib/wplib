@@ -254,7 +254,7 @@ abstract class WPLib_List_Base
 			foreach ( $this->elements() as $element ) {
 
 				/**
-				 * @var WPLib_Entity_Base $element
+				 * @var WPLib_Item_Base $element
 				 *
 				 * @todo Create a interface that would indicate a class has a 'the_template' method.
 				 *
