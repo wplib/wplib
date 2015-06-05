@@ -23,15 +23,6 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 	}
 
 	/**
-	 *  Convenience method for setting HTTP Content Type for outputting plain text.
-	 */
-	static function plain_text() {
-
-		header( 'Content-type:text/plain' );
-
-	}
-
-	/**
 	 * Output a hyperlink with URL, Link Text and optional title text.
 	 *
 	 * @param string $href
