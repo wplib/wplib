@@ -12,11 +12,6 @@ class WPLib_Administrator extends WPLib_User_Base {
 	 *
 	 * @var string
 	 */
-	const ROLE = 'administrator';
+	const ROLE = WPLib_User_Role_Administrator::ROLE;
 
-	static function on_load() {
-
-
-	}
 }
-WPLib_Administrator::on_load();

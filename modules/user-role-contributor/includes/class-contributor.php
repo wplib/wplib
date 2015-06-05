@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Contributor
  *
- * The user type of 'Contributor'
+ * The user type of 'contributor'
  */
 class WPLib_Contributor extends WPLib_User_Base {
 
@@ -12,14 +12,6 @@ class WPLib_Contributor extends WPLib_User_Base {
 	 *
 	 * @var string
 	 */
-	const ROLE = 'contributor';
-
-
-	static function on_load() {
-
-
-
-	}
+	const ROLE = WPLib_User_Role_Contributor::ROLE;
 
 }
-WPLib_Contributor::on_load();

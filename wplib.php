@@ -138,9 +138,14 @@ class WPLib {
 		self::register_module( 'theme', 0 );
 
 		/**
-		 * Load People after Posts since it extends
+		 * Register default User Roles
 		 */
 		self::register_module( 'people', 5 );
+		self::register_module( 'user-role-administrator', 4 );
+		self::register_module( 'user-role-contributor', 4 );
+		self::register_module( 'user-role-subscriber', 4 );
+		self::register_module( 'user-role-editor', 4 );
+		self::register_module( 'user-role-author', 4 );
 
 
 		self::add_class_action( 'plugins_loaded', 11 );
