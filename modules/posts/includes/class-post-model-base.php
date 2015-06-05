@@ -139,6 +139,15 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
+	 * @return null|string
+	 */
+	function slug() {
+
+		return $this->has_post() ? $this->_post->post_name : null;
+
+	}
+
+	/**
 	 * @return bool
 	 */
 	function has_parent() {

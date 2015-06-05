@@ -101,7 +101,7 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 			WPLib_Posts::set_post_type_labels( static::POST_TYPE, $args );
 		}
 
-		return (object)WPLib_Posts::get_post_type_labels( static::POST_TYPE );
+		return WPLib_Posts::get_post_type_labels( static::POST_TYPE );
 
 	}
 

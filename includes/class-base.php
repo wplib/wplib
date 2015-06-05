@@ -64,19 +64,12 @@ abstract class WPLib_Base {
 	 * Return a class get_constant for the called instance.
 	 *
 	 * @param string $constant_name
-	 * @param string $class_name
 	 *
 	 * @return mixed|null
 	 */
-	function get_constant( $constant_name, $class_name = null ) {
+	function get_constant( $constant_name ) {
 
-		if ( is_null( $class_name ) ) {
-
-			$class_name = get_class( $this );
-
-		}
-
-		return defined( $constant_ref = "{$class_name}::{$constant_name}" ) ? constant( $constant_ref ) : null;
+		return defined( $constant_ref = get_class( $this ) . "::{$constant_name}" ) ? constant( $constant_ref ) : null;
 
 	}
 
