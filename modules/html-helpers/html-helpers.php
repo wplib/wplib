@@ -72,7 +72,7 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 				$link_text = $args['default_text'];
 			}
 			if ( ! $args['title_text'] && $args['link_target'] ) {
-				$args['title_text'] = esc_attr( sprintf( __( "Link to %s", 'sparkcity' ), $args['link_target'] ) );
+				$args['title_text'] = esc_attr( sprintf( __( "Link to %s", 'wplib' ), $args['link_target'] ) );
 			}
 			if ( $args['title_text'] ) {
 				$args['title_text'] = esc_attr( $args['title_text'] );
