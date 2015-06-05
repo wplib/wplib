@@ -6,7 +6,7 @@
  * @todo https://github.com/wplib/wplib/issues/4
  * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026937
  */
-class WPLib_List_Base
+abstract class WPLib_List_Base
 	extends WPLib_Base
 	implements IteratorAggregate, ArrayAccess, Serializable, Countable {
 
@@ -208,6 +208,25 @@ class WPLib_List_Base
 	}
 
 	/**
+	 */
+	function clear_elements() {
+
+		$this->_elements = array();
+
+	}
+
+	/**
+	 *
+	 * @param array $elements
+	 *
+	 */
+	function set_elements( $elements ) {
+
+		$this->_elements = $elements;
+
+	}
+
+	/**
 	 * @param string $template
 	 * @param array $args
 	 */
@@ -235,7 +254,7 @@ class WPLib_List_Base
 			foreach ( $this->elements() as $element ) {
 
 				/**
-				 * @var WPLib_Entity_Base $element
+				 * @var WPLib_Item_Base $element
 				 *
 				 * @todo Create a interface that would indicate a class has a 'the_template' method.
 				 *

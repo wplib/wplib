@@ -6,7 +6,27 @@
  * The Model Base Class for Posts
  *
  * @property WPLib_Post_Base $owner
+ *
+ * @method int ID()
+ * @method int comment_count()
+ * @method int menu_order()
+ *
+ * @method string date()
+ * @method string date_gmt()
+ * @method string modified()
+ * @method string modified_gmt()
+ *
+ * @method string status()
+ * @method string comment_status()
+ * @method string ping_status()
+ * @method string password()
+ * @method string to_ping()
+ * @method string pinged()
+ *
+ * @method void the_iso8601_date()
+ * @method void the_datetime()
  */
+
 abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 	/**
@@ -18,6 +38,24 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 * Child class should define a valid value for POST_TYPE
 	 */
 	const POST_TYPE = null;
+
+	/**
+	 * @param WP_Post|object|null $post
+	 * @param array               $args
+	 */
+	function __construct( $post, $args = array() ) {
+
+		/*
+		 * Find the post if possible
+		 */
+		$this->_post = WPLib::get_post( $post );
+
+		/*
+		 * Let our parent class capture whatever properties where passed in as $args
+		 */
+		parent::__construct( $args );
+
+	}
 
 	/**
 	 * @param array $args
@@ -47,6 +85,15 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		}
 
 		return new static( $post, $args );
+
+	}
+
+	/**
+	 * @return null|WPLib_Post_View_Base
+	 */
+	function view() {
+
+		return is_object( $this->owner ) ? $this->owner->view() : null;
 
 	}
 
@@ -83,6 +130,24 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
+	 * @return null|string
+	 */
+	function title() {
+
+		return $this->has_post() ? get_the_title( $this->_post->ID ) : null;
+
+	}
+
+	/**
+	 * @return null|string
+	 */
+	function slug() {
+
+		return $this->has_post() ? $this->_post->post_name : null;
+
+	}
+
+	/**
 	 * @return bool
 	 */
 	function has_parent() {
@@ -101,13 +166,98 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
+	 * Returns the absolute URL for the represented post, or if not contained post object null.
+	 *
+	 * @see url()   permalink() is alias of url()
+	 *
+	 * @return int
+	 */
+	function permalink() {
+
+		return $this->url();
+
+	}
+
+	/**
+	 * Returns the absolute URL for the represented post, or if not contained post object null.
+	 *
+	 * @see permalink()   url() is preferred alias of permalink().
+	 *
+	 * @return string
+	 */
+	function url() {
+
+		if ( ! $this->has_post() ) {
+
+			$url = null;
+
+		} else {
+
+			switch ( $this->post_type() ) {
+
+				case 'post':
+
+					$url = get_permalink( $this->_post->ID );
+					break;
+
+				case 'page':
+
+					$url = get_page_link( $this->_post->ID );
+					break;
+
+				default:
+
+					$url = get_post_permalink( $this->_post->ID );
+
+			}
+
+		}
+
+		return $url;
+
+	}
+
+	/**
+	 * Return the post type as defined by the class.
+	 *
+	 * Validate against the current post if there is a current post.
+	 *
 	 * @return string|null
 	 */
 	function post_type() {
 
-		return is_object( $this->owner ) ? $this->owner->constant( 'POST_TYPE' ) : false;
+		if ( ! is_object( $this->owner ) ) {
+
+			$post_type = null;
+
+		} else {
+
+			$post_type = $this->owner->get_constant( 'POST_TYPE' );
+
+		}
+
+		if ( $this->has_post() &&  $this->_post->post_type != $post_type ) {
+
+			$message = __( 'Post type mismatch: %s=%s, WP_Post=%s.', 'wplib' );
+			WPLib::trigger_error( sprintf( $message, get_class( $this ), $post_type, $this->_post->post_type ) );
+
+		}
+
+		return $post_type;
 
 	}
+
+	/**
+	 * Determine if this is a $post_type == 'post'
+	 *
+	 * @return bool
+	 */
+	function is_blog_post() {
+
+		return WPLib_Post::POST_TYPE == $this->post_type();
+
+	}
+
 
 	/**
 	 * Retrieve the value of a field and to provide a default value if no _post is set.
@@ -267,8 +417,550 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function is_published() {
 
-		return $this->has_post() && 'publish' == $this->_post->post_status;
+		return $this->has_post() && 'publish' == $this->status();
 
 	}
+
+	/**
+	 * @return bool
+	 */
+	function is_attachment() {
+
+		/**
+		 * @todo Implement WPLib_Attachment and use WPLib_Attachment::POST_TYPE here.
+		 */
+	 	return 'attachment' == $this->post_type();
+
+	}
+
+	/**
+	 * @return WP_Post
+	 */
+	function parent_post() {
+
+		return $this->has_post() ? get_post( $this->parent_id() ) : null;
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function get_adjacent_post( $args = array() ) {
+
+		if ( ! $this->has_post() )  {
+
+			$adjacent_post = null;
+
+		} else {
+
+			global $post;
+
+			$args = wp_parse_args( $args, array(
+				'in_same_term'   => false,
+				'excluded_terms' => '',
+				'taxonomy'       => 'category',
+				'previous'       => null,
+			) );
+
+			$save_post = $post;
+
+			$post = $this->_post;
+
+			$adjacent_post = get_adjacent_post(
+				$args['in_same_term'],
+				$args['excluded_terms'],
+				$args['previous'],
+				$args['taxonomy']
+			);
+
+			$post = $save_post;
+
+		}
+
+		return $adjacent_post;
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function get_previous_post( $args = array() ) {
+
+		$args = wp_parse_args( $args );
+		$args[ 'previous' ] = true;
+		return $this->get_adjacent_post( $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 *
+	 * @return mixed|null
+	 */
+	function get_next_post( $args = array() ) {
+
+		$args = wp_parse_args( $args );
+		$args[ 'previous' ] = false;
+		return $this->get_adjacent_post( $args );
+
+	}
+
+
+	/**
+	 * @param string $method_name
+	 * @param array $args
+	 *
+	 * @return array|mixed|null
+	 */
+	function __call( $method_name, $args ) {
+
+		if ( ! $this->has_post() ) {
+
+			$value = parent::__call( $method_name, $args );
+
+		} else {
+			/**
+			 * Capture methods that identify WP_Post field names.
+			 *
+			 * Strip 'post_' as a prefix and recognize methods as accessing WP_Post properties.
+			 *
+			 * 'name' is too generic so 'post_name' is accessed via slug():
+			 *
+			 *       $this->slug()              => return $this->_post->post_name
+			 *
+			 * 'post_type' is too iconic so post_type() is used vs. type():
+			 *
+			 * 'post_parent' is accessed by parent_id():
+			 *
+			 *       $this->parent_id()         => return $this->_post->post_parent
+			 *
+			 * Others are accessed as method name sans 'post_' prefix, i.e.
+			 *
+			 *       $this->ID()                => return $this->_post->ID
+			 *       $this->menu_order()        => return $this->_post->menu_order
+			 *       $this->date()              => return $this->_post->post_date
+			 *       $this->date_gmt()          => return $this->_post->post_date_gmt
+			 *       $this->modified()          => return $this->_post->post_modified
+			 *       $this->modified_gmt()      => return $this->_post->post_modified_gmt
+			 *       $this->password()          => return $this->_post->password
+			 *       $this->comment_count()     => return $this->_post->comment_count
+			 *       $this->pinged()            => return $this->_post->pinged
+			 *       $this->to_ping()           => return $this->_post->to_ping
+			 *       $this->ping_status()       => return $this->_post->ping_status
+			 *       $this->comment_status()    => return $this->_post->comment_status
+			 *
+			 * Lastly 'post_type', 'post_content' and 'post_excerpt' are accessed via more functions, so:
+			 *
+			 *       $this->post_type()         !=> return $this->_post->post_type
+			 *       $this->content()           !=> return $this->_post->post_content
+			 *       $this->excerpt()           !=> return $this->_post->post_excerpt
+			 *
+			 */
+
+			switch ( preg_replace( '#^post_(.+)$#', '$1', $method_name ) ) {
+
+				case 'ID':
+				case 'menu_order';
+				case 'comment_count':
+
+					$data_type     = 'int';
+					$property_name = $method_name;
+					break;
+
+				case 'date':
+				case 'date_gmt':
+				case 'modified':
+				case 'modified_gmt':
+
+					$data_type     = 'date';
+					$property_name = "post_{$method_name}";
+					break;
+
+				case 'status':
+				case 'password':
+
+					$data_type     = 'string';
+					$property_name = "post_{$method_name}";
+					break;
+
+				case 'comment_status':
+				case 'ping_status':
+				case 'to_ping':
+				case 'pinged':
+					$data_type     = 'string';
+					$property_name = $method_name;
+					break;
+
+			}
+
+			if ( ! $property_name ) {
+
+				$value = parent::__call( $method_name, $args );
+
+			} else {
+
+				$value = $this->_post->$property_name;
+
+				switch ( $data_type ) {
+					case 'int':
+
+						$value = intval( $value );
+						break;
+
+					case 'date':
+						/**
+						 * @todo Verify that this is what we want to standardize on.
+						 */
+						$value = mysql2date( DATE_W3C, $value );
+
+					default:
+						/*
+						 * No need to do anything for a string.
+						 */
+
+				}
+
+			}
+
+		}
+
+		return $value;
+
+	}
+
+	/**
+	 *  Determine if post
+	 */
+	function has_adjacent_posts() {
+
+		$previous = $this->is_attachment() ? $this->parent_post() : $this->get_previous_post();
+
+		return $previous || $this->get_next_post();
+
+	}
+
+	/**
+	 * Determine if post has been modified since first published.
+	 *
+	 * @return bool True if modified since first published.
+	 */
+	function is_modified() {
+
+		return $this->unix_timestamp() !== $this->modified_unix_timestamp();
+
+	}
+
+	/**
+	 *
+	 */
+	function is_single() {
+
+		return is_single();
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function unix_timestamp() {
+
+		return $this->has_post()
+			? get_post_time( 'U', false, $this->_post, false )
+			: 0;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function unix_timestamp_gmt() {
+
+		return $this->has_post()
+			? get_post_time( 'U', true, $this->_post, false )
+			: 0;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function modified_unix_timestamp() {
+
+		return $this->has_post()
+			? get_post_modified_time( 'U', false, $this->_post, false )
+			: 0;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function modified_unix_timestamp_gmt() {
+
+		return $this->has_post()
+			? get_post_modified_time( 'U', true, $this->_post, false )
+			: 0;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function iso8601_date() {
+
+		return $this->has_post()
+			? get_post_time( 'c', false, $this->_post, false )
+			: false;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function iso8601_date_gmt() {
+
+		return $this->has_post()
+			? get_post_time( 'c', true, $this->_post, false )
+			: false;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function iso8601_modified_date() {
+
+		return $this->has_post()
+			? get_post_modified_time( 'c', false, $this->_post, false )
+			: false;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function iso8601_modified_date_gmt() {
+
+		return $this->has_post()
+			? get_post_modified_time( 'c', true, $this->_post, false )
+			: false;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function datetime() {
+
+		return $this->has_post()
+			? get_post_time( get_option( 'date_format' ), false, $this->_post, true )
+			: false;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function modified_datetime() {
+
+		return $this->has_post()
+			? get_post_modified_time( get_option( 'date_format' ), true, $this->_post, true )
+			: false;
+
+	}
+
+	function posted_on_values() {
+
+		return $this->has_post() ? (object) array(
+
+			'iso8601_date'          => $this->iso8601_date(),
+			'iso8601_modified_date' => $this->iso8601_modified_date(),
+			'datetime'              => $this->iso8601_date(),
+			'modified_datetime'     => $this->iso8601_modified_date(),
+
+		) : false;
+
+	}
+
+	/**
+	 * Return post's author ID
+	 *
+	 * @note Does not use get_the_author_meta( 'ID' ) and thus does not fire 'get_the_author_ID' hook
+	 * @todo Discuss if it should?  Or is this way more not robust?
+	 *
+	 * @return int|bool
+	 */
+	function author_id() {
+
+		return $this->has_post() ? intval( $this->_post->post_author ) : false;
+
+	}
+
+	/**
+	 * @return null|WPLib_User_Base
+	 */
+	function author() {
+
+		if ( ! ( $author_id = $this->author_id() ) ) {
+
+		 	$author = null;
+
+		} else {
+
+			$author = WPLib::get_user_by( 'id', $author_id );
+
+		}
+
+		return $author;
+
+	}
+
+	/**
+	 * Whether the post has been password protected.
+	 *
+	 * @note This is NOT the same as post_password_required() because it checks current state of cookie.
+	 *       Use with
+	 *
+	 * @return bool|null
+	 */
+	function password_required() {
+
+		$password = $this->has_post() ? $this->password() : false;
+
+		return ! empty( $password );
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function comments_number() {
+
+		return get_comments_number( $this->_post->ID );
+
+	}
+
+	/**
+	 * @return mixed|null
+	 */
+	function format_slug() {
+
+		return $this->has_post() ? get_post_format( $this->_post->ID ) : null;
+
+	}
+
+	/**
+	 * Does this post have comments?
+	 *
+	 * @note Does not use have_comments() because that is specific to the wp_query and not to the post itself.
+	 *
+	 * @return bool
+	 *
+	 *
+	 */
+	function has_comments() {
+
+		return $this->has_post() ? $this->comment_count() > 0 : false;
+
+	}
+
+	/**
+	 *
+	 */
+	function number_of_comments() {
+
+		return $this->has_post() ? get_comments_number( $this->_post->ID ) : 0;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function comments_open() {
+
+		return $this->has_post() ? comments_open( $this->_post->ID ) : false;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function supports_comments() {
+
+		return post_type_supports( $this->post_type(), 'comments' );
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function comments_unavailable() {
+
+		return ! $this->comments_open() && 0 < $this->number_of_comments() && $this->supports_comments();
+
+	}
+
+
+	/**
+	 * @return int
+	 */
+	function number_of_comment_pages() {
+
+		$theme = WPLib::theme();
+
+		if ( ! $theme->uses_paged_comments() ) {
+
+			$number = $this->has_comments() ? 1 : 0;
+
+		} else {
+
+			$number = $this->has_post() ? $theme->number_of_comment_pages() : 0;
+
+		}
+		return $number;
+
+	}
+
+
+	/**
+	 * Can user comments?
+	 *
+	 * Yes if no password or password provided and comments are open.
+	 *
+	 * @todo We probably need to change this method. If confused info about $post with state of password entry
+	 *
+	 * @return bool
+	 */
+	function user_can_comment() {
+
+		$post = $this->post();
+
+		return $post && ! post_password_required( $post ) && $item->comments_open();
+
+	}
+
+	/**
+	 * Can user see comments?
+	 *
+	 * Yes if no password or password provided and comments are either open or at least one comment exists.
+	 *
+	 * @todo We probably need to change this method. If confuses info about $post with state of password entry
+	 *
+	 * @return bool
+	 */
+	function user_can_see_comments() {
+
+		$post = $this->post();
+
+		return $post &&
+		       ! post_password_required( $post ) &&
+		       ( $this->comments_open() || $this->comments_number() );
+
+	}
+
 
 }

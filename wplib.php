@@ -27,8 +27,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
+ * @mixin WPLib_Theme
  * @mixin WPLib_Posts
  * @mixin WPLib_Terms
+ * @mixin WPLib_Users
+ * @mixin _WPLib_Html_Helpers
+ * @mixin _WPLib_WP_Helpers
  *
  * @todo Utility Modules: https://github.com/wplib/wplib/issues/6
  *
@@ -88,6 +92,26 @@ class WPLib {
 	private static $_doing_xmlrpc = false;
 
 	/**
+	 * @var bool|string Flag to hold filename currently loading. Used by _shutdown() to report if a file failed to load.
+	 */
+	private static $_file_loading = false;
+
+	/**
+	 * @var array Files to autoload in the find_autoload files.
+	 */
+	private static $_new_files;
+
+	/**
+	 * @var int
+	 */
+	private static $_non_app_class_count = 0;
+
+	/**
+	 * @var WPLib_Theme_Base|bool
+	 */
+	private static $_theme = false;
+
+	/**
 	 *
 	 */
 	static function on_load() {
@@ -98,20 +122,74 @@ class WPLib {
 
 		}
 
+		self::register_helper( 'posts' );
+
 		spl_autoload_register( array( __CLASS__, '_autoloader' ) );
 
-		self::register_module( 'posts' );
-		self::register_module( 'terms' );
-		self::register_module( 'post-posts' );
-		self::register_module( 'page-posts' );
-		self::register_module( 'categories' );
-		self::register_module( 'post-tags' );
-		self::register_module( 'people' );
+		self::register_module( 'posts', 0 );
+		self::register_module( 'terms', 0 );
+		self::register_module( 'users', 0 );
+		self::register_module( 'post-type-post', 0 );
+		self::register_module( 'post-type-page', 0 );
+		self::register_module( 'taxonomy-categories', 0 );
+		self::register_module( 'taxonomy-post-tags', 0 );
+		self::register_module( 'html-helpers', 0 );
+		self::register_module( 'wp-helpers', 0 );
+		self::register_module( 'theme', 0 );
+
+		/**
+		 * Register default User Roles
+		 */
+		self::register_module( 'user-role-administrator', 4 );
+		self::register_module( 'user-role-contributor', 4 );
+		self::register_module( 'user-role-subscriber', 4 );
+		self::register_module( 'user-role-editor', 4 );
+		self::register_module( 'user-role-author', 4 );
+
+		/**
+		 * Load People after Posts since it extends
+		 */
+		self::register_module( 'post-type-person', 5 );
 
 		self::add_class_action( 'plugins_loaded', 11 );
 		self::add_class_action( 'after_setup_theme' );
 		self::add_class_action( 'after_setup_theme', 11 );
 		self::add_class_action( 'xmlrpc_call' );
+		self::add_class_action( 'shutdown' );
+
+		/**
+		 * Set a marker to ignore classes declared before this class.
+		 */
+		self::$_non_app_class_count = count( get_declared_classes() ) - 1;
+
+	}
+
+	/**
+	 * Return the list of classes declared after WPLib first loads.
+	 * @return array
+	 *
+	 * @todo Add a warning when this is called because it can autoload all classes.
+	 */
+	static function app_classes() {
+
+		if ( ! ( $app_classes = WPLib::cache_get( $cache_key = 'app_classes' ) ) ) {
+
+			/**
+			 * Make sure we have all classes loaded.
+			 */
+			WPLib::autoload_all_classes();
+			$app_classes = array_reverse( array_slice( get_declared_classes(), self::$_non_app_class_count ) );
+			$app_classes = array_filter( $app_classes, function( $element ) {
+				/*
+				 * Strip out WordPress core classes
+				 */
+				return ! preg_match( '#^(WP|wp)_#', $element );
+			});
+			WPLib::cache_set( $cache_key, $app_classes );
+
+		}
+
+		return $app_classes;
 
 	}
 
@@ -192,6 +270,9 @@ class WPLib {
 	 */
 	private static function _load_necessary_files() {
 
+		spl_autoload_register( $autoloader = array( __CLASS__, '_find_files_autoloader' ), true, true );
+
+
 		/**
 		 * Find all autoloading files from components that have been loaded by (1) plugins or (2) the theme.
 		 */
@@ -206,6 +287,35 @@ class WPLib {
 		 * Find all autoloading files defined by modules specified by (1) plugins or (2) the theme.
 		 */
 		self::_find_autoload_files();
+
+		spl_autoload_unregister( $autoloader );
+
+	}
+
+	/**
+	 * Special autoloader to run only for conflicts.
+	 *
+	 * @param $class_name
+	 */
+	static function _find_files_autoloader( $class_name ) {
+
+		$dirpath = dirname( self::$_file_loading );
+
+		$parts = explode( '_', strtolower( $class_name ) );
+		array_shift( $parts );
+		$filename = implode( '-', $parts );
+
+		$filepath = "{$dirpath}/class-{$filename}.php";
+
+		if ( is_file( $filepath ) ) {
+
+			require( $filepath );
+
+			$new_files = array_flip( self::$_new_files );
+			unset( $new_files[$filepath] );
+			self::$_new_files = array_flip( $new_files );
+
+		}
 
 	}
 
@@ -222,13 +332,43 @@ class WPLib {
 
 			foreach ( $priority as $filepath ) {
 
+				if ( WPLib::is_development() && ! is_file( $filepath ) ) {
+
+					WPLib::trigger_error( sprintf( __( "Required file not found: %s", 'wplib' ), $filepath ) );
+
+				}
+
+				/**
+				 * Set self::$_file_loading so 'shutdown' hook can report which file caused the load error.
+				 */
+				self::$_file_loading = $filepath;
 				require_once $filepath;
+				self::$_file_loading = false;
+
+				/**
+				 * Find all autoloading files defined by the above module.
+				 */
+				self::_find_autoload_files();
 
 			}
 
 		}
 
 		self::$_modules = array();
+
+	}
+
+	/**
+	 * Throw error if site failed to load because of a module failing to load.
+	 */
+	static function _shutdown() {
+
+		if ( self::$_file_loading ) {
+
+			$message = __( 'File failed to load: %s.', 'wplib' );
+			self::trigger_error( sprintf( $message, self::$_file_loading ), E_USER_ERROR, true );
+
+		}
 
 	}
 
@@ -278,7 +418,7 @@ class WPLib {
 
 			$class_key = WPLib::is_production() ? md5( $class_key ) : $class_key;
 
-			if ( ! ( $new_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" ) ) ) {
+			if ( ! ( self::$_new_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" ) ) ) {
 
 				$autoload_files = array();
 
@@ -311,16 +451,17 @@ class WPLib {
 					/**
 					 * Diff the manually added files with the new ones scanned to get new files.
 					 */
-					$new_files = array_diff( $found_files, $added_files );
+					self::$_new_files = array_diff( $found_files, $added_files );
 
 					/**
 					 * Load all the scanned files from the /include/ directory
 					 */
-					foreach( $new_files as $filepath ) {
+					do {
+						self::$_file_loading = array_shift( self::$_new_files );
+						require( self::$_file_loading );
+						self::$_file_loading = false;
 
-						require( $filepath );
-
-					}
+					} while ( count( self::$_new_files ) );
 
 					/**
 					 * Find the newly declared classes by comparing what was declared before with what is declared now.
@@ -373,6 +514,20 @@ class WPLib {
 		}
 
 	}
+
+	/**
+	 * Force loading of all classes if needed to find all classes with a specific constant.
+	 */
+	static function autoload_all_classes() {
+
+		foreach ( array_keys( self::$_autoload_files ) as $autoload_class ) {
+
+			self::_autoloader( $autoload_class );
+
+		}
+
+	}
+
 
 	/**
 	 *
@@ -501,7 +656,6 @@ class WPLib {
 		unset( $mustload_classes[ $child_class ] );
 
 	}
-
 
 	/**
 	 * Capture status of DOING_XMLRPC
@@ -692,7 +846,7 @@ class WPLib {
 					 * Loop through each of the helper classes to see
 					 * if the method exists in that helper class
 					 */
-					if ( is_callable( $callable = array( $helper, $helper_method ) ) ) {
+					if ( method_exists( $helper, $helper_method ) && is_callable( $callable = array( $helper, $helper_method ) ) ) {
 
 						/*
 						 * If helper method found in helper class, set $callable and cache it.
@@ -803,6 +957,12 @@ class WPLib {
 	 */
 	static function get_root_dir( $filepath, $class_name = false ) {
 
+		if ( ! $class_name ) {
+
+			$class_name = get_called_class();
+
+		}
+
 		$filepath = '/' . ltrim( $filepath, '/' );
 
 		$reflector = new ReflectionClass( $class_name );
@@ -882,7 +1042,7 @@ class WPLib {
 	 */
 	static function register_module( $module, $priority = 10 ) {
 
-		self::$_modules[ $priority ][] = static::root_dir() . "/modules/{$module}/{$module}.php";
+		self::$_modules[ $priority ][] = static::get_root_dir( "modules/{$module}/{$module}.php" );
 
 	}
 
@@ -894,7 +1054,6 @@ class WPLib {
 	 */
 	static function cache_get( $key, $group = '' ) {
 
-		$cache = false;
 		if ( ! is_string( $key ) && ! is_int( $key ) && static::is_development() ) {
 
 			static::trigger_error( __( 'Cache key is not string or numeric.', 'wplib' ) );
@@ -994,6 +1153,15 @@ class WPLib {
 	/**
 	 * @return bool
 	 */
+	static function doing_autosave() {
+
+		return defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE;
+
+	}
+
+	/**
+	 * @return bool
+	 */
 	static function do_log_errors() {
 
 		return defined( 'WPLIB_LOG_ERRORS' ) && WPLIB_LOG_ERRORS;
@@ -1013,16 +1181,58 @@ class WPLib {
 	}
 
 	/**
+	 * @param string $method
+	 * @param array  $args
+	 *
+	 * @return mixed
+	 */
+	function __call( $method, $args ) {
+
+		$value = null;
+
+		if ( preg_match( '#^the_#', $method ) && is_callable( array( $this, $method ) ) ) {
+
+			$value = static::do_the_methods( $this, $this, $method, $args );
+
+		} else {
+
+			/*
+			 * Oops. No method was found.  Output an error message.
+			 */
+			$message = sprintf(
+				__( 'ERROR: There is no method %s() for class %s. ', 'wplib' ),
+				$method,
+				get_class( $this )
+			);
+
+			self::trigger_error( $message, E_USER_ERROR );
+
+		}
+
+		return $value;
+
+	}
+
+	/**
 	 * Triggers error message unless doing AJAX, XMLRPC or Cron; then it logs the error but only if Development mode.
 	 *
 	 * @param string $error_msg
 	 * @param int $error_type
+	 * @param bool $echo If true use 'echo', if false use trigger_error().
 	 */
-	static function trigger_error( $error_msg, $error_type = E_USER_NOTICE ) {
+	static function trigger_error( $error_msg, $error_type = E_USER_NOTICE, $echo = false ) {
 
 		if ( ! static::doing_ajax() && ! static::doing_xmlrpc() && ! static::doing_cron() ) {
 
-			trigger_error( $error_msg, $error_type );
+			if ( $echo ) {
+
+				echo "{$error_msg} [{$error_type}] ";
+
+			} else {
+
+				trigger_error( $error_msg, $error_type );
+
+			}
 
 		} else if ( static::is_development() || static::do_log_errors() ) {
 
@@ -1033,7 +1243,7 @@ class WPLib {
 			 *
 			 * For runmode() == WPLib::DEVELOPMENT define( 'WPLIB_RUNMODE', 0 ) in /wp-config.php.
 			 */
-			error_log( "[{$error_type}] {$error_msg}" );
+			error_log( "{$error_msg} [{$error_type}]" );
 
 		}
 
@@ -1047,7 +1257,7 @@ class WPLib {
 	 *
 	 * @return mixed|null
 	 */
-	static function constant( $constant_name, $class_name = false ) {
+	static function get_constant( $constant_name, $class_name = false ) {
 
 		if ( ! $class_name ) {
 
@@ -1061,36 +1271,82 @@ class WPLib {
 
 	/**
 	 * @param string $template
-	 * @param array $_template_vars
-	 * @param WPLib_Entity_Base|object $entity
+	 * @param array|string $_template_vars
+	 * @param WPLib_Item_Base|object $item
+	 *
+	 * @note This is called via an instance as well as
+	 *       If this becomes deprecated we can prefix with an '_' and then
+	 *       use __call() and __callStatic() to allow it to be invoked.
+	 * @see  http://stackoverflow.com/a/7983863/102699
 	 */
-	static function the_template( $template, $_template_vars = array(), $entity = null ) {
+	static function the_template( $template, $_template_vars = array(), $item = null ) {
 
 
 		$_filename = preg_replace( '#(\.php)$#', '', ltrim( $template, '/' ) ) . '.php';
 
 		$template = new stdClass();
 		$template->dir = get_stylesheet_directory();
-		$template->filename = "{$template->dir}/{$_filename}";
+		$template->filename = "{$template->dir}/templates/{$_filename}";
 
-		if ( ! is_file( $template->filename )  ) {
+		if ( ! is_string( $_template_vars ) || false !== strpos( $_template_vars, '=' ) ) {
 
-			$template->dir = static::get_root_dir( 'templates' );
+			$_specialty = false;
 
-			$template->filename = "{$template->dir}/{$_filename}";
+			if ( is_string( $_template_vars ) ) {
 
-			if ( ! is_file( $template->filename ) ) {
+				$_template_vars = wp_parse_args( $_template_vars );
 
-				$template->filename = $template->dir = false;
+			}
 
-				if ( ! WPLib::is_production() ) {
+			if ( false === $_template_vars || is_null( $_template_vars ) ) {
 
-					/**
-					 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
-					 */
-					echo "\n<!--[FAILED Tags Template File: {$template->filename} -->\n";
+				$_template_vars = array();
 
-				}
+			} else if ( ! is_array( $_template_vars ) ) {
+
+				$message = __( 'Unexpected value for 2nd parameter passed to the_template(). Expected array, string, false or null but got %s.', 'wplib' );
+				WPLib::trigger_error( sprintf( $message, gettype( $_template_vars ) ) );
+
+			}
+
+		} else {
+
+			/**
+			 * If a string is passed assume it is for a more specific template and behave like get_template_part().
+			 */
+			$_specialty = esc_attr( $_template_vars );
+
+			$_template_vars	= array();
+
+			$_specialty = preg_replace( '#(\.php)$#', "-{$_specialty}$1", $template->filename );
+
+		}
+
+		if ( $_specialty && is_file( $_specialty )  ) {
+			/**
+			 * We found the special template before the general one.
+			 */
+			$template->filename = $_specialty;
+
+			$_specialty = true;
+
+		}
+
+
+		if ( true !== $_specialty && ! is_file( $template->filename )  ) {
+
+			/**
+			 * No speciality template and no template at all.
+			 */
+			$template->filename = $template->dir = false;
+
+			if ( ! WPLib::is_production() ) {
+
+				/**
+				 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
+				 */
+				echo "\n<!--[FAILED Template File: {$template->filename} -->\n";
+
 			}
 
 		}
@@ -1103,33 +1359,192 @@ class WPLib {
 
 			if ( ! WPLib::doing_ajax() && ! WPLib::is_production() ) {
 
-				echo "\n<!--[Tags Template File: {$template->filename} -->\n";
+				echo "\n<!--[Template File: {$template->filename} -->\n";
 
 			}
 
 			extract( $_template_vars, EXTR_PREFIX_SAME, '_' );
 
-			if ( $entity && ( $_var_name = WPLib::constant( 'VAR_NAME', get_class( $entity ) ) ) ) {
+			if ( $item && ( $_var_name = WPLib::get_constant( 'VAR_NAME', get_class( $item ) ) ) ) {
 				/*
-				 * Assign the $entity's preferred variable name in addition to '$entity', i.e. '$brand'
+				 * Assign the $item's preferred variable name in addition to '$item', i.e. '$brand'
 				 * This is a very controlled use of extract() i.e. I know what I am doing here.
 				 */
-				extract( array( $_var_name => $entity ) );
+				extract( array( $_var_name => $item ) );
 			}
 
 			$template->vars = $_template_vars;
 
-			unset( $_template_vars, $_filename, $_cache_key, $_var_name );
+			unset( $_template_vars, $_filename, $_cache_key, $_var_name, $_specialty );
 
 			ob_start();
 
+			self::$_file_loading = $filepath;
 			require( $template->filename );
+			self::$_file_loading = false;
 
 			$output = ob_get_clean();
 
 		}
 
 		echo $output;
+
+	}
+
+	/**
+	 * @param string|object $view
+	 * @param string|object $model
+	 * @param string $method_name
+	 * @param array $args
+	 *
+	 * @return mixed
+	 */
+	static function do_the_methods( $view, $model, $method_name, $args ) {
+
+		if ( preg_match( '#^the_(.+)_template$#', $method_name, $match ) ) {
+
+			/*
+			 * Put the $template name at the beginning of the $args array
+			 */
+			array_unshift( $args, str_replace( '_', '-', $match[1] ) );
+
+			/**
+			 * Now call 'the_template' with $template as first element in $args
+			 */
+			$value = call_user_func_array( array( $view, 'the_template' ), $args );
+
+			if ( preg_match( '#^<\{WPLib:(.+)\}>#', $value, $match ) ) {
+				/**
+				 * Check to see if their is a content type indicator
+				 */
+				switch ( $match[1] ) {
+
+					case 'JSON':
+						$suffix = '_json';
+						break;
+
+					case 'HTML':
+					default:
+						$suffix = '_html';
+						/*
+						 * Indicate that this content need not be run through wp_kses_post()
+						 * since it was loaded by a template which can be reviewed for security.
+						 */
+						$has_html_suffix = true;
+						break;
+				}
+			}
+		} else if ( method_exists( $view, $method_name ) && is_callable( $callable = array( $view, $method_name ) ) ) {
+
+			/**
+			 * Call the view method directly.
+			 */
+			$value = call_user_func_array( $callable, $args );
+
+		} else if ( preg_match( '#^the_(.+?)(_attr|_url|_html|_link)?$#', $method_name, $match ) ) {
+
+			$method_name = $match[ 1 ];
+			$suffix = 3 == count( $match ) ? $match[ 2 ] : false;
+
+
+			if ( is_callable( $callable = array( $view, "{$method_name}{$suffix}" ) ) ) {
+
+				$has_html_suffix = preg_match( '#^_(html|link)$#', $suffix );
+
+				/*
+				 * Check $view to see if the suffixed method exist.
+				 */
+				$value = call_user_func_array( $callable, $args );
+
+			} else if ( is_callable( $callable = array( $model, $method_name ) ) ) {
+
+				/*
+				 * Check $model to see if the method exist.
+				 */
+				$value = call_user_func_array( $callable, $args );
+
+				$has_html_suffix = false;
+
+			} else {
+
+				/*
+				 * Not found, throw an error.
+				 * $match[0] should have original $method_name
+				 */
+				$class_name = is_object( $view ) ? get_class( $view ) : $view;
+
+				$message = sprintf( __( 'Method %s not found for class %s.', 'wplib' ), $match[ 0 ], $class_name );
+
+				WPLib::trigger_error( $message, E_USER_ERROR );
+
+				$has_html_suffix = false;
+
+			}
+
+		}
+
+		/**
+		 * Auto-escape output
+		 */
+		switch ( $suffix ) {
+
+			case '_attr':
+
+				echo $value = esc_attr( $value );
+				break;
+
+			case '_url':
+
+				echo $value = esc_url( $value );
+				break;
+
+			case '_html':
+			case '_link':
+
+				echo $has_html_suffix ? $value : wp_kses_post( $value );
+				break;
+
+			default:
+
+				echo $value = esc_html( $value );
+
+		}
+
+
+	}
+
+	/**
+	 * @return int
+	 */
+	static function max_posts_per_page() {
+
+		return 999;
+
+	}
+
+	/**
+	 * @return string
+	 */
+	static function new_post_url() {
+
+		return admin_url( 'post-new.php' );
+
+	}
+
+	/**
+	 * @return WPLib_Theme_Base
+	 */
+	static function theme() {
+
+		return self::$_theme;
+
+	}
+	/**
+	 * @param WPLib_Theme_Base $theme
+	 */
+	static function set_theme( $theme ) {
+
+		self::$_theme = $theme;
 
 	}
 
