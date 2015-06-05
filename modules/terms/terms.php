@@ -190,6 +190,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	}
 
 	/**
+	 * @param string $taxonomy
 	 * @param string $label_type
 	 *
 	 * @return string
