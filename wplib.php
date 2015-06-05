@@ -131,7 +131,7 @@ class WPLib {
 		self::register_module( 'users', 0 );
 		self::register_module( 'post-posts', 0 );
 		self::register_module( 'page-posts', 0 );
-		self::register_module( 'categories', 0 );
+		self::register_module( 'taxonomy-categories', 0 );
 		self::register_module( 'taxonomy-post-tags', 0 );
 		self::register_module( 'html-helpers', 0 );
 		self::register_module( 'wp-helpers', 0 );
