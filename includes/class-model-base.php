@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Model_Base
  *
- * @property WPLib_Entity_Base $owner
+ * @property WPLib_Item_Base $owner
  */
 abstract class WPLib_Model_Base extends WPLib_Base {
 
@@ -15,6 +15,23 @@ abstract class WPLib_Model_Base extends WPLib_Base {
 	function view() {
 
 		return $this->owner->view;
+
+	}
+
+	/**
+	 * @param string $constant
+	 *
+	 * @return mixed|null
+	 */
+	function get_constant( $constant ) {
+
+		if ( is_null( $value = parent::get_constant( $constant ) ) ) {
+
+			$value = $this->owner->get_constant( $constant );
+
+		}
+
+		return $value;
 
 	}
 

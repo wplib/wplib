@@ -132,7 +132,7 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 
 	function taxonomy() {
 
-		return $this->constant( 'TAXONOMY' );
+		return $this->get_constant( 'TAXONOMY' );
 
 	}
 

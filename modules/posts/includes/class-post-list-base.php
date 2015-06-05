@@ -2,93 +2,50 @@
 
 /**
  * Class WPLib_Post_List_Base
+ *
+ * @method WPLib_Post_Base[] elements()
  */
 class WPLib_Post_List_Base extends WPLib_List_Base {
 
-	/**
-	 * @var WP_Query|bool
-	 */
-	protected $_query = false;
-
-	/**
-	 * @var string
-	 */
-	private $_element_class;
+	private $_post_types;
 
 
 	/**
-	 * @param array $query
+	 * @param array $posts
 	 * @param array $args
-	 *
-	 * @future Improve this to use lazy loading of query and element instantiation
 	 */
-	function __construct( $query, $args = array() ) {
-
-		$args = wp_parse_args( $args, array(
-			'element_class' => 'WPLib_Post_Default',
-			'elements' => array(),
-		));
-
-		/*
-		 * Grab element class so that its name can be used dynamically, and also used later.
-		 */
-		$element_class = $this->_element_class = $args[ 'element_class' ];
-
-		unset( $args[ 'element_class' ] );
+	function __construct( $posts, $args = array() ) {
 
 
-		if ( $query instanceof WP_Query ) {
+		if ( isset( $posts ) && is_array( $posts ) ) {
 
-			$this->_query = $query;
+			foreach ( $posts as $index => $post ) {
 
-		} else if ( is_array( $query ) || is_string( $query ) ) {
-
-			$query = wp_parse_args( $args['query'], array(
-				'post_type'      => WPLib::constant( 'POST_TYPE', $element_class ),
-				'post_status'    => 'publish',
-				'orderby'        => 'menu_order',
-				'order'          => 'ASC',
-				'posts_per_page' => 99,
-				'no_found_rows'  => true,
-			) );
-
-			if ( ! empty( $query['post__not_in'] ) && ! is_array( $query['post__not_in'] ) ) {
-
-				$query['post__not_in'] = array( $query['post__not_in'] );
-
-			}
-			$this->_query = new WPLib_Query( $query );
-
-		}
-
-		if ( isset( $this->_query->posts ) && is_array( $this->_query->posts ) ) {
-
-			foreach ( $this->_query->posts as $post ) {
-
-				// @todo Use make_new() here by default unless if does not exist.
-
-				$args[ 'elements' ][ $post->ID ] = new $element_class( $post );
+				$posts[ $index ] = WPLib_Posts::make_new_item( $post );
 
 			}
 
 		}
 
-		$elements = $args[ 'elements' ];
-		unset( $args[ 'elements' ] );
-
-		parent::__construct( $elements, $args );
+		parent::__construct( $posts, $args );
 
 	}
-
 
 	/**
-	 * @return string
+	 *
 	 */
-	function element_class() {
+	function post_types() {
 
-		return $this->_element_class;
+		foreach( $this->elements() as $element ) {
+
+			$this->_post_types[ $element->post_type() ] = true;
+
+		}
+
+		return $this->_post_types = array_keys( $this->_post_types );
 
 	}
+
 
 	/**
 	 * Get index value for an object stored in a list.
