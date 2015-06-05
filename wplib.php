@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.1-alpha
+ * Version:     0.1.0
  * Author:      The WPLib Team
  * Author URI:  https://github.com/wplib/
  * Text Domain: wplib
