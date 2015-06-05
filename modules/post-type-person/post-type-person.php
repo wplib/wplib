@@ -1,12 +1,12 @@
 <?php
 
 /**
- * Class WPLib_People
+ * Class WPLib_Post_Type_Person
  *
  * @mixin WPLib_Person
  * @static WPLib_Post_List_Base get_list()
  */
-class WPLib_People extends WPLib_Post_Module_Base {
+class WPLib_Post_Type_Person extends WPLib_Post_Module_Base {
 
 	const POST_TYPE = 'wplib_person';
 
@@ -45,4 +45,4 @@ class WPLib_People extends WPLib_Post_Module_Base {
 	}
 
 }
-WPLib_People::on_load();
+WPLib_Post_Type_Person::on_load();

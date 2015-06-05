@@ -10,6 +10,6 @@
  */
 class WPLib_Person extends WPLib_Post_Base {
 
-	const POST_TYPE = WPLib_People::POST_TYPE;
+	const POST_TYPE = WPLib_Post_Type_Person::POST_TYPE;
 
 }
