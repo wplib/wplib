@@ -254,6 +254,16 @@ class WPLib {
 	}
 
 	/**
+	 * If used in a theme you have to first initialize it before WPLib_Theme_Base
+	 * classes will be available to extend.
+	 */
+	static function initialize() {
+
+		self::_load_necessary_files();
+
+	}
+
+	/**
 	 * Now load the theme's modules.
 	 */
 	static function _after_setup_theme() {
