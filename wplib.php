@@ -750,7 +750,7 @@ class WPLib {
 	 */
 	static function add_class_action( $action, $priority = 10 ) {
 
-		$hook = "_{$action}" . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = str_replace( '-', '_', "_{$action}" ) . ( 10 != $priority ? "_{$priority}" : '' );
 		add_action( $action, array( get_called_class(), $hook ), $priority, 99 );
 
 	}
@@ -761,7 +761,7 @@ class WPLib {
 	 */
 	static function add_class_filter( $filter, $priority = 10 ) {
 
-		$hook = "_{$filter}" . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = str_replace( '-', '_', "_{$filter}" ) . ( 10 != $priority ? "_{$priority}" : '' );
 		add_filter( $filter, array( get_called_class(), $hook ), $priority, 99 );
 
 	}
@@ -772,7 +772,7 @@ class WPLib {
 	 */
 	static function remove_class_action( $action, $priority = 10 ) {
 
-		$hook = "_{$action}" . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = str_replace( '-', '_', "_{$action}" ) . ( 10 != $priority ? "_{$priority}" : '' );
 		remove_action( $action, array( get_called_class(), $hook ), $priority );
 
 	}
@@ -783,7 +783,7 @@ class WPLib {
 	 */
 	static function remove_class_filter( $filter, $priority = 10 ) {
 
-		$hook = "_{$filter}" . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = str_replace( '-', '_', "_{$filter}" ) . ( 10 != $priority ? "_{$priority}" : '' );
 		remove_filter( $filter, array( get_called_class(), $hook ), $priority );
 
 	}
@@ -1000,7 +1000,7 @@ class WPLib {
 
 		if ( ! isset( self::$_root_urls[ $class_name ] ) ) {
 
-			$root_dir = static::get_root_dir( $filepath, $class_name );
+			$root_dir = static::get_root_dir( '', $class_name );
 
 			if ( preg_match( '#^' . preg_quote( get_stylesheet_directory() ) . '(.*)#', $root_dir, $match ) ) {
 				/**
@@ -1016,11 +1016,13 @@ class WPLib {
 
 			}
 
-			self::$_root_urls[ $class_name ] = $root_url;
+			self::$_root_urls[ $class_name ] = rtrim( $root_url, '/' );
 
 		}
 
-		return self::$_root_urls[ $class_name ];
+		$filepath = '/' . ltrim( $filepath, '/' );
+
+		return self::$_root_urls[ $class_name ] . $filepath;
 
 	}
 
@@ -1042,7 +1044,7 @@ class WPLib {
 
 		$asset_path = ltrim( $asset_path, '/' );
 
-	 	return static::get_root_url( $class_name ) . "/assets/{$asset_path}";
+	 	return static::get_root_url( "/assets/{$asset_path}", $class_name );
 
 	}
 
