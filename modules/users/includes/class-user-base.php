@@ -334,5 +334,14 @@ abstract class WPLib_User_Base extends WPLib_Item_Base {
 
 	}
 
+	/**
+	 * @return bool
+	 */
+	function is_current_user() {
+
+		return $this->ID() == get_current_user_id();
+
+	}
+
 }
 
