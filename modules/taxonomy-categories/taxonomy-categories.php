@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Class WPLib_Taxonomy_Categories
+ * Class WPLib_Categories
  */
-class WPLib_Taxonomy_Categories extends WPLib_Module_Base {
+class WPLib_Categories extends WPLib_Module_Base {
 
 	const TAXONOMY = 'category';
 
@@ -17,5 +17,5 @@ class WPLib_Taxonomy_Categories extends WPLib_Module_Base {
 	}
 
 }
-WPLib_Taxonomy_Categories::on_load();
+WPLib_Categories::on_load();
 

@@ -11,7 +11,7 @@
  */
 class WPLib_Category extends WPLib_Term_Base {
 
-  const TAXONOMY = WPLib_Taxonomy_Categories::TAXONOMY;
+  const TAXONOMY = WPLib_Categories::TAXONOMY;
 
 }
 
