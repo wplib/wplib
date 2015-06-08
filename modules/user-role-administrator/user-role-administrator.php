@@ -1,9 +1,9 @@
 <?php
 
 /**
- * class WPLib_User_Role_Administrator
+ * class WPLib_Administrators
  */
-class WPLib_User_Role_Administrator extends WPLib_Module_Base {
+class WPLib_Administrators extends WPLib_Module_Base {
 
 	const ROLE = 'administrator';
 
@@ -84,4 +84,4 @@ class WPLib_User_Role_Administrator extends WPLib_Module_Base {
 
 	}
 }
-WPLib_User_Role_Administrator::on_load();
+WPLib_Administrators::on_load();

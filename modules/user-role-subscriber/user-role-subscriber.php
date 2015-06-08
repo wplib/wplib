@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Users
  */
-class WPLib_User_Role_Subscriber extends WPLib_Module_Base {
+class WPLib_Subscribers extends WPLib_Module_Base {
 
 	const ROLE = 'subscriber';
 
@@ -31,4 +31,4 @@ class WPLib_User_Role_Subscriber extends WPLib_Module_Base {
 
 	}
 }
-WPLib_User_Role_Subscriber::on_load();
+WPLib_Subscribers::on_load();

@@ -12,6 +12,6 @@ class WPLib_Author extends WPLib_User_Base {
 	 *
 	 * @var string
 	 */
-	const ROLE = WPLib_User_Role_Author::ROLE;
+	const ROLE = WPLib_Authors::ROLE;
 
 }

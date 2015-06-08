@@ -1,9 +1,9 @@
 <?php
 
 /**
- * class WPLib_User_Role_Author
+ * class WPLib_Authors
  */
-class WPLib_User_Role_Author extends WPLib_Module_Base {
+class WPLib_Authors extends WPLib_Module_Base {
 
 	const ROLE = 'author';
 
@@ -37,4 +37,4 @@ class WPLib_User_Role_Author extends WPLib_Module_Base {
 
 	}
 }
-WPLib_User_Role_Author::on_load();
+WPLib_Authors::on_load();

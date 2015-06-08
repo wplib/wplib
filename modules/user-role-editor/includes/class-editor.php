@@ -12,6 +12,6 @@ class WPLib_Editor extends WPLib_User_Base {
 	 *
 	 * @var string
 	 */
-	const ROLE = WPLib_User_Role_Editor::ROLE;
+	const ROLE = WPLib_Editors::ROLE;
 
 }

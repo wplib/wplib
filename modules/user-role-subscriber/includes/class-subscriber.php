@@ -12,6 +12,6 @@ class WPLib_Subscriber extends WPLib_User_Base {
 	 *
 	 * @var string
 	 */
-	const ROLE = WPLib_User_Role_Subscriber::ROLE;
+	const ROLE = WPLib_Subscribers::ROLE;
 
 }

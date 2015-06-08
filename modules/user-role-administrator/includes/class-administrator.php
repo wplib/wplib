@@ -12,6 +12,6 @@ class WPLib_Administrator extends WPLib_User_Base {
 	 *
 	 * @var string
 	 */
-	const ROLE = WPLib_User_Role_Administrator::ROLE;
+	const ROLE = WPLib_Administrators::ROLE;
 
 }
