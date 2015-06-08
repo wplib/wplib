@@ -167,6 +167,9 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 				/**
 				 * Add support to pre 3.7 WordPress
+				 *
+				 * @todo Add error messages when taxonomy != category
+				 * @todo and when 'link_format' is not false
 				 */
 				$adjacent_post = get_adjacent_post_rel_link(
 					$args['format'],
@@ -476,6 +479,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 		echo wp_kses_post( $this->get_category_list_links_html( $args ) );
 
 	}
+
 	/**
 	 * @param array $args
 	 *
@@ -492,7 +496,6 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 	}
 
-
 	/**
 	 * @param array $args
 	 */
@@ -501,6 +504,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 		echo wp_kses_post( $this->get_post_tag_list_links_html( $args ) );
 
 	}
+
 	/**
 	 * @param array $args
 	 *
