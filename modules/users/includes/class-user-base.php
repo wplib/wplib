@@ -34,12 +34,16 @@ abstract class WPLib_User_Base extends WPLib_Item_Base {
 	private static $_display_names = array();
 
 	/**
-	 * @param WP_User|null $user
+	 * @param WP_User|int|string|null $user
 	 * @param array $args
 	 */
 	function __construct( $user, $args = array() ) {
 
-		$this->_user = $user;
+		if ( ! is_null( $user ) ) {
+
+			$this->_user = WPLib_Users::get_user( $user );
+
+		}
 
 		$args = wp_parse_args( $args, array(
 			'model' => array( 'user' => $user ),

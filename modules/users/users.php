@@ -173,7 +173,7 @@ class WPLib_Users extends WPLib_Module_Base {
 	}
 
 	/**
-	 * @param WP_User $wp_user
+	 * @param WP_User|int|string|null $wp_user
 	 *
 	 * @return mixed|null
 	 */
