@@ -77,11 +77,15 @@ class WPLib_Terms extends WPLib_Module_Base {
 	static function _init() {
 
 		foreach( self::$_taxonomy_args as $taxonomy => $taxonomy_args ) {
+
+			$object_types = ! empty( self::$_object_types[ $taxonomy ] ) ? self::$_object_types[ $taxonomy ] : array();
+
 			/*
 			 * For each of the term types that have been previously
 			 * initialized, register them for WordPress.
 			 */
-			register_taxonomy( $taxonomy, self::$_object_types[ $taxonomy ], $taxonomy_args );
+			register_taxonomy( $taxonomy, $object_types, $taxonomy_args );
+
 		}
 
 	}
@@ -93,16 +97,6 @@ class WPLib_Terms extends WPLib_Module_Base {
 	static function _init_99() {
 
 		self::_clear_taxonomy_args();
-
-	}
-
-	/**
-	 * The $args saved early to later be passed to register_taxonomy().
-	 * @return array
-	 */
-	static function taxonomy_args() {
-
-		return self::$_taxonomy_args;
 
 	}
 
@@ -140,7 +134,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 * @param array $object_types
 	 *
 	 */
-	static function _set_taxonomy_object_types( $taxonomy, $object_types ) {
+	static function set_taxonomy_object_types( $taxonomy, $object_types ) {
 
 		self::$_object_types[ $taxonomy ] = $object_types;
 
@@ -177,6 +171,8 @@ class WPLib_Terms extends WPLib_Module_Base {
 		 */
 		self::$_labels = null;
 		self::$_taxonomy_args = null;
+		self::$_object_types = null;
+
 	}
 
 
@@ -195,7 +191,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 *
 	 * @return string
 	 */
-	static function get_taxonomy_label( $taxonomy, $label_type ) {
+	static function _get_taxonomy_label( $taxonomy, $label_type ) {
 
 		return ! empty( self::$_labels[ $taxonomy ][ $label_type ] )
 			? self::$_labels[ $taxonomy ][ $label_type ]
@@ -208,7 +204,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 *
 	 * @return array
 	 */
-	static function get_taxonomy_labels( $taxonomy ) {
+	static function _get_taxonomy_labels( $taxonomy ) {
 
 		return isset( self::$_labels[ $taxonomy ] ) && is_array( self::$_labels[ $taxonomy ] )
 			? self::$_labels[ $taxonomy ]
@@ -222,7 +218,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 *
 	 * @return array
 	 */
-	static function set_taxonomy_labels( $taxonomy, $args ) {
+	static function _set_taxonomy_labels( $taxonomy, $args ) {
 
 		self::$_labels[ $taxonomy ] = $args;
 
