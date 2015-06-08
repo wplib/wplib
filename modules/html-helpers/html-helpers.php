@@ -112,9 +112,7 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 
 			$href = esc_url( $href );
 
-			if ( ! $args['is_html'] ) {
-				$link_text = esc_html( $link_text );
-			}
+			$link_text = $args['is_html'] ? wp_kses_post( $link_text ) : esc_html( $link_text );
 
 			if ( $args['onclick'] ) {
 				$args['onclick'] = ' onclick="' . esc_js( $args['onclick'] ) . '"';

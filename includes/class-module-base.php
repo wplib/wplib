@@ -5,6 +5,8 @@
  */
 abstract class WPLib_Module_Base extends WPLib {
 
+	const INSTANCE_CLASS = null;
+
 	/**
 	 * Delegate calls to an instance class if the class has a INSTANCE_CLASS constant or plural name adds 's', otherwise delegate to WPLib.
 	 *
@@ -75,7 +77,7 @@ abstract class WPLib_Module_Base extends WPLib {
 		/**
 		 * See if module has an INSTANCE_CLASS constant defined.
 		 */
-		return static::get_constant( 'INSTANCE_CLASS' );
+		return static::INSTANCE_CLASS;
 
 	}
 

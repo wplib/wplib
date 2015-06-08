@@ -22,7 +22,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	/**
 	 * The $args saved early to later be passed to register_post_type().
 	 *
-	 * @var array
+	 * @var array|null
 	 */
 	private static $_post_type_args = array();
 
@@ -101,15 +101,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 		}
 
 	}
-	/**
-	 * The $args saved early to later be passed to register_post_type().
-	 * @return array
-	 */
-	static function post_type_args() {
 
-		return self::$_post_type_args;
-
-	}
 	/**
 	 * Save $args for later passing to register_post_type().
 	 *
@@ -134,7 +126,6 @@ class WPLib_Posts extends WPLib_Module_Base {
 		self::$_post_type_args = null;
 	}
 
-
 	/**
 	 * @return array
 	 */
@@ -145,41 +136,43 @@ class WPLib_Posts extends WPLib_Module_Base {
 	}
 
 	/**
+	 * @param string $post_type
 	 * @param string $label_type
 	 *
 	 * @return string
 	 */
-	static function get_post_type_label( $label_type ) {
+	static function _get_post_type_label( $post_type, $label_type ) {
 
-		return ! empty( self::$_labels[ $label_type ] ) ? self::$_labels[ $label_type ] : null;
+		$labels = static::_get_post_type_labels( $post_type );
+
+		return ! empty( $labels[ $label_type ] ) ? $labels[ $label_type ] : null;
 
 	}
 
 	/**
-	 * @param string $post_type_slug
+	 * @param string $post_type
 	 *
 	 * @return array
 	 */
-	static function get_post_type_labels( $post_type_slug ) {
+	static function _get_post_type_labels( $post_type ) {
 
-		return isset( self::$_labels[ $post_type_slug ] ) && is_array( self::$_labels[ $post_type_slug ] )
-			? self::$_labels[ $post_type_slug ]
+		return isset( self::$_labels[ $post_type ] ) && is_array( self::$_labels[ $post_type ] )
+			? self::$_labels[ $post_type ]
 			: array();
 
 	}
 
 	/**
-	 * @param string $post_type_slug
+	 * @param string $post_type
 	 * @param array $args
 	 *
 	 * @return array
 	 */
-	static function set_post_type_labels( $post_type_slug, $args ) {
+	static function _set_post_type_labels( $post_type, $args ) {
 
-		self::$_labels[ $post_type_slug ] = $args;
+		self::$_labels[ $post_type ] = $args;
 
 	}
-
 
 	/**
 	 * @param WP_Post|object|int|string|array|null|bool $post
@@ -352,7 +345,6 @@ class WPLib_Posts extends WPLib_Module_Base {
 		return $list;
 	}
 
-
 	/**
 	 * Query the posts.  Equivalent to creating a new WP_Query which both instantiates and queries the DB.
 	 *
@@ -421,7 +413,6 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 	}
 
-
 	/**
 	 * Get a list of post types that support a specific named feature.
 	 *
@@ -441,7 +432,6 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		return $post_types;
 	}
-
 
 	/**
 	 * @param string $post_type

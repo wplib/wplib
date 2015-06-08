@@ -10,43 +10,7 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 	const INSTANCE_CLASS = null;
 
 	/**
-	 * Query the posts.  Equivalent to creating a new WP_Query which both instantiates and queries the DB.
-	 *
-	 * @param array $args
-	 * @return WP_Post[]
-	 */
-	static function get_query( $args = array() ) {
-
-		$args = wp_parse_args( $args );
-
-		if ( ! is_null( static::POST_TYPE ) ) {
-
-			$args['post_type'] = static::POST_TYPE;
-
-		}
-		/**
-		 * Query the posts and set the $this->_query with the query used.
-		 */
-		$query = WPLib_Posts::get_query( array_filter( $args ) );
-
-		return $query;
-	}
-
-	/**
-	 * Determines if the current query's object is a singular post URL of the calling classes' post type.
-	 *
-	 * @return bool
-	 */
-	static function is_singular() {
-		/**
-		 * @var WP_Query $wp_the_query
-		 */
-		global $wp_the_query;
-		return $wp_the_query->is_singular( static::POST_TYPE );
-	}
-
-	/**
-	 * REgister the labels used for this post_type.
+	 * Register the labels used for this post_type.
 	 *
 	 * @param array $args
 	 *
@@ -59,6 +23,8 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 			 * @future Add an error message here. But, this should never happen unless developer screws up.
 			 */
 			$args['name'] = null;
+
+			$labels = $args;
 
 		} else {
 
@@ -96,12 +62,12 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 			/**
 			 * For the calling class, merge the templates and with the singular and plural post type names.
 			 */
-			$args = wp_parse_args( $args, $labels );
+			$labels = wp_parse_args( $args, $labels );
 
-			WPLib_Posts::set_post_type_labels( static::POST_TYPE, $args );
+			WPLib_Posts::_set_post_type_labels( static::POST_TYPE, $labels );
 		}
 
-		return WPLib_Posts::get_post_type_labels( static::POST_TYPE );
+		return $labels;
 
 	}
 
@@ -116,8 +82,8 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 
 		$args = wp_parse_args( $args, array(
 
-			'label'  => WPLib_Posts::get_post_type_label( 'name' ),
-			'labels' => WPLib_Posts::get_post_type_labels( static::POST_TYPE ),
+			'label'  => WPLib_Posts::_get_post_type_label( static::POST_TYPE, 'name' ),
+			'labels' => WPLib_Posts::_get_post_type_labels( static::POST_TYPE ),
 
 			/**
 			 * @future add a list of all possible arguments
@@ -247,4 +213,41 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 		return $post_type_list_class;
 
 	}
+
+	/**
+	 * Query the posts.  Equivalent to creating a new WP_Query which both instantiates and queries the DB.
+	 *
+	 * @param array $args
+	 * @return WP_Post[]
+	 */
+	static function get_query( $args = array() ) {
+
+		$args = wp_parse_args( $args );
+
+		if ( ! is_null( static::POST_TYPE ) ) {
+
+			$args['post_type'] = static::POST_TYPE;
+
+		}
+		/**
+		 * Query the posts and set the $this->_query with the query used.
+		 */
+		$query = WPLib_Posts::get_query( array_filter( $args ) );
+
+		return $query;
+	}
+
+	/**
+	 * Determines if the current query's object is a singular post URL of the calling classes' post type.
+	 *
+	 * @return bool
+	 */
+	static function is_singular() {
+		/**
+		 * @var WP_Query $wp_the_query
+		 */
+		global $wp_the_query;
+		return $wp_the_query->is_singular( static::POST_TYPE );
+	}
+
 }
