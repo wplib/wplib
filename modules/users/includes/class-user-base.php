@@ -226,6 +226,8 @@ abstract class WPLib_User_Base extends WPLib_Item_Base {
 	 * @param string $display_name
 	 * @param string[] $capabilities
 	 * @param bool|string $role_slug
+	 *
+	 * @todo Move this to WPLib_Users
 	 */
 	static function register_role( $display_name, $capabilities, $role_slug = false  ) {
 
