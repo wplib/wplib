@@ -4,7 +4,7 @@
 WPLib was built for both agency and internal corporate developers who want their custom-developed WordPress sites to be both robust and easy to maintain as site complexity grows. 
 
 ##Status
-WPLib is in beta status at version 0.1.0 in master.
+WPLib is in beta status at version 0.2.0 in master.
 
 We are actively working on it with a goal to develop stable beta versions that can be used in production, and then a 1.0.0 version when we are comfortable that the majority of the API will not need to change.
 
