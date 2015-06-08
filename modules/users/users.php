@@ -216,6 +216,22 @@ class WPLib_Users extends WPLib_Module_Base {
 
 	}
 
+	/**
+	 * @param string $user_role
+	 *
+	 * @return bool
+	 */
+	static function current_user_is( $user_role ) {
+		/**
+		 * @var WP_User $current_user
+		 */
+		$current_user = wp_get_current_user();
+
+		return isset( $current_user->roles )
+			&& is_array( $current_user->roles )
+			&& in_array( $user_role, $current_user->roles );
+
+	}
 
 
 }
