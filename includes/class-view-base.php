@@ -149,13 +149,13 @@ abstract class WPLib_View_Base extends WPLib_Base {
 
 		$value = null;
 
-		if ( 0 !== strpos( $method_name, 'the_' ) ) {
+		if ( 0 === strpos( $method_name, 'the_' ) ) {
 
-			$value = call_user_func_array( array( $this->owner->model, $method_name ), $args );
+			$value = WPLib::do_the_methods( $this, $this->model(), $method_name, $args );
 
 		} else {
 
-		   	$value = WPLib::do_the_methods( $this, $this->model(), $method_name, $args );
+			$value = call_user_func_array( array( $this->owner->model, $method_name ), $args );
 		}
 
 		return $value;
