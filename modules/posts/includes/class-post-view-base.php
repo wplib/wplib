@@ -152,15 +152,30 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 			$post = $this->_post;
 
-			$adjacent_post = get_adjacent_post_link(
-				$args['format'],
-				$args['link_format'],
-				$args['in_same_term'],
-				$args['excluded_terms'],
-				$args['previous'],
-				$args['taxonomy']
-			);
+			if ( function_exists( 'get_adjacent_post_link' ) ) {
 
+				$adjacent_post = get_adjacent_post_link(
+					$args['format'],
+					$args['link_format'],
+					$args['in_same_term'],
+					$args['excluded_terms'],
+					$args['previous'],
+					$args['taxonomy']
+				);
+
+			} else {
+
+				/**
+				 * Add support to pre 3.7 WordPress
+				 */
+				$adjacent_post = get_adjacent_post_rel_link(
+					$args['format'],
+					$args['in_same_term'],
+					$args['excluded_terms'],
+					$args['previous']
+				);
+
+			}
 			$post = $save_post;
 
 		}
