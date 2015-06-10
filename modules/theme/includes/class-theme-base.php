@@ -1147,4 +1147,42 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
+	/**
+	 * @return WPLib_User_List
+	 */
+	function queried_list() {
+
+	    global $wp_the_query;
+
+	    return WPLib_Posts::get_list(
+	        $wp_the_query,
+	        'default_list=WPLib_Post_List_Default'
+	    );
+
+	}
+
+	/**
+	 * @return WPLib_User_Base
+	 */
+	function current_user() {
+		/**
+		 * @var WP_User $user
+		 */
+		$user = get_current_user();
+
+		if ( ! isset( $user->roles ) || ! is_array( $user->roles ) || 0 === count( $user->roles ) ) {
+
+			$user = null;
+
+		} else {
+
+			$user = WPLib::make_user( $user );
+
+		}
+
+		return $user;
+
+	}
+
+
 }
