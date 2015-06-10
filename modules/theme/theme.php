@@ -13,9 +13,19 @@ class WPLib_Theme extends WPLib_Module_Base {
 	 */
 	static function on_load() {
 
+		/**
+		 * Creates a JS variable WPLib.ajaxurl
+		 */
 		self::add_class_action( 'wp_enqueue_scripts', 0 );
+
+		/**
+		 * Hijack `template_include` so that we can ensure a $theme variable is defined.
+		 */
 		self::add_class_action( 'template_include', 999 );
 
+		/**
+		 * Adds any classes passed to $theme->set_body_class() to the classes that will be displayed in <body class="...">
+		 */
 	}
 
 	/**
