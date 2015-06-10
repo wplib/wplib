@@ -16,6 +16,11 @@ abstract class WPLib_Theme_Base extends WPLib {
 	const VAR_NAME = 'theme';
 
 	/**
+	 * @var string
+	 */
+	private $_body_class = '';
+
+	/**
 	 * Return the site name as configured.
 	 *
 	 * @return string|void
@@ -1111,6 +1116,34 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 		}
 		return $number;
+
+	}
+
+	/**
+	 * @return string
+	 */
+	function body_class() {
+
+		return $this->_body_class;
+
+	}
+
+	/**
+	 * Allows setting of the body class at the top of a theme template file.
+	 *
+	 * This uses the 'body_class' hook and avoid the themer from having to use it for simple additions to a body class.
+	 *
+	 * @param string|array $classes
+	 */
+	function set_body_class( $classes ) {
+
+		if ( is_array( $classes ) ) {
+
+			$classes = implode( ' ', $classes );
+
+		}
+
+		$this->_body_class = $classes;
 
 	}
 

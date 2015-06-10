@@ -19,6 +19,33 @@ class WPLib_Theme extends WPLib_Module_Base {
 	}
 
 	/**
+	 * Adds any classes passed to $theme->set_body_class() to the classes that will be displayed in <body class="...">
+	 *
+	 * @param array $classes
+	 *
+	 * @return array
+	 */
+	static function _body_class( $classes ) {
+
+		if ( $body_class = WPLib::theme()->body_class() ) {
+
+			if ( is_array( $body_class ) ) {
+
+				$classes = array_unique( $body_class + array_map( 'esc_attr', $classes ) );
+
+			} else if ( is_string( $body_class ) ) {
+
+				$classes[] = esc_attr( $body_class );
+			}
+
+		}
+
+		return $classes;
+
+	}
+
+
+	/**
 	 * Creates a JS variable WPLib.ajaxurl
 	 *
 	 *  Priority 0 ONLY so that this static function does not conflict with the instance method in child classes
@@ -108,6 +135,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 		WPLib::set_theme( $theme );
 
 	}
+
 }
 
 WPLib_Theme::on_load();
