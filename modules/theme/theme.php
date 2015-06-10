@@ -26,6 +26,8 @@ class WPLib_Theme extends WPLib_Module_Base {
 		/**
 		 * Adds any classes passed to $theme->set_body_class() to the classes that will be displayed in <body class="...">
 		 */
+		self::add_class_filter( 'body_class' );
+
 	}
 
 	/**
