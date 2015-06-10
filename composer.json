@@ -1,0 +1,15 @@
+{
+    "name": "wplib/wplib",
+    "description": "WPLib is a Foundation Library with a tiny core extended by modules for professional WordPress developers who build custom themes and app plugins. It enables an object-oriented MV* architecture, is compatible with most theme frameworks,
+    is optimized for use with a persistent object cache, and targets agency and corporate development.",
+    "type": "project",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "The WPLib Team",
+            "email": "wplib@newclarity.net",
+            "homepage": "http://wplib.org",
+            "role": "WordPress Developer and Architect"
+        }
+    ]
+}
