@@ -243,5 +243,57 @@ class WPLib_Terms extends WPLib_Module_Base {
 
 	}
 
+	/**
+	 * @param object|int|string $term
+	 * @param string $taxonomy
+	 * @param array $args
+	 * @return object|null
+	 */
+	static function get_term( $term, $taxonomy, $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+
+			'lookup_type' => 'id'
+
+		));
+
+		switch ( gettype( $term ) ) {
+
+			case 'object':
+				break;
+
+			case 'integer':
+
+				$term = get_term_by( $args[ 'lookup_type' ], $term, $taxonomy );
+				break;
+
+			case 'string':
+
+				do {
+
+					if( $slug_term = get_term_by( 'slug', $term, $args[ 'taxonomy' ] ) ) {
+
+						$term = $slug_term;
+						break;
+
+					}
+
+					if ( $name_term = get_term_by( 'name', $term, $args[ 'taxonomy' ] ) ) {
+
+						$term = $name_term;
+						break;
+
+					}
+
+				} while ( false );
+
+				break;
+
+		}
+
+		return $term;
+
+	}
+
 }
 WPLib_Terms::on_load();
