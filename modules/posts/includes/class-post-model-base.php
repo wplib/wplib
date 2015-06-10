@@ -595,6 +595,9 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 					$property_name = $method_name;
 					break;
 
+				default:
+					$property_name = false;
+
 			}
 
 			if ( ! $property_name ) {
