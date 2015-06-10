@@ -30,6 +30,15 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 		 */
 		foreach ( array( 'model', 'view' ) as $property_name ) {
 
+			if ( ! isset( $args[ $property_name ] ) ) {
+
+				/*
+				 * If no model or view class was specified then use the default.
+				 */
+				$args[ $property_name ] = $this->_get_property_class( $property_name );
+
+			}
+
 			if ( is_object( $args[ $property_name ] ) ) {
 				/*
 				 * If it was an object, just assign is.
@@ -38,14 +47,6 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 
 			} else {
 
-				if ( ! isset( $args[ $property_name ] ) ) {
-
-					/*
-					 * If no model or view class was specified then use the default.
-					 */
-					$args[ $property_name ] = $this->_get_property_class( $property_name );
-
-				}
 
 				if ( is_string( $args[ $property_name ] ) ) {
 
@@ -173,7 +174,7 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 
 		if ( is_wp_error( $value ) ) {
 
-			$message = __( 'ERROR: No method %s exists for class %s or in its data or its tags.', 'wplib' );
+			$message = __( 'ERROR: No method %s exists for class %s or in its Model or its View.', 'wplib' );
 
 			trigger_error( sprintf( $message, $method_name, get_class( $this ) ) );
 

@@ -26,42 +26,38 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	 */
 	function __construct( $term, $args = array() ) {
 
-		$args = wp_parse_args( $args, array(
-			'lookup_type' => 'term_id'
-		));
-
-		switch ( gettype( $term ) ) {
-
-			case 'object':
-				$args[ 'term' ] = $term;
-				break;
-
-			case 'integer':
-
-				if ( empty( $args[ 'taxonomy' ] ) ) {
-					break;
-				}
-				$args['term'] = get_term_by( $args[ 'lookup_type' ], $term, $args['taxonomy'] );
-				break;
-
-			case 'string':
-				if ( empty( $args[ 'taxonomy' ] ) ) {
-					break;
-				}
-				if( ! ( $args[ 'term' ] = get_term_by( 'slug', $term, $args[ 'taxonomy' ] ) ) ) {
-
-					if ( !( $args[ 'term' ] = get_term_by( 'name', $term, $args[ 'taxonomy' ] ) ) ) {
-
-						$args['term'] = $term;
-
-					}
-
-				}
-				break;
-
-		}
+		$this->_term = WPLib::get_term( $term, static::item_taxonomy() );
 
 		parent::__construct( $args );
+
+	}
+
+	/**
+	 * Return the item class name defined for this model.
+	 *
+	 * Assumes the Model class name is simply the Item class name with '_Model' on the end.
+	 *
+	 *     App_Foo -> App_Foo_Model
+	 *
+	 * @todo Add lookup by ITEM_CLASS in Model or MODEL_CLASS in Item if and when we find that naming conventions fail
+	 * @todo But wait to do that because maybe YAGNI.
+	 *
+	 * @return mixed
+	 */
+	static function item_class() {
+
+		return preg_replace( '#^(.+)_Model$#', '$1', get_called_class() );
+
+	}
+
+	/**
+	 * Returns the TAXONOMY value for this model's item.
+	 *
+	 * @return mixed|null
+	 */
+	static function item_taxonomy() {
+
+		return WPLib::get_constant( 'TAXONOMY', self::item_class() );
 
 	}
 
@@ -72,17 +68,17 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	 */
 	static function make_new( $args ) {
 
+		$taxonomy = self::item_taxonomy();
+
 		if ( isset( $args['term']->term_id ) && is_numeric( $args['term']->term_id ) ) {
 
-			$term = $args['term'];
-
-			$term = get_term( static::TAXONOMY, $term->term_id );
+			$term = get_term( $args['term']->term_id, $taxonomy );
 
 			unset( $args['term'] );
 
 		} else if ( isset( $args['term'] ) && is_numeric( $args['term'] ) ) {
 
-			$term = get_term( static::TAXONOMY, $args['term'] );
+			$term = get_term( $args['term'], $taxonomy );
 
 			unset( $args['term'] );
 

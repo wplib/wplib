@@ -272,13 +272,18 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		));
 
-		$query = wp_parse_args( $query, array(
+		$try_class = $args[ 'list_owner' ];
 
-			'post_type' => WPLib::get_constant( 'POST_TYPE', $try_class = $args[ 'list_owner' ] ),
+		if ( is_array( $query ) ) {
 
-		));
+			$query = wp_parse_args( $query, array(
 
-		unset( $args[ 'list_owner' ] );
+				'post_type' => WPLib::get_constant( 'POST_TYPE', $try_class ),
+
+			) );
+
+			unset( $args['list_owner'] );
+		}
 
 		$args = wp_parse_args( $args, array(
 
@@ -330,7 +335,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 			/*
 			 * Give up and use default, i.e. WPLib_List_Default
 			 */
-			$args['list_class'] = $args['list_default'];
+			$args['list_class'] = $args[ 'default_list' ];
 
 		}
 
@@ -461,7 +466,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 			foreach ( array_reverse( get_declared_classes() ) as $class_name ) {
 
-				if ( is_subclass_of( $class_name, 'WPLib_Item_Base' )  && $post_type = WPLib::get_constant( 'POST_TYPE', $class_name ) ) {
+				if ( is_subclass_of( $class_name, 'WPLib_Post_Base' )  && $post_type = WPLib::get_constant( 'POST_TYPE', $class_name ) ) {
 
 					$post_type_classes[ $post_type ] = $class_name;
 

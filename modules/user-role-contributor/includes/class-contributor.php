@@ -12,6 +12,6 @@ class WPLib_Contributor extends WPLib_User_Base {
 	 *
 	 * @var string
 	 */
-	const ROLE = WPLib_User_Role_Contributor::ROLE;
+	const ROLE = WPLib_Contributors::ROLE;
 
 }

@@ -34,12 +34,16 @@ abstract class WPLib_User_Base extends WPLib_Item_Base {
 	private static $_display_names = array();
 
 	/**
-	 * @param WP_User|null $user
+	 * @param WP_User|int|string|null $user
 	 * @param array $args
 	 */
 	function __construct( $user, $args = array() ) {
 
-		$this->_user = $user;
+		if ( ! is_null( $user ) ) {
+
+			$this->_user = WPLib_Users::get_user( $user );
+
+		}
 
 		$args = wp_parse_args( $args, array(
 			'model' => array( 'user' => $user ),
@@ -222,6 +226,8 @@ abstract class WPLib_User_Base extends WPLib_Item_Base {
 	 * @param string $display_name
 	 * @param string[] $capabilities
 	 * @param bool|string $role_slug
+	 *
+	 * @todo Move this to WPLib_Users
 	 */
 	static function register_role( $display_name, $capabilities, $role_slug = false  ) {
 
@@ -327,6 +333,15 @@ abstract class WPLib_User_Base extends WPLib_Item_Base {
 
 		}
 		return $user ? WPLib_Users::make_user( $user ) : null;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function is_current_user() {
+
+		return $this->ID() == get_current_user_id();
 
 	}
 

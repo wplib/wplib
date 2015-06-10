@@ -1,9 +1,9 @@
 <?php
 
 /**
- * class WPLib_User_Role_Contributor
+ * class WPLib_Contributors
  */
-class WPLib_User_Role_Contributor extends WPLib_Module_Base {
+class WPLib_Contributors extends WPLib_Module_Base {
 
 	const ROLE = 'contributor';
 
@@ -33,4 +33,4 @@ class WPLib_User_Role_Contributor extends WPLib_Module_Base {
 
 	}
 }
-WPLib_User_Role_Contributor::on_load();
+WPLib_Contributors::on_load();

@@ -142,14 +142,4 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 
 	}
 
-	/**
-	 * @return mixed|null
-	 */
-	static function instance_class() {
-
-		return static::INSTANCE_CLASS ? static::INSTANCE_CLASS : null;
-
-	}
-
-
 }

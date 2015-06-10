@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.2.0
+ * Version:     0.3.0
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -1027,7 +1027,21 @@ class WPLib {
 	}
 
 	/**
-	 * Return the asset path for a relative
+	 * Echo the asset path
+	 *
+	 * @param string $asset_path
+	 * @param bool|string $class_name Name of class to return the root dir.
+	 *
+	 * @return string
+	 */
+	static function the_asset_url( $asset_path, $class_name = false ) {
+
+		echo esc_url( static::get_asset_url( $asset_path, $class_name ) );
+
+	}
+
+	/**
+	 * Return the asset path
 	 *
 	 * @param string $asset_path
 	 * @param bool|string $class_name Name of class to return the root dir.

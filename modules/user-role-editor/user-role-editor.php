@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Users
  */
-class WPLib_User_Role_Editor extends WPLib_Module_Base {
+class WPLib_Editors extends WPLib_Module_Base {
 
 	const ROLE = 'editor';
 
@@ -57,4 +57,4 @@ class WPLib_User_Role_Editor extends WPLib_Module_Base {
 
 	}
 }
-WPLib_User_Role_Editor::on_load();
+WPLib_Editors::on_load();

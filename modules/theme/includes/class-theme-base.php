@@ -16,6 +16,11 @@ abstract class WPLib_Theme_Base extends WPLib {
 	const VAR_NAME = 'theme';
 
 	/**
+	 * @var string
+	 */
+	private $_body_class = '';
+
+	/**
 	 * Return the site name as configured.
 	 *
 	 * @return string|void
@@ -1113,5 +1118,71 @@ abstract class WPLib_Theme_Base extends WPLib {
 		return $number;
 
 	}
+
+	/**
+	 * @return string
+	 */
+	function body_class() {
+
+		return $this->_body_class;
+
+	}
+
+	/**
+	 * Allows setting of the body class at the top of a theme template file.
+	 *
+	 * This uses the 'body_class' hook and avoid the themer from having to use it for simple additions to a body class.
+	 *
+	 * @param string|array $classes
+	 */
+	function set_body_class( $classes ) {
+
+		if ( is_array( $classes ) ) {
+
+			$classes = implode( ' ', $classes );
+
+		}
+
+		$this->_body_class = $classes;
+
+	}
+
+	/**
+	 * @return WPLib_User_List
+	 */
+	function queried_list() {
+
+	    global $wp_the_query;
+
+	    return WPLib_Posts::get_list(
+	        $wp_the_query,
+	        'default_list=WPLib_Post_List_Default'
+	    );
+
+	}
+
+	/**
+	 * @return WPLib_User_Base
+	 */
+	function current_user() {
+		/**
+		 * @var WP_User $user
+		 */
+		$user = get_current_user();
+
+		if ( ! isset( $user->roles ) || ! is_array( $user->roles ) || 0 === count( $user->roles ) ) {
+
+			$user = null;
+
+		} else {
+
+			$user = WPLib::make_user( $user );
+
+		}
+
+		return $user;
+
+	}
+
 
 }

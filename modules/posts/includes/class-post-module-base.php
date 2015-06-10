@@ -131,16 +131,19 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 	/**
 	 * @param array|string|WPLib_Query $query
 	 * @param array $args
-	 * @return WPLib_User_List
+	 * @return WPLib_Post_List_Base
 	 */
 	static function get_list( $query = array(), $args = array() ) {
 
-		$query = wp_parse_args( $query );
+		if ( is_array( $query ) ) {
 
-		if ( $post_type = static::get_constant( 'POST_TYPE' ) ) {
+			$query = wp_parse_args( $query );
 
-			$query[ 'post_type' ] = $post_type;
+			if ( $post_type = static::POST_TYPE ) {
 
+				$query[ 'post_type' ] = $post_type;
+
+			}
 		}
 
 		$args = wp_parse_args( $args, array(

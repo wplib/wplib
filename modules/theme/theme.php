@@ -13,10 +13,49 @@ class WPLib_Theme extends WPLib_Module_Base {
 	 */
 	static function on_load() {
 
+		/**
+		 * Creates a JS variable WPLib.ajaxurl
+		 */
 		self::add_class_action( 'wp_enqueue_scripts', 0 );
+
+		/**
+		 * Hijack `template_include` so that we can ensure a $theme variable is defined.
+		 */
 		self::add_class_action( 'template_include', 999 );
 
+		/**
+		 * Adds any classes passed to $theme->set_body_class() to the classes that will be displayed in <body class="...">
+		 */
+		self::add_class_filter( 'body_class' );
+
 	}
+
+	/**
+	 * Adds any classes passed to $theme->set_body_class() to the classes that will be displayed in <body class="...">
+	 *
+	 * @param array $classes
+	 *
+	 * @return array
+	 */
+	static function _body_class( $classes ) {
+
+		if ( $body_class = WPLib::theme()->body_class() ) {
+
+			if ( is_array( $body_class ) ) {
+
+				$classes = array_unique( $body_class + array_map( 'esc_attr', $classes ) );
+
+			} else if ( is_string( $body_class ) ) {
+
+				$classes[] = esc_attr( $body_class );
+			}
+
+		}
+
+		return $classes;
+
+	}
+
 
 	/**
 	 * Creates a JS variable WPLib.ajaxurl
@@ -108,6 +147,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 		WPLib::set_theme( $theme );
 
 	}
+
 }
 
 WPLib_Theme::on_load();
