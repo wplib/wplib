@@ -1419,7 +1419,7 @@ class WPLib {
 
 			ob_start();
 
-			self::$_file_loading = $filepath;
+			self::$_file_loading = $template->filename;
 			require( $template->filename );
 			self::$_file_loading = false;
 
@@ -1486,8 +1486,12 @@ class WPLib {
 			$method_name = $match[ 1 ];
 			$suffix = 3 == count( $match ) ? $match[ 2 ] : false;
 
+			if ( is_callable( $callable = array( $view, $suffix_method = "{$method_name}{$suffix}" ) ) && method_exists( $view, $suffix_method ) ) {
 
-			if ( is_callable( $callable = array( $view, "{$method_name}{$suffix}" ) ) ) {
+				/**
+				 * @note Reading this and want to know why do we use both is_callable() and method_exists()?
+				 * @see "More details" section and comments of http://jmfeurprier.com/2010/01/03/method_exists-vs-is_callable/
+				 */
 
 				$has_html_suffix = preg_match( '#^_(html|link)$#', $suffix );
 
@@ -1496,7 +1500,7 @@ class WPLib {
 				 */
 				$value = call_user_func_array( $callable, $args );
 
-			} else if ( is_callable( $callable = array( $model, $method_name ) ) ) {
+			} else if ( is_callable( $callable = array( $model, $method_name ) ) && method_exists( $model, $method_name ) )  {
 
 				/*
 				 * Check $model to see if the method exist.
