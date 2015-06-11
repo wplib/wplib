@@ -1195,6 +1195,20 @@ class WPLib {
 	}
 
 	/**
+	 * Return if WPLIB_TEMPLATE_GLOBAL_VARS was set to true
+	 *
+	 * Setting WPLIB_TEMPLATE_GLOBAL_VARS to false will cause WPLib to extract $GLOBALS before loading the WP template which normally happens in
+	 * /wp-include/template-loader.php but WPLib hijacks that.
+	 *
+	 * @return bool
+	 */
+	static function use_template_global_vars() {
+
+		return ! defined( 'WPLIB_TEMPLATE_GLOBAL_VARS' ) || ! WPLIB_TEMPLATE_GLOBAL_VARS;
+
+	}
+
+	/**
 	 * @param string $method
 	 * @param array  $args
 	 *
