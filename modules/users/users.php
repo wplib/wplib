@@ -212,7 +212,7 @@ class WPLib_Users extends WPLib_Module_Base {
 
 		}
 
-	 	return $role_slug;
+	 	return $role_slug ? $role_slug : WPLib_Subscriber::ROLE;
 
 	}
 
