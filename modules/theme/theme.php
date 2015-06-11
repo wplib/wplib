@@ -98,6 +98,17 @@ class WPLib_Theme extends WPLib_Module_Base {
 			 */
 			$theme = self::instance();
 
+			if ( $theme->use_template_global_vars() ) {
+
+				/**
+				 * For compatibility with WordPress templates we need to
+				 * extract all the global variables into the current scope.
+				 */
+
+				extract( $GLOBALS );
+
+			}
+
 			include( $template );
 
 		}
