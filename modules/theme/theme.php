@@ -96,7 +96,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 			/*
 			 * Make $theme available inside the template.
 			 */
-			$theme = self::instance();
+			$theme = WPLib::theme();
 
 			include( $template );
 
@@ -105,35 +105,6 @@ class WPLib_Theme extends WPLib_Module_Base {
 
 	}
 
-	/**
-	 * Create an instance of get_called_class()
-	 *
-	 * @return static
-	 */
-	static function instance() {
-
-		if ( ! WPLib::theme() ) {
-
-			foreach( WPLib::app_classes() as $class_name ) {
-
-				if ( is_subclass_of( $class_name, 'WPLib_Theme_Base' )  ) {
-
-					/*
-					 * Will create instance of FIRST class found that subclasses WPLib_Theme_Base.
-					 * That means sites should ONLY have ONE subclass of WPLib_Theme_Base.
-					 */
-					WPLib::set_theme( new $class_name() );
-					break;
-
-				}
-
-			}
-
-		}
-
-		return WPLib::theme();
-
-	}
 
 	/**
 	 * Theme method for setting a theme isntance for unit test mocking.

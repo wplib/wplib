@@ -170,9 +170,9 @@ class WPLib {
 	 *
 	 * @todo Add a warning when this is called because it can autoload all classes.
 	 */
-	static function app_classes() {
+	static function site_classes() {
 
-		if ( ! ( $app_classes = WPLib::cache_get( $cache_key = 'app_classes' ) ) ) {
+		if ( ! ( $app_classes = WPLib::cache_get( $cache_key = 'site_classes' ) ) ) {
 
 			/**
 			 * Make sure we have all classes loaded.
@@ -1561,6 +1561,25 @@ class WPLib {
 	 * @return WPLib_Theme_Base
 	 */
 	static function theme() {
+
+		if ( ! self::$_theme ) {
+
+			foreach( WPLib::site_classes() as $class_name ) {
+
+				if ( is_subclass_of( $class_name, 'WPLib_Theme_Base' )  ) {
+
+					/*
+					 * Will create instance of FIRST class found that subclasses WPLib_Theme_Base.
+					 * That means sites should ONLY have ONE subclass of WPLib_Theme_Base.
+					 */
+					self::$_theme = new $class_name;
+					break;
+
+				}
+
+			}
+
+		}
 
 		return self::$_theme;
 

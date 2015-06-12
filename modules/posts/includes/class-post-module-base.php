@@ -193,7 +193,7 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 
 		if ( ! ( $post_type_list_class = WPLib::cache_get( $cache_key = "list_post_type_class[{$called_class}]" ) ) ) {
 
-			foreach ( WPLib::app_classes() as $class_name ) {
+			foreach ( WPLib::site_classes() as $class_name ) {
 
 				if ( is_subclass_of( $class_name, 'WPLib_Post_List_Base' ) && $post_type = static::get_constant( 'POST_TYPE', $class_name ) ) {
 
