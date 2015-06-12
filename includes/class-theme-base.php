@@ -8,7 +8,7 @@
  * @method void the_site_name()
  *
  */
-abstract class WPLib_Theme_Base extends WPLib {
+abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	/**
 	 * Used by the_template() to assign an instance of this class to variable with this name.
@@ -98,7 +98,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 			'rel' => 'home'
 		));
 
-		return $this->get_link( $this->site_url(), $this->site_name(), $args );
+		return WPLib::get_link( $this->site_url(), $this->site_name(), $args );
 
 	}
 
@@ -394,13 +394,13 @@ abstract class WPLib_Theme_Base extends WPLib {
 			/**
 			 * If relative, add stylesheet URL and DIR to the $src and $filepath.
 			 */
-			$src = static::get_root_url( $src );
+			$src = $this->get_root_url( $src );
 
-			$filepath = static::get_root_dir( $src );
+			$filepath = $this->get_root_dir( $src );
 
 		}
 
-		if ( ! static::is_script_debug() && ! $absolute ) {
+		if ( ! WPLib::is_script_debug() && ! $absolute ) {
 			/**
 			 * If script debug and not absolute URL
 			 * then prefix extensions 'js' and 'css' with 'min.'
@@ -418,9 +418,9 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 			} else {
 
-				if ( $ver = self::cache_get( $cache_key = "external[{$filepath}]" ) ) {
+				if ( $ver = WPLib::cache_get( $cache_key = "external[{$filepath}]" ) ) {
 					$ver = md5_file( $filepath );
-					self::cache_get( $cache_key, $ver );
+					WPLib::cache_get( $cache_key, $ver );
 				}
 
 			}
@@ -661,7 +661,7 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 */
 	function is_page_on_front() {
 
-		return $front_page_id = self::front_page_id() && WPLib::is_page( $front_page_id );
+		return $front_page_id = $this->front_page_id() && WPLib::is_page( $front_page_id );
 
 	}
 
@@ -762,9 +762,9 @@ abstract class WPLib_Theme_Base extends WPLib {
 	 * @param array|string $_template_vars
 	 * @param WPLib_Item_Base|object $item
 	 */
-	static function the_template( $template, $_template_vars = array(), $item = null ) {
+	function the_template( $template, $_template_vars = array(), $item = null ) {
 
-	 	parent::the_template( $template, $_template_vars, WPLib_Theme::instance() );
+	 	WPLib::the_template( $template, $_template_vars, WPLib::theme() );
 
 	}
 
@@ -934,36 +934,6 @@ abstract class WPLib_Theme_Base extends WPLib {
 	function user_can( $capability ) {
 
 		return current_user_can( $capability );
-
-	}
-
-	/**
-	 * Output a hyperlink with URL, Link Text and optional title text.
-	 *
-	 * @param string $href
-	 * @param string $link_text
-	 * @param array $args
-	 *
-	 * @return string
-	 */
-	static function the_link( $href, $link_text, $args = array() ) {
-
-		WPLib::the_link( $href, $link_text, $args );
-
-	}
-
-	/**
-	 * Create a hyperlink with URL, Link Text and optional title text.
-	 *
-	 * @param string $href
-	 * @param string $link_text
-	 * @param array $args
-	 *
-	 * @return string
-	 */
-	static function get_link( $href, $link_text, $args = array() ) {
-
-		return WPLib::get_link( $href, $link_text, $args );
 
 	}
 
@@ -1184,5 +1154,22 @@ abstract class WPLib_Theme_Base extends WPLib {
 
 	}
 
+	/**
+	 * @return string
+	 */
+	function get_root_url() {
+
+		return WPLib::get_root_url( $filepath, get_class( $this ) );
+
+	}
+
+	/**
+	 * @return string
+	 */
+	function get_root_dir() {
+
+		return WPLib::get_root_dir( $filepath, get_class( $this ) );
+
+	}
 
 }
