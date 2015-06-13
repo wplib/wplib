@@ -977,7 +977,7 @@ class WPLib {
 
 		$reflector = new ReflectionClass( $class_name );
 
-		return dirname( $reflector->getFileName() ) . $filepath;
+		return realpath( dirname( $reflector->getFileName() ) . $filepath );
 
 	}
 
@@ -1022,9 +1022,24 @@ class WPLib {
 
 		$filepath = '/' . ltrim( $filepath, '/' );
 
-		return self::$_root_urls[ $class_name ] . $filepath;
+		return self::real_url( self::$_root_urls[ $class_name ] . $filepath );
 
 	}
+
+	/**
+	 * Like realpath() but for URLs
+	 * @param string $url
+	 * @return string
+	 */
+	static function real_url( $url ) {
+
+	    foreach( array_keys( $url = explode( '/', $url ), '..' ) AS $keypos => $key) {
+	        array_splice( $url, $key - ($keypos * 2 + 1 ), 2 );
+	    }
+
+	    return str_replace( './', '', implode('/', $url ) );
+	}
+
 
 	/**
 	 * Echo the asset path
