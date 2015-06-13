@@ -1244,19 +1244,25 @@ class WPLib {
 	 */
 	static function trigger_error( $error_msg, $error_type = E_USER_NOTICE, $echo = false ) {
 
+		$is_development = static::is_development();
+
 		if ( ! static::doing_ajax() && ! static::doing_xmlrpc() && ! static::doing_cron() ) {
 
-			if ( $echo ) {
+			if ( $is_development ) {
 
-				echo "{$error_msg} [{$error_type}] ";
+				if ( $echo ) {
 
-			} else {
+					echo "{$error_msg} [{$error_type}] ";
 
-				trigger_error( $error_msg, $error_type );
+				} else {
+
+					trigger_error( $error_msg, $error_type );
+
+				}
 
 			}
 
-		} else if ( static::is_development() || static::do_log_errors() ) {
+		} else if ( $is_development || static::do_log_errors() ) {
 
 			/**
 			 * ONLY triggers errors:
