@@ -1157,16 +1157,35 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	/**
 	 * @return string
 	 */
-	function get_root_url() {
+	function root_url() {
 
-		return WPLib::get_root_url( $filepath, get_class( $this ) );
+		return WPLib::get_root_url( '', get_class( $this ) );
 
 	}
 
 	/**
 	 * @return string
 	 */
-	function get_root_dir() {
+	function root_dir() {
+
+		return WPLib::get_root_dir( '', get_class( $this ) );
+
+	}
+	/**
+	 * @param string $filepath
+	 * @return string
+	 */
+	function get_root_url( $filepath ) {
+
+		return WPLib::get_root_url( $filepath, get_class( $this ) );
+
+	}
+
+	/**
+	 * @param string $filepath
+	 * @return string
+	 */
+	function get_root_dir( $filepath ) {
 
 		return WPLib::get_root_dir( $filepath, get_class( $this ) );
 
