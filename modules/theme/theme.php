@@ -98,7 +98,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 			 */
 			$theme = WPLib::theme();
 
-			if ( $theme->use_template_global_vars() ) {
+			if ( WPLib::use_template_global_vars() ) {
 
 				/**
 				 * For compatibility with WordPress templates we need to
