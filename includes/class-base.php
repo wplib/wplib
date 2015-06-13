@@ -218,19 +218,30 @@ abstract class WPLib_Base {
 	 * Generate debugging error message for attempts to call a non-existent method.
 	 *
 	 * @param string $method_name
-	 * @param array $args
+	 * @param array  $args
 	 *
-	 * @return null
+	 * @return mixed
 	 */
 	function __call( $method_name, $args ) {
 
 		$value = null;
 
-		if ( $this->_trigger_error ) {
+		if ( preg_match( '#^the_#', $method_name ) && is_callable( array( $this, $method_name ) ) ) {
 
-			$message = __( "Cannot call method '%s' in class '%s'.", 'wplib' );
+			$value = WPLib::do_the_methods( $this, $this, $method_name, $args );
 
-			WPLib::trigger_error( sprintf( $message, $method_name, get_class( $this ) ) );
+		} else {
+
+			/*
+			 * Oops. No method was found.  Output an error message.
+			 */
+			$message = sprintf(
+				__( 'ERROR: There is no method %s() in class %s. ', 'wplib' ),
+				$method_name,
+				get_class( $this )
+			);
+
+			WPLib::trigger_error( $message, E_USER_ERROR );
 
 		}
 

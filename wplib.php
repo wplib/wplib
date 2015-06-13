@@ -1221,39 +1221,6 @@ class WPLib {
 	}
 
 	/**
-	 * @param string $method
-	 * @param array  $args
-	 *
-	 * @return mixed
-	 */
-	function __call( $method, $args ) {
-
-		$value = null;
-
-		if ( preg_match( '#^the_#', $method ) && is_callable( array( $this, $method ) ) ) {
-
-			$value = static::do_the_methods( $this, $this, $method, $args );
-
-		} else {
-
-			/*
-			 * Oops. No method was found.  Output an error message.
-			 */
-			$message = sprintf(
-				__( 'ERROR: There is no method %s() for class %s. ', 'wplib' ),
-				$method,
-				get_class( $this )
-			);
-
-			self::trigger_error( $message, E_USER_ERROR );
-
-		}
-
-		return $value;
-
-	}
-
-	/**
 	 * Triggers error message unless doing AJAX, XMLRPC or Cron; then it logs the error but only if Development mode.
 	 *
 	 * @param string $error_msg
