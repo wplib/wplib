@@ -1,7 +1,7 @@
 {
     "name": "wplib/wplib",
     "description": "WPLib is a Foundation Library for building custom WordPress Sites.",
-    "type": "project",
+    "type": "wordpress-library",
     "license": "GPL-2.0+",
     "authors": [
         {
