@@ -105,7 +105,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 				 * extract all the global variables into the current scope.
 				 */
 
-				extract( $GLOBALS );
+				extract( $GLOBALS, EXTR_SKIP );
 
 			}
 
