@@ -118,7 +118,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 
 
 	/**
-	 * Theme method for setting a theme isntance for unit test mocking.
+	 * Theme method for setting a theme instance for unit test mocking.
 	 *
 	 * @param $theme
 	 *
