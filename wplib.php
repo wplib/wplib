@@ -198,14 +198,14 @@ class WPLib {
 	 */
 	static function _autoloader( $class_name ) {
 
-		if ( isset( self::$_autoload_files[ $class_name ] ) ) {
+		if ( isset( static::$_autoload_files[ $class_name ] ) ) {
 
-			require_once( self::$_autoload_files[ $class_name ] );
+			require_once( static::$_autoload_files[ $class_name ] );
 
 			/**
 			 * Don't need it anymore since we loaded it.
 			 */
-			unset( self::$_autoload_files[ $class_name ] );
+			unset( static::$_autoload_files[ $class_name ] );
 
 		}
 
@@ -249,7 +249,7 @@ class WPLib {
 	 */
 	static function _plugins_loaded_11() {
 
-		self::_load_necessary_files();
+		static::_load_necessary_files();
 
 	}
 
@@ -259,7 +259,7 @@ class WPLib {
 	 */
 	static function initialize() {
 
-		self::_load_necessary_files();
+		static::_load_necessary_files();
 
 	}
 
@@ -268,7 +268,7 @@ class WPLib {
 	 */
 	static function _after_setup_theme() {
 
-		self::_load_necessary_files();
+		static::_load_necessary_files();
 
 	}
 
@@ -286,17 +286,17 @@ class WPLib {
 		/**
 		 * Find all autoloading files from components that have been loaded by (1) plugins or (2) the theme.
 		 */
-		self::_find_autoload_files();
+		static::_find_autoload_files();
 
 		/**
 		 * Load the modules defined in (1) the plugins or (2) the theme.
 		 */
-		self::_load_modules();
+		static::_load_modules();
 
 		/**
 		 * Find all autoloading files defined by modules specified by (1) plugins or (2) the theme.
 		 */
-		self::_find_autoload_files();
+		static::_find_autoload_files();
 
 		spl_autoload_unregister( $autoloader );
 
@@ -321,9 +321,9 @@ class WPLib {
 
 			require( $filepath );
 
-			$new_files = array_flip( self::$_new_files );
+			$new_files = array_flip( static::$_new_files );
 			unset( $new_files[$filepath] );
-			self::$_new_files = array_flip( $new_files );
+			static::$_new_files = array_flip( $new_files );
 
 		}
 
@@ -358,7 +358,7 @@ class WPLib {
 				/**
 				 * Find all autoloading files defined by the above module.
 				 */
-				self::_find_autoload_files();
+				static::_find_autoload_files();
 
 			}
 
