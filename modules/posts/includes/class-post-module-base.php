@@ -99,6 +99,13 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 			*/
 		) );
 
+		if ( isset( $args[ 'taxonomies' ] ) ) {
+
+			$message = 'Cannot set taxonomies via WPLib::%s(). Assign this post type via WPLib::register_taxonomy()';
+			WPLib::trigger_error( sprintf( $message, __METHOD__ ) );
+
+		}
+
 		WPLib_Posts::_set_post_type_args( static::POST_TYPE, $args );
 
 	}
