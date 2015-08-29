@@ -105,7 +105,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 				 * extract all the global variables into the current scope.
 				 */
 
-				extract( $GLOBALS );
+				extract( $GLOBALS, EXTR_SKIP );
 
 			}
 
@@ -118,7 +118,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 
 
 	/**
-	 * Theme method for setting a theme isntance for unit test mocking.
+	 * Theme method for setting a theme instance for unit test mocking.
 	 *
 	 * @param $theme
 	 *
