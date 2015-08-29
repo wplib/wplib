@@ -503,7 +503,7 @@ class WPLib {
 				/**
 				 * Now stuff into cache
 				 */
-				static::cache_set( 'autoload_files', $autoload_files );
+				static::cache_set( $cache_key, $autoload_files );
 
 			}
 
