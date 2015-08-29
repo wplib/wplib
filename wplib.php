@@ -822,6 +822,8 @@ class WPLib {
 	 */
 	static function call_helper( $class_name, $helper_method, $args, $container = null ) {
 
+		$value = null;
+
 		if ( is_null( $container ) ) {
 			/**
 			 * This container is needed because call_user_func() doesn't pass things by reference
