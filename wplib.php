@@ -1586,6 +1586,11 @@ class WPLib {
 			}
 
 		}
+		if ( ! self::$_theme ) {
+
+			self::$_theme = new WPLib_Theme_Default();
+
+		}
 
 		return self::$_theme;
 
