@@ -133,8 +133,8 @@ class WPLib {
 		self::register_module( 'post-type-page', 0 );
 		self::register_module( 'taxonomy-categories', 0 );
 		self::register_module( 'taxonomy-post-tags', 0 );
-		self::register_module( 'html-helpers', 0 );
-		self::register_module( 'wp-helpers', 0 );
+		self::register_module( 'helpers-html', 0 );
+		self::register_module( 'helpers-wp', 0 );
 		self::register_module( 'theme', 0 );
 
 		/**
