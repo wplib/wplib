@@ -3,6 +3,6 @@
 /**
  * Class WPLib_Helper_Base
  */
-abstract class WPLib_Helper_Base extends WPLib {
+abstract class WPLib_Helper_Base extends WPLib_Module_Base {
 
 }

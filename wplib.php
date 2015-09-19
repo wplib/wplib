@@ -133,8 +133,8 @@ class WPLib {
 		self::register_module( 'post-type-page', 0 );
 		self::register_module( 'taxonomy-categories', 0 );
 		self::register_module( 'taxonomy-post-tags', 0 );
-		self::register_module( 'html-helpers', 0 );
-		self::register_module( 'wp-helpers', 0 );
+		self::register_module( 'helpers-html', 0 );
+		self::register_module( 'helpers-wp', 0 );
 		self::register_module( 'theme', 0 );
 
 		/**
@@ -145,11 +145,6 @@ class WPLib {
 		self::register_module( 'user-role-subscriber', 4 );
 		self::register_module( 'user-role-editor', 4 );
 		self::register_module( 'user-role-author', 4 );
-
-		/**
-		 * Load People after Posts since it extends
-		 */
-		self::register_module( 'post-type-person', 5 );
 
 		self::add_class_action( 'plugins_loaded', 11 );
 		self::add_class_action( 'after_setup_theme' );
@@ -1586,6 +1581,11 @@ class WPLib {
 				}
 
 			}
+
+		}
+		if ( ! self::$_theme ) {
+
+			self::$_theme = new WPLib_Theme_Default();
 
 		}
 
