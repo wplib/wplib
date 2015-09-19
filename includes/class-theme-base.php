@@ -524,6 +524,9 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 * @return WP_Query
 	 */
 	function query() {
+		/**
+		 * @todo Capture immediately after assigned into object property
+		 */
 		global $wp_the_query;
 
 		return $wp_the_query;
