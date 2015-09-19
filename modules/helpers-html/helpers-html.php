@@ -126,5 +126,66 @@ HTML;
 		return $html;
 	}
 
+
+	/**
+	 * Return a string of attributes formatted for HTML elements from an associative array
+	 *
+	 * @param array $args
+	 *
+	 * @return string
+	 */
+	static function to_html_attributes( $args = array() ) {
+
+		$args = wp_parse_args( $args );
+
+		$attributes = array_map(
+
+			function( $name ) use ( $args ) {
+
+				do {
+					$attribute = '';
+
+					if ( empty( $name ) || ! is_string( $name ) ) {
+						break;
+					}
+
+					$value = $args[ $name ];
+
+					if ( preg_match( '#^(object|array)$#', gettype( $value ) ) ) {
+						break;
+					}
+
+					$value = esc_attr( (string) $value );
+
+					if ( empty( $value ) ) {
+						break;
+					}
+
+					/**
+					 * Santitize Attribute Name
+					 * @see http://stackoverflow.com/a/13287707
+					 */
+					$name = preg_replace( '#[^\p{L}0-9_.-]#', '', $name );
+
+					if ( empty( $name ) ) {
+						break;
+					}
+
+					$attribute = "{$name}=\"{$value}\"";
+
+				} while ( false );
+
+				return $attribute;
+			},
+
+			array_keys( $args )
+
+		);
+
+		$attributes = implode( ' ', $attributes );
+
+		return $attributes;
+	}
+
 }
 _WPLib_Html_Helpers::on_load();
