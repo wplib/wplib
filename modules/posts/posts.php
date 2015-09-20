@@ -282,14 +282,13 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 			) );
 
-			unset( $args['list_owner'] );
 		}
 
 		$args = wp_parse_args( $args, array(
 
 			'list_class'    => "{$try_class}_List",
 
-			'default_list'  => 'WPLib_List_Default',
+			'default_list'  => 'WPLib_Post_List_Default',
 
 		));
 
