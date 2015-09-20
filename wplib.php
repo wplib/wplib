@@ -193,9 +193,9 @@ class WPLib {
 	 */
 	static function _autoloader( $class_name ) {
 
-		if ( isset( static::$_autoload_files[ $class_name ] ) ) {
+		if ( isset( self::$_autoload_files[ $class_name ] ) ) {
 
-			require_once( static::$_autoload_files[ $class_name ] );
+			require_once( self::$_autoload_files[ $class_name ] );
 
 			/**
 			 * Don't need it anymore since we loaded it.
