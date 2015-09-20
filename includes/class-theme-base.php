@@ -239,7 +239,11 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 			'items_wrap'     => false,
 		) );
 
-		wp_nav_menu( $args );
+		if ( has_nav_menu( $args['theme_location'] ) ) {
+
+			wp_nav_menu( $args );
+
+		}
 
 	}
 
