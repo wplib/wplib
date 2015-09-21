@@ -610,7 +610,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function get_post_list( $args = array() ) {
 
-		return new WPLib_Post_List_Default( $this->posts() );
+		return new WPLib_Post_List_Default( $this->posts(), $args );
 
 	}
 

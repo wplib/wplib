@@ -19,7 +19,7 @@ class WPLib_Post_List_Base extends WPLib_List_Base {
 		if ( isset( $posts ) && is_array( $posts ) ) {
 
 			$args = wp_parse_args( $args, array(
-				'list_owner' => 'WPLib_Post_List_Default',
+				'list_owner' => 'WPLib_Posts',
 			));
 
 			/**
@@ -29,7 +29,7 @@ class WPLib_Post_List_Base extends WPLib_List_Base {
 
 			foreach ( $posts as $index => $post ) {
 
-				$posts[ $index ] = $list_owner::make_new_item( $post );
+				$posts[ $index ] = $list_owner::make_new_item( $post, $args );
 
 			}
 

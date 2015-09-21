@@ -242,13 +242,37 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 	}
 
+	/**
+	 * Generate a "class" attribute value contained CSS styles named to output into an HTML element for this post.
+	 *
+	 * @param bool|false $classes
+	 */
 	function the_css_classes_attr( $classes = false ) {
 
 		echo $this->get_css_classes_attr( $classes );
 
 	}
 
+	/**
+	 * Return a list of CSS styles named to output into an HTML element for this post as a single string "class" attribute value.
+	 *
+	 * @param bool|false $classes
+	 * @return string
+	 */
 	function get_css_classes_attr( $classes = false ) {
+
+		return implode( ' ', array_map( 'esc_attr', $this->get_css_classes( $classes ) ) );
+
+	}
+
+	/**
+	 * Return an array of CSS styles for this post
+	 *
+	 * @param bool|false $classes
+	 *
+	 * @return array
+	 */
+	function get_css_classes( $classes = false ) {
 
 		return get_post_class( $classes, $this->model()->ID() );
 
@@ -495,7 +519,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 			'before'        => '<span class="cat-links{{class}}">',
 		));
 
-		$this->get_terms_list_links_html( $args );
+		return $this->get_terms_list_links_html( $args );
 
 	}
 
@@ -520,7 +544,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 			'before'        => '<span class="tags-links{{class}}">',
 		));
 
-		$this->get_terms_list_links_html( $args );
+		return $this->get_terms_list_links_html( $args );
 
 	}
 
@@ -783,6 +807,23 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 	}
 
+	/**
+	 * @param string $size
+	 */
+	function the_featured_image_html( $size = 'post-thumbnail' ) {
+		$model = $this->model();
+		if ( $model->has_post() ) {
+			get_the_post_thumbnail( $model->ID(), $size );
+		}
+	}
+
+	/**
+	 */
+	function the_thumbnail_html() {
+
+		$this->the_featured_image_html( $size );
+
+	}
 
 }
 

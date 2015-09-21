@@ -7,7 +7,6 @@
  *
  * @property WPLib_Post_Base $owner
  *
- * @method int ID()
  * @method int comment_count()
  * @method int menu_order()
  *
@@ -106,7 +105,6 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 	}
 
-
 	/**
 	 * @param WP_Post
 	 */
@@ -126,6 +124,15 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	function has_post() {
 
 		return isset( $this->_post ) && is_a( $this->_post, 'WP_Post' );
+
+	}
+
+	/**
+	 * @return int
+	 */
+	function ID() {
+
+		return $this->has_post() ? intval( $this->_post->ID ) : 0;
 
 	}
 
@@ -257,7 +264,6 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		return WPLib_Post::POST_TYPE == $this->post_type();
 
 	}
-
 
 	/**
 	 * Retrieve the value of a field and to provide a default value if no _post is set.
@@ -406,7 +412,6 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 	}
 
-
 	/**
 	 * Check if a post is published
 	 *
@@ -508,7 +513,6 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		return $this->get_adjacent_post( $args );
 
 	}
-
 
 	/**
 	 * @param string $method_name
@@ -662,7 +666,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function is_single() {
 
-		return is_single();
+		return is_single( $this->_post->ID );
 
 	}
 
@@ -907,7 +911,6 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 	}
 
-
 	/**
 	 * @return int
 	 */
@@ -927,7 +930,6 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		return $number;
 
 	}
-
 
 	/**
 	 * Can user comments?
@@ -960,10 +962,22 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		$post = $this->post();
 
 		return $post &&
-		       ! post_password_required( $post ) &&
-		       ( $this->comments_open() || $this->comments_number() );
+					 ! post_password_required( $post ) &&
+					 ( $this->comments_open() || $this->comments_number() );
 
 	}
 
+	/**
+	 * Does this post represent the site's front page?
+	 *
+	 * @return bool True, if front of site.
+	 */
+	function is_front_page() {
+
+		$page_id = $this->ID();
+
+		return 0 !== $page_id && intval( get_option( 'show_on_front' ) ) ===  $page_id;
+
+	}
 
 }

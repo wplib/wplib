@@ -262,7 +262,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	/**
 	 * @param array|string|WPLib_Query $query
 	 * @param array $args
-	 * @return WPLib_User_List
+	 * @return WPLib_Post_List_Default[]
 	 */
 	static function get_list( $query = array(), $args = array() ) {
 
@@ -274,15 +274,6 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		$try_class = $args[ 'list_owner' ];
 
-		if ( is_array( $query ) ) {
-
-			$query = wp_parse_args( $query, array(
-
-				'post_type' => WPLib::get_constant( 'POST_TYPE', $try_class ),
-
-			) );
-
-		}
 
 		$args = wp_parse_args( $args, array(
 
@@ -342,7 +333,26 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		unset( $args[ 'list_class' ], $args[ 'list_default' ] );
 
-		$query = WPLib_Posts::get_query( $query );
+
+		$args[ 'instance_class' ] = WPLib::get_constant( 'INSTANCE_CLASS', $args[ 'list_owner' ] );
+
+		if ( ! ( $post_type = WPLib::get_constant( 'POST_TYPE', $args[ 'instance_class' ] ) ) ) {
+
+			$post_type = 'post';
+
+		}
+
+		if ( ! is_array( $query ) ) {
+
+			$query = wp_parse_args( $query );
+
+		}
+
+		$query = WPLib_Posts::get_query( wp_parse_args( $query, array(
+
+			'post_type' => $post_type,
+
+		)));
 
 		$list = isset( $query->posts ) ? new $list_class( $query->posts, $args ) : null;
 
@@ -405,15 +415,33 @@ class WPLib_Posts extends WPLib_Module_Base {
 	/**
 	 * Create new Instance of a Post MVE
 	 *
-	 * @param WP_Post | $post
+	 * @param WP_Post $post
+	 * @param array $args
 	 *
 	 * @return mixed
 	 */
-	static function make_new_item( $post ) {
+	static function make_new_item( $post, $args = array() ) {
 
-		$post_item_class = self::get_post_type_class( $post->post_type );
+		$args = wp_parse_args( $args, array(
+			'instance_class' => false,
+			'list_owner' => 'WPLib_Posts',
+		));
 
-		return new $post_item_class( $post );
+		if ( ! $args[ 'instance_class' ] ) {
+
+			$args['instance_class'] = WPLib::get_constant( 'INSTANCE_CLASS', $args['list_owner'] );
+
+		}
+
+		if ( ! $args[ 'instance_class' ] ) {
+
+			$args['instance_class'] = self::get_post_type_class( $post->post_type );
+
+		}
+
+		$instance_class = $args['instance_class'];
+
+		return new $instance_class( $post );
 
 	}
 

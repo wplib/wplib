@@ -8,6 +8,7 @@
  *
  * @property WPLib_Post_Tag $owner
  */
-class WPLib_Post_View extends WPLib_Post_View_Base {
+class WPLib_Post_View extends WPLib_Post_View_Default {
+
 
 }

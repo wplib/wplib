@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.5.1
+ * Version:     0.5.2
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -118,7 +118,19 @@ class WPLib {
 
 		if ( defined( 'WPLIB_RUNMODE' ) ) {
 
-			self::set_runmode( WPLIB_RUNMODE );
+			$runmode = WPLIB_RUNMODE;
+
+			if ( is_string( $runmode ) && defined( "self::{$runmode}" ) ) {
+
+				$runmode = intval( self::get_constant( strtoupper( $runmode ) ) );
+
+			}
+
+			if ( is_int( $runmode ) && self::DEVELOPMENT <= $runmode && self::PRODUCTION >= $runmode ) {
+
+				self::set_runmode( $runmode );
+
+			}
 
 		}
 
@@ -1279,10 +1291,11 @@ class WPLib {
 	 *
 	 * @param string      $constant_name
 	 * @param string|bool $class_name
+	 * @param bool $try_parent
 	 *
 	 * @return mixed|null
 	 */
-	static function get_constant( $constant_name, $class_name = false ) {
+	static function get_constant( $constant_name, $class_name = false, $try_parent = true ) {
 
 		if ( ! $class_name ) {
 
@@ -1290,7 +1303,22 @@ class WPLib {
 
 		}
 
-		return defined( $constant_ref = "{$class_name}::{$constant_name}" ) ? constant( $constant_ref ) : null;
+		if ( defined( $constant_ref = "{$class_name}::{$constant_name}" ) ) {
+
+			$value = constant( $constant_ref );
+
+		} else if ( $try_parent && $parent_class = get_parent_class( $class_name ) ) {
+
+			$value = self::get_constant( $constant_name, $parent_class );
+
+		} else {
+
+			$value = null;
+
+		}
+
+		return $value;
+
 
 	}
 
@@ -1425,6 +1453,8 @@ class WPLib {
 	 * @return mixed
 	 */
 	static function do_the_methods( $view, $model, $method_name, $args ) {
+
+		$value = null;
 
 		if ( preg_match( '#^the_(.+)_template$#', $method_name, $match ) ) {
 
