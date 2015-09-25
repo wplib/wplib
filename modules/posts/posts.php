@@ -376,6 +376,12 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		} else {
 
+			if ( ! isset( $args['order'] ) && isset( $args['post_type'] ) && WPLib_Post::POST_TYPE === $args['post_type'] ) {
+
+				$args['order'] = 'DESC';
+
+			}
+
 			$args = wp_parse_args( $args, array(
 				'post_type'      => 'any',
 				'post_status'    => 'publish',
