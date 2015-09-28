@@ -1813,5 +1813,37 @@ class WPLib {
 
 	}
 
+
+	/**
+	 * @param bool|false $value
+	 *
+	 * @return bool|string
+	 */
+	static function get_short_prefix( $value = false ) {
+
+		$prefix = WPLib::get_constant( 'SHORT_PREFIX', get_called_class() );
+
+		return $value ? "{$prefix}{$value}" : $value;
+
+	}
+
+	/**
+	 * Returns the raw meta fieldname given a non-prefixed field name.
+	 * Adds both a leading underscore and a short prefix to the meta name.
+	 *
+	 * @param string $meta_name
+	 *
+	 * @return string
+	 */
+	static function get_raw_meta_fieldname( $meta_name ) {
+
+		$prefix = static::get_constant( 'SHORT_PREFIX' );
+
+		return "_{$prefix}{$meta_name}";
+
+	}
+
+
+
 }
 WPLib::on_load();
