@@ -437,7 +437,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	static function make_new_item( $post, $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
-			'instance_class' => false,
+			'instance_class' => false,                                                                                            `
 			'list_owner' => 'WPLib_Posts',
 		));
 
