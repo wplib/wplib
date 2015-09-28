@@ -11,6 +11,18 @@
 class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 
 	/**
+	 *
+	 */
+	static function on_load() {
+
+		/**
+		 * Register this class as a helper for WPLib.
+		 */
+		self::register_helper( __CLASS__, 'WPLib' );
+
+	}
+
+	/**
 	 * Is the Front Page configured to display a $post_type='page'?
 	 *
 	 * @param int $page_id
@@ -25,3 +37,4 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 
 
 }
+_WPLib_WP_Helpers::on_load();

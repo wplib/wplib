@@ -139,8 +139,6 @@ class WPLib {
 
 		}
 
-		self::register_helper( 'posts' );
-
 		spl_autoload_register( array( __CLASS__, '_autoloader' ) );
 
 		self::register_module( 'posts', 0 );
