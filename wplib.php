@@ -1415,6 +1415,78 @@ class WPLib {
 
 	}
 
+
+	/**
+	 * Return the subdir name for templates.
+	 *
+	 * @todo Allow different contexts (the app and different modules) to be set differently than the theme directory.
+	 *
+	 * @return string
+	 */
+	static function templates_subdir() {
+		/*
+		 * Allow the templates subdir to be overridden in the config file
+		 */
+		return defined( 'WPLIB_TEMPLATES_SUBDIR' )
+			? WPLIB_TEMPLATES_SUBDIR
+			: 'templates';
+
+	}
+
+	/**
+	 * Generates output for templates that are shared by modules inside of a WPLib App.
+	 *
+	 * @param string $template
+	 * @param array|string $_template_vars
+	 * @param WPLib_Item_Base|object|null $item
+	 */
+	static function the_module_template( $template, $_template_vars = array(), $item = null ) {
+
+		$module_filepath = WPLib::get_module_filepath( $item );
+
+		$templates_subdir = static::templates_subdir();
+
+		$template = "{$module_filepath}/{$templates_subdir}/{$template}";
+
+		static::the_template( $template, $_template_vars, $item );
+	}
+
+	/**
+	 * Generates output for templates that are shared by a WPLib App.
+	 *
+	 * @param string $template
+	 * @param array|string $_template_vars
+	 * @param WPLib_Item_Base|object|null $item
+	 */
+	static function the_app_template( $template, $_template_vars = array(), $item = null ) {
+
+		/**
+		 * Get the root directory for App defined for the item
+		 */
+		$class_name = $item->app_class();
+
+		if ( ! method_exists( $class_name, 'root_dir' ) ) {
+
+			$err_msg = __( "Class %s does not have method root_dir(), called from: %s::%s()", 'wplib' );
+
+			WPLib::trigger_error( sprintf( $err_msg, $class_name, __CLASS__, __METHOD__ ) );
+
+		} else {
+
+			$root_dir = call_user_func( array( $class_name, 'root_dir' ) );
+
+			$templates_subdir = static::templates_subdir();
+
+			$root_dir = WPLib::maybe_make_abspath_relative( $root_dir );
+
+			$template = "{$root_dir}/{$templates_subdir}/{$template}";
+
+			static::the_template( $template, $_template_vars, $item );
+
+		}
+
+	}
+
 	/**
 	 * @param string $template
 	 * @param array|string $_template_vars
@@ -1427,12 +1499,19 @@ class WPLib {
 	 */
 	static function the_template( $template, $_template_vars = array(), $item = null ) {
 
-
 		$_filename = preg_replace( '#(\.php)$#', '', ltrim( $template, '/' ) ) . '.php';
 
 		$template = new stdClass();
 		$template->dir = get_stylesheet_directory();
-		$template->filename = "{$template->dir}/templates/{$_filename}";
+
+		/*
+		 * If root path (i.e. "~/wp-content/...") add ABSPATH to the template file after removing ~
+		 * If not root path, assume the template file is in /templates/ inside the theme directory
+		 */
+		$_templates_subdir = static::templates_subdir();
+		$template->filename = preg_match( '#^~[\/](.+)#', $_filename, $match )
+			? ABSPATH . $match[ 1 ]
+			: "{$template->dir}/{$_templates_subdir}/{$_filename}";
 
 		if ( ! is_string( $_template_vars ) || false !== strpos( $_template_vars, '=' ) ) {
 
@@ -1521,7 +1600,14 @@ class WPLib {
 
 			$template->vars = $_template_vars;
 
-			unset( $_template_vars, $_filename, $_cache_key, $_var_name, $_specialty );
+			unset(
+				$_template_vars,
+				$_templates_subdir,
+				$_filename,
+				$_cache_key,
+				$_var_name,
+				$_specialty
+			);
 
 			ob_start();
 

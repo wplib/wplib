@@ -163,7 +163,25 @@ abstract class WPLib_View_Base extends WPLib_Base {
 
 	}
 
+	/**
+	 * @param string $template
+	 * @param array $_template_vars
+	 */
+	function the_module_template( $template, $_template_vars = array() ) {
 
+		WPLib::the_module_template( $template, $_template_vars, $this->owner );
+
+	}
+
+	/**
+	 * @param string $template
+	 * @param array $_template_vars
+	 */
+	function the_app_template( $template, $_template_vars = array() ) {
+
+		WPLib::the_app_template( $template, $_template_vars, $this->owner );
+
+	}
 
 
 }
