@@ -112,6 +112,11 @@ class WPLib {
 	private static $_theme = false;
 
 	/**
+	 * @var bool Flag to indicate all WPLib module classes have been loaded.
+	 */
+	private static $_init_9_ran = false;
+
+	/**
 	 *
 	 */
 	static function on_load() {
@@ -158,6 +163,7 @@ class WPLib {
 		self::register_module( 'user-role-editor', 4 );
 		self::register_module( 'user-role-author', 4 );
 
+		self::add_class_action( 'init', 9 );
 		self::add_class_action( 'plugins_loaded', 11 );
 		self::add_class_action( 'after_setup_theme' );
 		self::add_class_action( 'after_setup_theme', 11 );
@@ -172,31 +178,48 @@ class WPLib {
 	}
 
 	/**
+	 * Autoload all WPLib module classes to ensure they are available for 'init' hook.
+	 *
+	 * @return array
+	 */
+	static function _init_9() {
+
+		if ( ! WPLib::cache_get( $cache_key = 'module_classes_cached' ) ) {
+
+			self::$_init_9_ran = true;
+
+			self::autoload_all_classes();
+
+			WPLib::cache_set( $cache_key, true );
+		}
+
+	}
+
+	/**
 	 * Return the list of classes declared after WPLib first loads.
 	 * @return array
-	 *
-	 * @todo Add a warning when this is called because it can autoload all classes.
 	 */
 	static function site_classes() {
 
-		if ( ! ( $app_classes = WPLib::cache_get( $cache_key = 'site_classes' ) ) ) {
+		if ( ! ( $site_classes = WPLib::cache_get( $cache_key = 'site_classes' ) ) ) {
 
 			/**
 			 * Make sure we have all classes loaded.
 			 */
 			WPLib::autoload_all_classes();
-			$app_classes = array_reverse( array_slice( get_declared_classes(), self::$_non_app_class_count ) );
-			$app_classes = array_filter( $app_classes, function( $element ) {
+
+			$site_classes = array_reverse( array_slice( get_declared_classes(), self::$_non_app_class_count ) );
+			$site_classes = array_filter( $site_classes, function( $element ) {
 				/*
 				 * Strip out WordPress core classes
 				 */
-				return ! preg_match( '#^(WP|wp)_#', $element );
+				return ! preg_match( '#^(WP|wp)_?#', $element );
 			});
-			WPLib::cache_set( $cache_key, $app_classes );
+			WPLib::cache_set( $cache_key, $site_classes );
 
 		}
 
-		return $app_classes;
+		return $site_classes;
 
 	}
 
@@ -345,6 +368,9 @@ class WPLib {
 
 		self::$_modules = apply_filters( 'wplib_modules', self::$_modules );
 
+		$called_class = get_called_class();
+
+		$module_classes = isset( self::$_module_classes[ $called_class ] ) ? self::$_module_classes[ $called_class ] : array();
 		foreach ( self::$_modules as $priority ) {
 
 			foreach ( $priority as $filepath ) {
@@ -362,6 +388,9 @@ class WPLib {
 				require_once $filepath;
 				self::$_file_loading = false;
 
+				$classes = get_declared_classes();
+				$module_classes[ end( $classes ) ] = $module_path = preg_replace( $abspath_regex, '~/$1', $filepath );
+
 				/**
 				 * Find all autoloading files defined by the above module.
 				 */
@@ -370,6 +399,8 @@ class WPLib {
 			}
 
 		}
+
+		self::$_module_classes[ $called_class ] = $module_classes;
 
 		self::$_modules = array();
 
@@ -537,9 +568,20 @@ class WPLib {
 	 */
 	static function autoload_all_classes() {
 
-		foreach ( array_keys( self::$_autoload_files ) as $autoload_class ) {
+		static $classes_loaded = false;
 
-			self::_autoloader( $autoload_class );
+		if ( ! self::$_init_9_ran ) {
+
+			$err_msg = "Cannot call WPLib::autoload_all_classes() prior to 'init' action, priority 9.";
+			WPLib::trigger_error( $err_msg );
+
+		} else if ( ! $classes_loaded ) {
+
+			foreach ( array_keys( self::$_autoload_files ) as $autoload_class ) {
+
+				self::_autoloader( $autoload_class );
+
+			}
 
 		}
 
