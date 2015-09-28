@@ -1436,7 +1436,7 @@ class WPLib {
 	 * Return a class constant for the called class.
 	 *
 	 * @param string      $constant_name
-	 * @param string|bool $class_name
+	 * @param string|bool|object $class_name
 	 * @param bool $try_parent
 	 *
 	 * @return mixed|null
@@ -1446,6 +1446,12 @@ class WPLib {
 		if ( ! $class_name ) {
 
 			$class_name = get_called_class();
+
+		}
+
+		if ( is_object( $class_name ) ) {
+
+			$class_name = get_class( $class_name );
 
 		}
 
