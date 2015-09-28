@@ -81,4 +81,13 @@ abstract class WPLib_Module_Base extends WPLib {
 
 	}
 
+	/**
+	 * @return mixed|null
+	 */
+	static function var_name() {
+
+		return WPLib::get_constant( 'VAR_NAME', static::instance_class() );
+
+	}
+
 }
