@@ -1243,6 +1243,7 @@ class WPLib {
 
 	}
 
+	/**
 	 * @param string $key
 	 * @param string $group
 	 *
@@ -1473,7 +1474,6 @@ class WPLib {
 
 
 	}
-
 
 	/**
 	 * Return the subdir name for templates.
