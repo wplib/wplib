@@ -5,6 +5,8 @@
  */
 abstract class WPLib_Module_Base extends WPLib {
 
+	const MODULE_NAME = null;
+
 	const INSTANCE_CLASS = null;
 
 	/**
