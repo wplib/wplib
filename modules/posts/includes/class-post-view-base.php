@@ -813,7 +813,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	function the_featured_image_html( $size = 'post-thumbnail' ) {
 		$model = $this->model();
 		if ( $model->has_post() ) {
-			get_the_post_thumbnail( $model->ID(), $size );
+			echo get_the_post_thumbnail( $model->ID(), $size );
 		}
 	}
 
@@ -821,7 +821,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	 */
 	function the_thumbnail_html() {
 
-		$this->the_featured_image_html( $size );
+		$this->the_featured_image_html();
 
 	}
 
