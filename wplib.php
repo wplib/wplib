@@ -250,17 +250,19 @@ class WPLib {
 	 * @param bool|string $dir
 	 * @return string
 	 */
-	private static function _maybe_make_absolute( $filepath, $dir = false ) {
+	static function maybe_make_absolute_path( $filepath, $dir = false ) {
 
-		if ( '/' != $filepath[0] ) {
+		$directory_separator = DIRECTORY_SEPARATOR;
 
-			if ( preg_match( '#^~(/.*)$#', $filepath, $match ) ) {
+		if ( $directory_separator != $filepath[0] ) {
+
+			if ( preg_match( "#^~({$directory_separator}.*)$#", $filepath, $match ) ) {
 
 				$path = $match[1];
 
 			} else {
 
-				$path = '/' . ltrim( $filepath, '/' );
+				$path = $directory_separator . ltrim( $filepath, $directory_separator );
 
 			}
 
@@ -369,6 +371,9 @@ class WPLib {
 		$called_class = get_called_class();
 
 		$module_classes = isset( self::$_module_classes[ $called_class ] ) ? self::$_module_classes[ $called_class ] : array();
+
+		$abspath_regex = '#^' . preg_quote( ABSPATH ) . '(.+)' . DIRECTORY_SEPARATOR . '.+\.php$#';
+
 		foreach ( self::$_modules as $priority ) {
 
 			foreach ( $priority as $filepath ) {

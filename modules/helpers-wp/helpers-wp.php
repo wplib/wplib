@@ -35,6 +35,18 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 
 	}
 
+	/**
+	 * Takes a filepath and potentially returns a relative path (prefixed with '~/'), if $filepath begins with ABSPATH.
+	 *
+	 * @param string $filepath
+	 *
+	 * @return string
+	 */
+	static function maybe_make_abspath_relative( $filepath ) {
+
+		return preg_replace( '#^' . preg_quote( ABSPATH ) . '(.*)$#', "~/$1", $filepath );
+
+	}
 
 }
 _WPLib_WP_Helpers::on_load();
