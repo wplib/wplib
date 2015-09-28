@@ -5,6 +5,8 @@
  */
 class WPLib_Posts extends WPLib_Module_Base {
 
+	const INSTANCE_CLASS = 'WPLib_Post';
+
 	/**
 	 * The default post type labels for those labels not set for a post type.
 	 *
@@ -453,7 +455,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		$instance_class = $args['instance_class'];
 
-		return new $instance_class( $post );
+		return $instance_class ? new $instance_class( $post ) : null;
 
 	}
 
