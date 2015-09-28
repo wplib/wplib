@@ -77,6 +77,11 @@ class WPLib {
 	private static $_modules = array();
 
 	/**
+	 * @var string[] Names of loaded classes
+	 */
+	private static $_module_classes = array();
+
+	/**
 	 * @var array List of classes that must be loaded on every page load.
 	 */
 	private static $_mustload_classes = array();
@@ -1141,6 +1146,51 @@ class WPLib {
 	}
 
 	/**
+	 * @return string[]
+	 */
+	static function module_classes() {
+
+		return self::$_module_classes;
+
+	}
+
+	/**
+	 * @param string $app_class
+	 *
+	 * @return string[]|null
+	 */
+	static function get_module_classes( $app_class ) {
+
+		$module_classes = self::module_classes();
+
+		return ! empty( $module_classes[ $app_class ] ) ? $module_classes[ $app_class ] : null;
+
+	}
+
+	/**
+	 * @param WPLib_Item_Base $item
+	 *
+	 * @return string|null
+	 */
+	static function get_module_filepath( $item ) {
+
+		$reflector = new ReflectionClass( $item );
+
+		$filepath = WPLib::maybe_make_abspath_relative( $reflector->getFileName() );
+
+		foreach( self::get_module_classes( $item->app_class() ) as $module_class => $module_filepath ) {
+
+			if ( 0 === strpos( $filepath, $module_filepath ) ) {
+
+				return $module_filepath;
+
+			}
+
+		}
+
+		return null;
+
+	}
 
 	/**
 	 * @return array|null
