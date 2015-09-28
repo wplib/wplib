@@ -1911,15 +1911,11 @@ class WPLib {
 	}
 
 	/**
-	 * @param bool|false $value
-	 *
 	 * @return bool|string
 	 */
-	static function get_short_prefix( $value = false ) {
+	static function short_prefix() {
 
-		$prefix = WPLib::get_constant( 'SHORT_PREFIX', get_called_class() );
-
-		return $value ? "{$prefix}{$value}" : $value;
+		return WPLib::get_constant( 'SHORT_PREFIX', get_called_class() );
 
 	}
 
@@ -1931,7 +1927,7 @@ class WPLib {
 	 *
 	 * @return string
 	 */
-	static function get_raw_meta_fieldname( $meta_name ) {
+	static function _get_raw_meta_fieldname( $meta_name ) {
 
 		$prefix = static::get_constant( 'SHORT_PREFIX' );
 
