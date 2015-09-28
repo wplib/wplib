@@ -119,7 +119,6 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 
 	}
 
-
 	/**
 	 * @param string $property_name
 	 *
@@ -235,6 +234,15 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 
 		}
 		return $property_class;
+
+	}
+
+	/**
+	 * @return null|string
+	 */
+	function app_class() {
+
+		return WPLib::app_class( $this );
 
 	}
 

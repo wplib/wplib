@@ -979,7 +979,6 @@ class WPLib {
 		if ( ! $class_name ) {
 
 			$class_name = get_called_class();
-
 		}
 
 		$filepath = '/' . ltrim( $filepath, '/' );
@@ -1097,6 +1096,58 @@ class WPLib {
 	}
 
 	/**
+
+	/**
+	 * @return array|null
+	 */
+	static function app_classes() {
+
+		if ( ! ( $app_classes = WPLib::cache_get( $cache_key = "app_classes" ) ) ) {
+
+			$app_classes = array_filter( self::site_classes(), function( $class_name ) {
+				return is_subclass_of( $class_name, 'WPLib_App_Base' );
+			});
+
+			WPLib::cache_set( $cache_key, $app_classes );
+
+		}
+		return $app_classes;
+
+	}
+
+	/**
+	 * Returns the one app class defined.
+	 *
+	 * @note ASSUMES naming convention where App name is a subset of name of class, i.e. 'LawPress' and 'LawPress_Person'.
+	 * @note Currently only supports one app class.
+	 *
+	 * @var string|object $class_name
+	 * @return string|null
+	 */
+	static function app_class( $class_name ) {
+
+		if ( is_object( $class_name ) ) {
+
+			$class_name = get_class( $class_name );
+
+		}
+
+		foreach( self::app_classes() as $app_class ) {
+
+			$regex = '#^'. preg_quote( $app_class ) . '_.+$#';
+
+			if ( preg_match( $regex, $class_name ) ) {
+
+				return $app_class;
+
+			}
+
+		}
+
+		return 'WPLib';
+
+	}
+
 	 * @param string $key
 	 * @param string $group
 	 *
