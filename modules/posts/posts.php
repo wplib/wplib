@@ -486,40 +486,20 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 */
 	static function get_post_type_class( $post_type ) {
 
-		$classes = self::get_post_type_classes();
+		$classes = self::post_type_classes();
 
 		return ! empty( $classes[ $post_type ] ) ? $classes[ $post_type ] : null;
 
 	}
 
 	/**
-	 * @return array
+	 * @return string[]
 	 *
 	 * @todo Enhance this to support multiple classes per post type
 	 */
-	static function get_post_type_classes() {
+	static function post_type_classes() {
 
-		if ( ! ( $post_type_classes = WPLib::cache_get( $cache_key = 'post_type_classes' ) ) ) {
-
-			WPLib::autoload_all_classes();
-
-			$post_type_classes = array();
-
-			foreach ( array_reverse( get_declared_classes() ) as $class_name ) {
-
-				if ( is_subclass_of( $class_name, 'WPLib_Post_Base' )  && $post_type = WPLib::get_constant( 'POST_TYPE', $class_name ) ) {
-
-					$post_type_classes[ $post_type ] = $class_name;
-
-				}
-
-			}
-
-			WPLib::cache_set( $cache_key, $post_type_classes );
-
-		}
-
-		return $post_type_classes;
+		return WPLib::_get_child_classes( 'post_type', 'POST_TYPE', 'WPLib_Post_Base' );
 
 	}
 

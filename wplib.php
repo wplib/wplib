@@ -1863,6 +1863,46 @@ class WPLib {
 
 	}
 
+	/**
+	 * Returns array of class names $base_class children with positive values for $base_class::$contant_name.
+	 *
+	 * @param $type
+	 * @param $constant_name
+	 * @param $base_class
+	 *
+	 * @return string[]
+	 */
+	static function _get_child_classes( $type, $constant_name, $base_class ) {
+
+		if ( ! ( $child_classes = WPLib::cache_get( $cache_key = "{$type}_classes" ) ) ) {
+
+			$child_classes = array();
+
+			foreach ( self::site_classes() as $class_name ) {
+
+				do {
+
+					if ( ! is_subclass_of( $class_name, $base_class ) ) {
+						continue;
+					}
+
+					if ( ! is_null( $constant_value = WPLib::get_constant( $constant_name, $class_name ) ) ) {
+						continue;
+					}
+
+					$child_classes[ $constant_value ] = $class_name;
+
+				} while ( false );
+
+			}
+
+			WPLib::cache_set( $cache_key, $child_classes );
+
+		}
+
+		return $child_classes;
+
+	}
 
 	/**
 	 * @param bool|false $value
