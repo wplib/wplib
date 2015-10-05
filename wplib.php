@@ -128,7 +128,7 @@ class WPLib {
 
 		if ( defined( 'WPLIB_RUNMODE' ) ) {
 
-			$runmode = WPLIB_RUNMODE;
+			$runmode = strtoupper( WPLIB_RUNMODE );
 
 			if ( is_string( $runmode ) && defined( "self::{$runmode}" ) ) {
 
@@ -141,6 +141,10 @@ class WPLib {
 				self::set_runmode( $runmode );
 
 			}
+
+		} else {
+
+			self::set_runmode( self::PRODUCTION );
 
 		}
 
@@ -783,7 +787,7 @@ class WPLib {
 	 */
 	static function is_production() {
 
-		return self::DEVELOPMENT == self::$_runmode;
+		return self::PRODUCTION == self::$_runmode;
 
 	}
 
@@ -1522,7 +1526,7 @@ class WPLib {
 		/**
 		 * Get the root directory for App defined for the item
 		 */
-		$class_name = $item->app_class();
+		$class_name = is_object( $item ) && method_exists( $item, 'app_class' ) ? $item->app_class() : get_called_class();
 
 		if ( ! method_exists( $class_name, 'root_dir' ) ) {
 

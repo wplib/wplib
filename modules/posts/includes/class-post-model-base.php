@@ -303,7 +303,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		if ( $this->has_post() ) {
 
-			$meta_name = call_user_func( array( $this->owner->app_class(), 'get_raw_meta_fieldname' ), $meta_name );
+			$meta_name = call_user_func( array( $this->owner->app_class(), '_get_raw_meta_fieldname' ), $meta_name );
 
 			$meta_value = get_post_meta( $this->_post->ID, $meta_name, true );
 
