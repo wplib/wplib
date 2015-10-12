@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.6.0
+ * Version:     0.6.2
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -1174,15 +1174,21 @@ class WPLib {
 	/**
 	 * @param WPLib_Item_Base $item
 	 *
-	 * @return string|null
+	 * @return string|bool|null
 	 */
-	static function get_module_filepath( $item ) {
+	static function get_module_filepath( $item = false ) {
+
+		if ( ! $item ) {
+			$item = get_called_class();
+		}
 
 		$reflector = new ReflectionClass( $item );
 
 		$filepath = WPLib::maybe_make_abspath_relative( $reflector->getFileName() );
 
-		foreach( self::get_module_classes( $item->app_class() ) as $module_class => $module_filepath ) {
+		$app_class = WPLib::app_class( $item );
+
+		foreach( self::get_module_classes( $app_class ) as $module_class => $module_filepath ) {
 
 			if ( 0 === strpos( $filepath, $module_filepath ) ) {
 
@@ -1233,7 +1239,7 @@ class WPLib {
 
 		foreach( self::app_classes() as $app_class ) {
 
-			$regex = '#^'. preg_quote( $app_class ) . '_.+$#';
+			$regex = '#^_?'. preg_quote( $app_class ) . '_.+$#';
 
 			if ( preg_match( $regex, $class_name ) ) {
 
@@ -1501,11 +1507,18 @@ class WPLib {
 	 *
 	 * @param string $template
 	 * @param array|string $_template_vars
-	 * @param WPLib_Item_Base|object|null $item
+	 * @param WPLib_Item_Base|object|string|null $item
+	 * @param string $class_name
 	 */
-	static function the_module_template( $template, $_template_vars = array(), $item = null ) {
+	static function the_module_template( $template, $_template_vars = array(), $item = null, $class_name = null ) {
 
-		$module_filepath = WPLib::get_module_filepath( $item );
+		if ( is_null( $class_name ) ) {
+
+			$class_name = get_called_class();
+
+		}
+
+		$module_filepath = static::get_module_filepath( $class_name );
 
 		$templates_subdir = static::templates_subdir();
 

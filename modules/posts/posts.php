@@ -365,7 +365,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 * Query the posts.  Equivalent to creating a new WP_Query which both instantiates and queries the DB.
 	 *
 	 * @param array $args
-	 * @return WP_Post[]
+	 * @return WPLib_Query
 	 *
 	 * @todo https://github.com/wplib/wplib/issues/3
 	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026403
@@ -374,9 +374,22 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		if ( $args instanceof WP_Query ) {
 
+			/**
+			 * @TODO Fix to return a WPLib_Query, not a WP_Query.
+			 */
 			$query = $args;
 
 		} else {
+
+			if ( ! isset( $args['post_type'] ) ) {
+
+				if ( $post_type = static::get_constant( 'POST_TYPE' ) ) {
+
+					$args['post_type'] = $post_type;
+
+				}
+
+			}
 
 			if ( isset( $args['post_type'] ) && WPLib_Post::POST_TYPE == $args['post_type'] ) {
 
