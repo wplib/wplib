@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.6.2
+ * Version:     0.6.3
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -1174,7 +1174,7 @@ class WPLib {
 	/**
 	 * @param WPLib_Item_Base $item
 	 *
-	 * @return string|bool|null
+	 * @return string|null
 	 */
 	static function get_module_filepath( $item = false ) {
 
@@ -1770,10 +1770,19 @@ class WPLib {
 				 */
 				$value = call_user_func_array( $callable, $args );
 
+			} else if ( is_callable( $callable = array( $model, $suffix_method ) ) && method_exists( $model, $suffix_method ) )  {
+
+				/*
+				 * Check $model to see if the $suffix_method exists.
+				 */
+				$value = call_user_func_array( $callable, $args );
+
+				$has_html_suffix = '_html' === $suffix;
+
 			} else if ( is_callable( $callable = array( $model, $method_name ) ) && method_exists( $model, $method_name ) )  {
 
 				/*
-				 * Check $model to see if the method exist.
+				 * Check $model to see if the $method_name exists.
 				 */
 				$value = call_user_func_array( $callable, $args );
 
