@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.6.3
+ * Version:     0.6.4
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -38,6 +38,7 @@
  *
  * @todo PHPDoc - https://github.com/wplib/wplib/issues/8
  * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11027141
+ *
  *
  */
 class WPLib {
@@ -354,16 +355,19 @@ class WPLib {
 		array_shift( $parts );
 		$filename = implode( '-', $parts );
 
-		$filepath = "{$dirpath}/class-{$filename}.php";
+		foreach( array( 'class', 'trait' ) as $type ) {
 
-		if ( is_file( $filepath ) ) {
+			$filepath = "{$dirpath}/{$type}-{$filename}.php";
 
-			require( $filepath );
+			if ( is_file( $filepath ) ) {
 
-			$new_files = array_flip( static::$_new_files );
-			unset( $new_files[$filepath] );
-			static::$_new_files = array_flip( $new_files );
+				require( $filepath );
 
+				$new_files = array_flip( self::$_new_files );
+				unset( $new_files[ $filepath ] );
+				self::$_new_files = array_flip( $new_files );
+
+			}
 		}
 
 	}
