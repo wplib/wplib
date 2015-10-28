@@ -123,6 +123,11 @@ class WPLib {
 	private static $_init_9_ran = false;
 
 	/**
+	 * @var array registered templates.
+	 */
+	private static $_templates = array();
+
+	/**
 	 *
 	 */
 	static function on_load() {
@@ -149,7 +154,7 @@ class WPLib {
 
 		}
 
-		spl_autoload_register( array( __CLASS__, '_autoloader' ) );
+		spl_autoload_register( array( __CLASS__, '_autoloader' ), true, true );
 
 		self::register_module( 'posts', 0 );
 		self::register_module( 'terms', 0 );
@@ -300,6 +305,7 @@ class WPLib {
 	static function initialize() {
 
 		static::_load_necessary_files();
+		static::_load_templates();
 
 	}
 
@@ -405,7 +411,9 @@ class WPLib {
 				self::$_file_loading = false;
 
 				$classes = get_declared_classes();
-				$module_classes[ end( $classes ) ] = $module_path = preg_replace( $abspath_regex, '~/$1', $filepath );
+				$module_classes[ $module_class = end( $classes ) ] = $module_path = preg_replace( $abspath_regex, '~/$1', $filepath );
+
+				call_user_func( array( $module_class, '_load_templates' ) );
 
 				/**
 				 * Find all autoloading files defined by the above module.
@@ -1965,6 +1973,63 @@ class WPLib {
 
 	}
 
+	/**
+	 * Autoload all WPLib module classes to ensure they are available for 'init' hook.
+	 *
+	 * @return array
+	 */
+	private static function _load_templates() {
+
+		if ( count( $templates = glob( static::template_dir() . '/*.php' ) ) ) {
+
+			foreach( $templates as $template ) {
+
+				static::register_template( basename( $template, '.php' ) );
+
+			}
+
+		}
+
+		return;
+
+	}
+
+	/**
+	 * Register a template
+	 *
+	 * @param string $template
+	 * @param string|bool $called_class
+	 */
+	static function register_template( $template, $called_class = false ) {
+
+		self::$_templates[ $called_class ? $called_class : get_called_class() ][ $template ] =
+			self::maybe_make_abspath_relative( static::get_template_dir( $template ) );
+
+	}
+
+	/**
+	 * Return the template filepath for the passed $template for the called class.
+	 *
+	 * @param string $template
+	 *
+	 * @return string
+	 */
+	static function get_template_dir( $template ) {
+
+		return static::template_dir() . '/' . basename( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
+
+	}
+
+	/**
+	 * Return the templates directory path for the called class.
+	 *
+	 * @return string
+	 */
+	static function template_dir() {
+
+		return static::get_root_dir( 'templates' );
+
+	}
 
 
 }
