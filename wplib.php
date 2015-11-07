@@ -357,23 +357,18 @@ class WPLib {
 
 		$dirpath = dirname( self::$_file_loading );
 
-		$parts = explode( '_', strtolower( $class_name ) );
-		array_shift( $parts );
-		$filename = implode( '-', $parts );
+		$filename = implode( '-', strtolower( $class_name ) );
 
-		foreach( array( 'class', 'trait' ) as $type ) {
+		$filepath = "{$dirpath}/{$filename}.php";
 
-			$filepath = "{$dirpath}/{$type}-{$filename}.php";
+		if ( is_file( $filepath ) ) {
 
-			if ( is_file( $filepath ) ) {
+			require( $filepath );
 
-				require( $filepath );
+			$new_files = array_flip( self::$_new_files );
+			unset( $new_files[ $filepath ] );
+			self::$_new_files = array_flip( $new_files );
 
-				$new_files = array_flip( self::$_new_files );
-				unset( $new_files[ $filepath ] );
-				self::$_new_files = array_flip( $new_files );
-
-			}
 		}
 
 	}
