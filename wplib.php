@@ -305,7 +305,7 @@ class WPLib {
 	static function initialize() {
 
 		static::_load_necessary_files();
-		static::_load_templates();
+		static::_register_templates();
 
 	}
 
@@ -413,7 +413,7 @@ class WPLib {
 				$classes = get_declared_classes();
 				$module_classes[ $module_class = end( $classes ) ] = $module_path = preg_replace( $abspath_regex, '~/$1', $filepath );
 
-				call_user_func( array( $module_class, '_load_templates' ) );
+				call_user_func( array( $module_class, '_register_templates' ) );
 
 				/**
 				 * Find all autoloading files defined by the above module.
@@ -1974,11 +1974,11 @@ class WPLib {
 	}
 
 	/**
-	 * Autoload all WPLib module classes to ensure they are available for 'init' hook.
+	 * Register all templates for WPLib, an App or a module.
 	 *
 	 * @return array
 	 */
-	private static function _load_templates() {
+	private static function _register_templates() {
 
 		if ( count( $templates = glob( static::template_dir() . '/*.php' ) ) ) {
 
@@ -1989,8 +1989,6 @@ class WPLib {
 			}
 
 		}
-
-		return;
 
 	}
 
