@@ -38,8 +38,6 @@
  *
  * @todo PHPDoc - https://github.com/wplib/wplib/issues/8
  * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11027141
- *
- *
  */
 class WPLib {
 
@@ -357,7 +355,7 @@ class WPLib {
 
 		$dirpath = dirname( self::$_file_loading );
 
-		$filename = implode( '-', strtolower( $class_name ) );
+		$filename = self::dashify( $class_name );
 
 		$filepath = "{$dirpath}/{$filename}.php";
 
@@ -2021,6 +2019,22 @@ class WPLib {
 	static function template_dir() {
 
 		return static::get_root_dir( 'templates' );
+
+	}
+
+	/**
+	 * @param string $string
+	 * @param bool|true $lowercase
+	 *
+	 * @return string
+	 */
+	static function dashify( $string, $lowercase = true ) {
+
+		$string = str_replace( array( '_', ' ' ), '-', $string );
+		if ( $lowercase ) {
+			$string = strtolower(  $string );
+		}
+		return $string;
 
 	}
 
