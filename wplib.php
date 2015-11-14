@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.6.4
+ * Version:     0.6.5
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -93,6 +93,11 @@ class WPLib {
 	private static $_autoload_files = array();
 
 	/**
+	 * @var array Files for Parent Classes that are autoloaded during cache generation
+	 */
+	private static $_autoloaded_parents = array();
+
+	/**
 	 * @var bool Get's set if doing XMLRPC.
 	 */
 	private static $_doing_xmlrpc = false;
@@ -103,9 +108,9 @@ class WPLib {
 	private static $_file_loading = false;
 
 	/**
-	 * @var array Files to autoload in the find_autoload files.
+	 * @var array Files that have been loaded so they won't be reloaded.
 	 */
-	private static $_new_files;
+	private static $_loaded_include_files = array();
 
 	/**
 	 * @var int
@@ -243,12 +248,17 @@ class WPLib {
 
 		if ( isset( self::$_autoload_files[ $class_name ] ) ) {
 
-			require_once( self::$_autoload_files[ $class_name ] );
+			require_once( $filepath = self::$_autoload_files[ $class_name ] );
 
-			/**
+			/*
 			 * Don't need it anymore since we loaded it.
 			 */
-			unset( static::$_autoload_files[ $class_name ] );
+			unset( self::$_autoload_files[ $class_name ] );
+
+			/*
+			 * But we do need to make sure we don't load again.
+			 */
+			self::$_loaded_include_files[ $filepath ] = $class_name;
 
 		}
 
@@ -328,7 +338,6 @@ class WPLib {
 
 		spl_autoload_register( $autoloader = array( __CLASS__, '_find_files_autoloader' ), true, true );
 
-
 		/**
 		 * Find all autoloading files from components that have been loaded by (1) plugins or (2) the theme.
 		 */
@@ -369,9 +378,20 @@ class WPLib {
 
 				require( $filepath );
 
-				$new_files = array_flip( self::$_new_files );
-				unset( $new_files[ $filepath ] );
-				self::$_new_files = array_flip( $new_files );
+				/*
+				 * Capture the file and class loaded so that
+				 * we don't tryto load the file again.
+				 */
+				self::$_loaded_include_files[ $filepath ] = $class_name;
+
+				/*
+				 * Capture the class so that we don't try to autoload
+				 * class that has already been autoloaded because of
+				 * being a parent class.  This is needed to add to the
+				 * cache because they won't get autoloaded when the cache
+				 * is set.
+				 */
+				self::$_autoloaded_parents[ $class_name ] = $filepath;
 
 			}
 		}
@@ -396,6 +416,13 @@ class WPLib {
 		foreach ( self::$_modules as $priority ) {
 
 			foreach ( $priority as $filepath ) {
+
+				if ( isset( self::$_loaded_include_files[ $filepath ] ) ) {
+				 	/*
+				 	 * Already loaded
+				 	 */
+				 	 continue;
+				}
 
 				if ( WPLib::is_development() && ! is_file( $filepath ) ) {
 
@@ -490,12 +517,14 @@ class WPLib {
 
 			$class_key = WPLib::is_production() ? md5( $class_key ) : $class_key;
 
-			if ( ! ( self::$_new_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" ) ) ) {
+			$autoload_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" );
 
-				$autoload_files = array();
+			if ( ! $autoload_files || 0 === count( $autoload_files ) ) {
+
+				self::$_autoloaded_parents = $autoload_files = array();
 
 				/**
-				 * These were the files that were manually added
+				 * These were the files that were previously added
 				 */
 				$added_files = array_values( self::$_autoload_files );
 
@@ -516,49 +545,63 @@ class WPLib {
 					}
 
 					/**
-					 * Find out what classes are currently defined.
-					 */
-					$declared_classes = get_declared_classes();
-
-					/**
-					 * Diff the manually added files with the new ones scanned to get new files.
-					 */
-					self::$_new_files = array_diff( $found_files, $added_files );
-
-					/**
 					 * Load all the scanned files from the /include/ directory
 					 */
-					do {
-						self::$_file_loading = array_shift( self::$_new_files );
+					foreach( $found_files as $filepath ) {
+
+						if ( isset( self::$_loaded_include_files[ $filepath ] ) ) {
+							/**
+							 * If the class was already loaded by an autoloader
+							 */
+							continue;
+
+						}
+
+						if ( static::is_development() ) {
+							/*
+							 * We assume there is only one class per class file
+							 * so make sure we have only one.
+							 */
+							self::_ensure_only_one_class( $filepath );
+
+						}
+						/*
+						 * Keep track so that in case the file fails to load
+						 * we can display an error telling what file borked
+						 * in the self::_shutdown() hook.
+						 */
+						self::$_file_loading = $filepath;
+
 						require( self::$_file_loading );
+
 						self::$_file_loading = false;
 
-					} while ( count( self::$_new_files ) );
-
-					/**
-					 * Find the newly declared classes by comparing what was declared before with what is declared now.
-					 */
-					$loaded_classes = array_diff( get_declared_classes(), $declared_classes );
-
-					if ( count( $loaded_classes ) > count( $found_files ) ) {
-
-						$message = __( 'More than one class defined in \'/includes/\' directory of %s.', 'wplib' );
-						static::trigger_error( sprintf( $message, $class_name ) );
-
-					} else if ( count( $loaded_classes ) < count( $found_files ) ) {
-
-						$message = __( 'Files with no classes defined in \'/includes/\' directory of %s.', 'wplib' );
-						static::trigger_error( sprintf( $message, $class_name ) );
-
-					} else {
-
 						/**
-						 * Add them in for autoloading.
-						 * $loaded_classes should be in the same order as $found_files.
+						 * Get the class that was last defined.
 						 */
-						$autoload_files += array_combine( $loaded_classes, $found_files );
+						$declared_classes = get_declared_classes();
+						$autoload_files[ $class_name = end( $declared_classes ) ] = $filepath;
+
+						/*
+						 * Capture in self::$loaded_files so we can avoid loading parent classes twice.
+						 * Parents that have not been loaded will be loaded via an autoloader.
+						 */
+						self::$_loaded_include_files[ $filepath ] = $class_name;
+
 
 					}
+
+				}
+
+				if ( count( self::$_autoloaded_parents ) ) {
+
+					/**
+					 * Add in files for parent classes that were autoloaded.
+					 * If we don't do this then the cache would not have the
+					 * parent classes and the child class declarations when
+					 * they are needed would fail.
+					 */
+					$autoload_files += self::$_autoloaded_parents;
 
 				}
 
@@ -569,7 +612,7 @@ class WPLib {
 
 			}
 
-			if ( isset( $autoload_files ) ) {
+			if ( is_array( $autoload_files ) && count( $autoload_files ) ) {
 
 				/**
 				 * Set the mustload classes based on on_load() ordered by parent/child classes.
@@ -579,7 +622,7 @@ class WPLib {
 				/**
 				 * Add these new files to the list of files to autoload at the default priority.
 				 */
-				self::$_autoload_files = array_merge( self::$_autoload_files, $autoload_files );
+				self::$_autoload_files += $autoload_files;
 
 			}
 
@@ -610,7 +653,6 @@ class WPLib {
 		}
 
 	}
-
 
 	/**
 	 *
@@ -666,12 +708,16 @@ class WPLib {
 	 */
 	private static function _load_mustload_classes( $mustload_classes ) {
 
-		foreach( $mustload_classes as $mustload_class ) {
+		if ( is_array( $mustload_classes ) ) {
 
-			/**
-			 * This will autoload the class file if it does not already exist.
-			 */
-			class_exists( $mustload_class );
+			foreach ( $mustload_classes as $mustload_class ) {
+
+				/**
+				 * This will autoload the class file if it does not already exist.
+				 */
+				class_exists( $mustload_class );
+
+			}
 
 		}
 
@@ -686,9 +732,9 @@ class WPLib {
 	 */
 	private static function _ordered_mustload_classes() {
 
-		if ( ! static::cache_get( $cache_key = "mustload_classes" ) ) {
+		if ( ! ( $mustload_classes = static::cache_get( $cache_key = "mustload_classes" ) ) ) {
 
-			$mustload_classes = array();
+			array();
 
 			do {
 				reset( self::$_mustload_classes );
@@ -904,6 +950,8 @@ class WPLib {
 			 */
 			$container = new stdClass();
 		}
+
+		$found = false;
 
 		/*
 		 * Check to see if the helper callable for this class and method is cached.
@@ -2029,6 +2077,49 @@ class WPLib {
 
 	}
 
+	/**
+	 * @return bool
+	 */
+	static function is_wp_debug() {
+
+		return defined( 'WP_DEBUG' ) && WP_DEBUG;
+
+	}
+
+	/**
+	 * Scans the source file to ensure that only one PHP class is declared per file.
+	 *
+	 * This is important because we assume only one class for the autoloader.
+	 *
+	 * @note For use only during development
+	 *
+	 * @param $filename
+	 */
+	static function _ensure_only_one_class( $filename ) {
+
+		if ( WPLib::is_wp_debug() ) {
+
+			preg_match_all(
+					'#\n\s*(abstract|final)?\s*class\s*(\w+)#i',
+					file_get_contents( $filename ),
+					$matches,
+					PREG_PATTERN_ORDER
+			);
+
+			if ( 1 < count( $matches[2] ) ) {
+
+				$message = __( 'Include files in WPLib Modules can can only contain one PHP class, %d found in %s: ' );
+
+				static::trigger_error( sprintf(
+						$message,
+						count( $matches[2] ),
+						$class_name,
+						implode( ', ', $matches[2] )
+				) );
+
+			}
+		}
+	}
 
 }
 WPLib::on_load();
