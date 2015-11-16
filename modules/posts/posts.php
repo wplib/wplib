@@ -540,37 +540,5 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 	}
 
-//	/**
-//	 * @param $thing
-//	 *
-//	 * @return array
-//	 */
-//	static function get_post_and_item( $thing ) {
-//
-//		if ( ! $thing ) {
-//
-//			$thing = WPLib::theme()->post();
-//
-//		}
-//
-//		if ( is_a( $thing, 'WP_Post' ) ) {
-//
-//			$item = WPLib::make_new_item( $post = $thing );
-//
-//		} else {
-//
-//			$item = $thing;
-//
-//			if ( $thing instanceof WPLib_Post_Base ) {
-//
-//				$post = $thing->post();
-//
-//			}
-//		}
-//
-//		return array( $post, $item );
-//
-//	}
-
 }
 WPLib_Posts::on_load();
