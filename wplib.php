@@ -1706,6 +1706,51 @@ class WPLib {
 	}
 
 	/**
+	 * Register all templates for WPLib, an App or a module.
+	 *
+	 * @return array
+	 */
+	private static function _register_templates() {
+
+		if ( count( $templates = glob( static::template_dir() . '/*.php' ) ) ) {
+
+			foreach( $templates as $template ) {
+
+				static::register_template( basename( $template, '.php' ) );
+
+			}
+
+		}
+
+	}
+
+	/**
+	 * Register a template
+	 *
+	 * @param string $template
+	 * @param string|bool $called_class
+	 */
+	static function register_template( $template, $called_class = false ) {
+
+		self::$_templates[ $called_class ? $called_class : get_called_class() ][ $template ] =
+			self::maybe_make_abspath_relative( static::get_template_dir( $template ) );
+
+	}
+
+	/**
+	 * Return the template filepath for the passed $template for the called class.
+	 *
+	 * @param string $template
+	 *
+	 * @return string
+	 */
+	static function get_template_dir( $template ) {
+
+		return static::template_dir() . '/' . basename( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
+
+	}
+
+	/**
 	 * @param string $template
 	 * @param array|string $_template_vars
 	 * @param WPLib_Item_Base|object $item
@@ -2033,6 +2078,7 @@ class WPLib {
 		return self::$_theme;
 
 	}
+
 	/**
 	 * @param WPLib_Theme_Base $theme
 	 */
@@ -2162,13 +2208,10 @@ class WPLib {
 	 * @param string $method_name
 	 * @param int $stability
 	 */
-	static function get_template_dir( $template ) {
 	static function check_method_stability( $method_name, $stability ) {
 
-		return static::template_dir() . '/' . basename( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
 		if ( WPLIB_STABILITY > $stability ) {
 
-	}
 			$err_msg = __(
 				'The %s method has been marked with a stability of %d ' .
 			        'but the current WPLIB_STABILITY requirement is set to %d. ' .
@@ -2176,12 +2219,6 @@ class WPLib {
 				'wplib'
 			);
 
-	/**
-	 * Return the templates directory path for the called class.
-	 *
-	 * @return string
-	 */
-	static function template_dir() {
 			switch ( $stability ) {
 				case self::DEPRECATED:
 					$err_msg .= __(
@@ -2190,7 +2227,6 @@ class WPLib {
 					);
 					break;
 
-		return static::get_root_dir( 'templates' );
 				case self::EXPERIMENTAL:
 					$err_msg .= __(
 						'the method is EXPERIMENTAL so it is likely to ' .
@@ -2200,7 +2236,6 @@ class WPLib {
 					);
 					break;
 
-	}
 				case self::STABLE:
 					$err_msg .= __(
 						'the method is STABLE so it is unlikely to change ' .
@@ -2211,15 +2246,10 @@ class WPLib {
 					);
 					break;
 
-	/**
-	 * @return bool
-	 */
-	static function is_wp_debug() {
 				default:
 					$err_msg = false;
 					break;
 
-		return defined( 'WP_DEBUG' ) && WP_DEBUG;
 			}
 
 			if ( $err_msg ) {
