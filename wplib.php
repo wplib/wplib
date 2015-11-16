@@ -47,6 +47,14 @@ class WPLib {
 	const SHORT_PREFIX = 'wplib_';
 
 	/**
+	 * Stability
+	 */
+	const DEPRECATED = 0;
+	const EXPERIMENTAL = 1;
+	const STABLE = 2;
+	const LOCKED = 3;
+
+	/**
 	 * Runmodes
 	 */
 	const DEVELOPMENT = 0;
@@ -138,6 +146,40 @@ class WPLib {
 	static function on_load() {
 
 		if ( defined( 'WPLIB_RUNMODE' ) ) {
+		if ( ! defined( 'WPLIB_STABILITY' ) ) {
+
+			/* @note THIS IS NOT WIDELY IMPLEMENTED YET.
+			 *
+			 * WPLib follows the convention of Node.js in having a Stability Index.
+			 * Every class, property, method, constant, etc. will have a Stability value,
+			 * except for those that do not (yet.)
+			 *
+			 * The stability will be specified by an @stability PHPDoc comment with one
+			 * of the following values:
+			 *
+			 *    Stability:  0 - Deprecated
+			 *    Stability:  1 - Experimental
+			 *    Stability:  2 - Stable
+			 *    Stability:  3 - Locked
+			 *
+			 * The default stability is 2 - Stable. However you can set the stability
+			 * you want in your wp-local-config.php file using the WPLIB_STABILITY constant.
+			 *
+			 * You can check (for example) for EXPERIMENTAL stability in a method using:
+			 *
+			 *      self::check_method_stability( __METHOD__, WPLib::EXPERIMENTAL );
+			 *
+			 * Internal methods -- ones with a leading underscore -- will not be marked with
+			 * a stability level.
+			 *
+			 * To read more about the concept of stability:
+			 *
+			 * @see https://nodejs.org/api/documentation.html#documentation_stability_index
+			 */
+			define( 'WPLIB_STABILITY', 2 );
+
+		}
+
 
 			$runmode = strtoupper( WPLIB_RUNMODE );
 
@@ -276,6 +318,8 @@ class WPLib {
 	 * @return string
 	 */
 	static function maybe_make_absolute_path( $filepath, $dir = false ) {
+
+		self::check_method_stability( __METHOD__, WPLib::EXPERIMENTAL );
 
 		$directory_separator = DIRECTORY_SEPARATOR;
 
@@ -2022,51 +2066,6 @@ class WPLib {
 	}
 
 	/**
-	 * Register all templates for WPLib, an App or a module.
-	 *
-	 * @return array
-	 */
-	private static function _register_templates() {
-
-		if ( count( $templates = glob( static::template_dir() . '/*.php' ) ) ) {
-
-			foreach( $templates as $template ) {
-
-				static::register_template( basename( $template, '.php' ) );
-
-			}
-
-		}
-
-	}
-
-	/**
-	 * Register a template
-	 *
-	 * @param string $template
-	 * @param string|bool $called_class
-	 */
-	static function register_template( $template, $called_class = false ) {
-
-		self::$_templates[ $called_class ? $called_class : get_called_class() ][ $template ] =
-			self::maybe_make_abspath_relative( static::get_template_dir( $template ) );
-
-	}
-
-	/**
-	 * Return the template filepath for the passed $template for the called class.
-	 *
-	 * @param string $template
-	 *
-	 * @return string
-	 */
-	static function get_template_dir( $template ) {
-
-		return static::template_dir() . '/' . basename( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
-
-	}
-
-	/**
 	 * Return the templates directory path for the called class.
 	 *
 	 * @return string
@@ -2083,6 +2082,117 @@ class WPLib {
 	static function is_wp_debug() {
 
 		return defined( 'WP_DEBUG' ) && WP_DEBUG;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	static function stability() {
+
+		return intval( WPLIB_STABILITY );
+
+	}
+
+	/**
+	 * Call at the start of a method to check stability level.
+	 *
+	 * Stability levels can be one of:
+	 *
+	 *      WPLib::DEPRECATED (0)
+	 *      WPLib::EXPERIMENTAL (1)
+	 *      WPLib::STABLE (2)
+	 *      WPLib::LOCKED (3)
+	 *
+	 * @example The follow illustrates how to check that the stability
+	 *          level is low enough to support EXPERIMENTAL methods.
+	 *
+	 *      /**
+	 *       * @stablity 1 - Experimental
+	 *       * /
+	 *      function foo() {
+	 *          self::check_method_stability( __METHOD__, WPLib::EXPERIMENTAL );
+	 *          // Do the work of foo()
+	 *          return;
+	 *      }
+	 *
+	 * @param string $method_name
+	 * @param int $stability
+	 */
+	static function get_template_dir( $template ) {
+	static function check_method_stability( $method_name, $stability ) {
+
+		return static::template_dir() . '/' . basename( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
+		if ( WPLIB_STABILITY > $stability ) {
+
+	}
+			$err_msg = __(
+				'The %s method has been marked with a stability of %d ' .
+			        'but the current WPLIB_STABILITY requirement is set to %d. ' .
+					'You can enable this in wp-config-local.php but BE AWARE that ',
+				'wplib'
+			);
+
+	/**
+	 * Return the templates directory path for the called class.
+	 *
+	 * @return string
+	 */
+	static function template_dir() {
+			switch ( $stability ) {
+				case self::DEPRECATED:
+					$err_msg .= __(
+						'the method has been DEPRECATED and you ' .
+						'should really revise your code.', 'wplib'
+					);
+					break;
+
+		return static::get_root_dir( 'templates' );
+				case self::EXPERIMENTAL:
+					$err_msg .= __(
+						'the method is EXPERIMENTAL so it is likely to ' .
+						'change thus forcing you to modify your own code ' .
+						'when it changes when you plan to upgrade to a ' .
+						'newer version of WPLib.', 'wplib'
+					);
+					break;
+
+	}
+				case self::STABLE:
+					$err_msg .= __(
+						'the method is STABLE so it is unlikely to change ' .
+						'but it has not yet been locked to it is possible ' .
+						'this it could change. If so you will need to modify ' .
+						'your own code when you plan to upgrade to a newer ' .
+						'version of WPLib.', 'wplib'
+					);
+					break;
+
+	/**
+	 * @return bool
+	 */
+	static function is_wp_debug() {
+				default:
+					$err_msg = false;
+					break;
+
+		return defined( 'WP_DEBUG' ) && WP_DEBUG;
+			}
+
+			if ( $err_msg ) {
+
+				$err_msg .= __(' To enable add "define( \'WPLIB_STABILITY\', %d );" to your config file.', 'wplib' );
+
+				WPLib::trigger_error( sprintf(
+					$err_msg,
+					$method_name,
+					$stability,
+					WPLIB_STABILITY,
+					$stability
+				));
+
+			}
+		}
 
 	}
 
