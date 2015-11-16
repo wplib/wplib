@@ -1347,25 +1347,38 @@ class WPLib {
 	 */
 	static function app_class( $class_name ) {
 
-		if ( is_object( $class_name ) ) {
+		if ( ! ( $app_class = WPLib::cache_get( $cache_key = "app_class" ) ) ) {
 
-			$class_name = get_class( $class_name );
+			if ( is_object( $class_name ) ) {
 
-		}
-
-		foreach( self::app_classes() as $app_class ) {
-
-			$regex = '#^_?'. preg_quote( $app_class ) . '_.+$#';
-
-			if ( preg_match( $regex, $class_name ) ) {
-
-				return $app_class;
+				$class_name = get_class( $class_name );
 
 			}
 
+			$found = false;
+			foreach ( self::app_classes() as $app_class ) {
+
+				$regex = '#^_?' . preg_quote( $app_class ) . '_.+$#';
+
+				if ( preg_match( $regex, $class_name ) ) {
+
+					$found = true;
+					break;
+
+				}
+
+			}
+
+			if ( ! $found ) {
+				$app_class = 'WPLib';
+			}
+
+
+			WPLib::cache_set( $cache_key, $app_class );
+
 		}
 
-		return 'WPLib';
+		return $app_class;
 
 	}
 
