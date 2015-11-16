@@ -80,6 +80,16 @@ class WPLib_Terms extends WPLib_Module_Base {
 
 			$object_types = ! empty( self::$_object_types[ $taxonomy ] ) ? self::$_object_types[ $taxonomy ] : array();
 
+			/**
+			 * This filter hook is fired once per taxonomy and just
+			 * before WordPress' register_taxonomy() is called.
+			 *
+			 * @since 0.6.6
+			 *
+			 * @stability 1 - Experimental
+			 */
+			$taxonomy_args = apply_filters( 'wplib_taxonomy_args', $taxonomy_args, $taxonomy );
+
 			/*
 			 * For each of the term types that have been previously
 			 * initialized, register them for WordPress.
@@ -87,6 +97,24 @@ class WPLib_Terms extends WPLib_Module_Base {
 			register_taxonomy( $taxonomy, $object_types, $taxonomy_args );
 
 		}
+
+		/**
+		 * This action hook fires AFTER WPLib calls register_taxonomy()
+		 * (hence 'post' vs. 'pre') for all the taxonomies registered in
+		 * the on_load() for a subclass of WPLib_Term_Module_Base.
+		 *
+		 * This hook allows the calling self::attach_taxonomy() for a
+		 * subclass of WPLib_Post_Module_Base.
+		 *
+		 * @note The first 'post' in the hook name means "after"
+		 *       vs. 'pre' which would mean "before"
+		 *       (i.e. WordPress' 'pre_get_posts' hook.)
+		 *
+		 * @since 0.6.6
+		 *
+		 * @stability 1 - Experimental
+		 */
+		do_action( 'wplib_post_register_taxonomies' );
 
 	}
 

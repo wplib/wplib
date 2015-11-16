@@ -67,6 +67,17 @@ class WPLib_Posts extends WPLib_Module_Base {
 	static function _init() {
 
 		foreach( self::$_post_type_args as $post_type => $post_type_args ) {
+
+			/**
+			 * This filter hook is fired once per post type and called
+			 * just before WordPress' register_post_type() is called.
+			 *
+			 * @since 0.6.6
+			 *
+			 * @stability 1 - Experimental
+			 */
+			$post_type_args = apply_filters( 'wplib_post_type_args', $post_type_args, $post_type );
+
 			/*
 			 * For each of the post types that have been previously
 			 * initialized, register them for WordPress.
@@ -74,6 +85,19 @@ class WPLib_Posts extends WPLib_Module_Base {
 			register_post_type( $post_type, $post_type_args );
 		}
 
+		/**
+		 * This action hook fires AFTER WPLib calls register_post_type()
+		 * for all the post types registered in the on_load() for a
+		 * subclass of WPLib_Post_Module_Base.
+		 *
+		 * @note The first 'post' in the hook name means "after", vs.
+		 *       "pre" which means before.
+		 *
+		 * @since 0.6.6
+		 *
+		 * @stability 1 - Experimental
+		 */
+		do_action( 'wplib_post_register_post_types' );
 	}
 
 	/**
