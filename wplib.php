@@ -145,6 +145,19 @@ class WPLib {
 	 */
 	static function on_load() {
 
+		/**
+		 * @var bool Flag to ensure this method is only ever called once.
+		 */
+		static $done = false;
+
+		if ( $done ) {
+
+			$err_msg = __( 'The %s::on_load() method should not call its parent class, e.g. remove parent::on_load().', 'wplib' );
+
+			WPLib::trigger_error( sprintf( $err_msg, get_called_class() ) );
+
+		}
+
 		if ( ! defined( 'WPLIB_STABILITY' ) ) {
 
 			/* @note THIS IS NOT WIDELY IMPLEMENTED YET.
