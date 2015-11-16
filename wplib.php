@@ -145,7 +145,6 @@ class WPLib {
 	 */
 	static function on_load() {
 
-		if ( defined( 'WPLIB_RUNMODE' ) ) {
 		if ( ! defined( 'WPLIB_STABILITY' ) ) {
 
 			/* @note THIS IS NOT WIDELY IMPLEMENTED YET.
@@ -180,6 +179,11 @@ class WPLib {
 
 		}
 
+		if ( ! defined( 'WPLIB_RUNMODE' ) ) {
+
+			self::set_runmode( self::PRODUCTION );
+
+		} else {
 
 			$runmode = strtoupper( WPLIB_RUNMODE );
 
@@ -189,15 +193,23 @@ class WPLib {
 
 			}
 
-			if ( is_int( $runmode ) && self::DEVELOPMENT <= $runmode && self::PRODUCTION >= $runmode ) {
+			if ( ! is_numeric( $runmode ) ) {
 
-				self::set_runmode( $runmode );
+				$runmode = self::PRODUCTION;
+
+			} else {
+
+				$runmode = intval( $runmode );
+
+				if ( $runmode < self::DEVELOPMENT || self::PRODUCTION < $runmode ) {
+
+					$runmode = self::PRODUCTION;
+
+				}
 
 			}
 
-		} else {
-
-			self::set_runmode( self::PRODUCTION );
+			self::set_runmode( $runmode );
 
 		}
 
