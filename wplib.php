@@ -1829,6 +1829,11 @@ class WPLib {
 	}
 
 	/**
+	 * Do "the_" Methods - Allow classes to delegate the "the_" logic processing here.
+	 *
+	 * The "the_" method can call virtual methods and/or delegate to a view or a model.
+	 * The view and model can both be the same object if needed.
+	 *
 	 * @param string|object $view
 	 * @param string|object $model
 	 * @param string $method_name
