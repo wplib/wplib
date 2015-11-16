@@ -260,4 +260,29 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 		return $wp_the_query->is_singular( static::POST_TYPE );
 	}
 
+	/**
+	 * Allows a post type to attach a taxonomy that is registered by someone else's code.
+	 *
+	 * @param string $taxonomy
+	 *
+	 * @stability 1 - Experimental
+	 */
+	static function attach_taxonomy( $taxonomy ) {
+
+		$VALID_HOOK = 'wplib_post_register_taxonomies';
+
+		if ( current_action() !== $VALID_HOOK ) {
+
+			$class_name = get_called_class();
+
+		    $err_msg = __( '%s::%s() will only work correctly if called within the action hook %s.', 'wplib' );
+
+			WPLib::trigger_error( sprintf( $err_msg, $class_name, __FUNCTION__, $VALID_HOOK ) );
+
+		}
+
+		register_taxonomy_for_object_type( $taxonomy, static::POST_TYPE );
+
+	}
+
 }
