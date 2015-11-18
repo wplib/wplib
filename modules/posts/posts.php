@@ -294,95 +294,22 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		$args = wp_parse_args( $args, array(
 
-			'list_owner'    => get_called_class(),
-
-		));
-
-		$try_class = $args[ 'list_owner' ];
-
-
-		$args = wp_parse_args( $args, array(
-
-			'list_class'    => "{$try_class}_List",
-
 			'default_list'  => 'WPLib_Post_List_Default',
+			'items'         =>
+				function( $query ) {
+
+					$posts = $query instanceof WP_Query
+						? $query->posts
+						: WPLib_Posts::get_posts( $query );
+
+					return $posts;
+
+				},
 
 		));
 
-		if ( ! class_exists( $args['list_class'] ) ) {
+		return parent::get_list( $query, $args );
 
-			do {
-				/*
-				 * Check first to see if it already exists. Maybe it was passed in and thus does?
-				 */
-				if ( class_exists( $args['list_class'] ) ) {
-					break;
-				}
-
-				/*
-				 * Add '_Default' to last list class checked, i.e. WPLib_Posts_List_Default for WPLib_Posts::get_list()
-				 */
-				$args['list_class'] = "{$args[ 'list_class' ]}_Default";
-				if ( class_exists( $args['list_class'] ) ) {
-					break;
-				}
-
-				$args['list_class'] = false;
-
-				$try_class = preg_replace( '#^(.+)_Base$#', '$1', get_parent_class( $try_class ) );
-
-				if ( ! $try_class ) {
-					break;
-				}
-
-				/*
-				 * Add '_List' to element class, i.e. WPLib_Posts_List for WPLib_Posts::get_list()
-				 */
-				$args['list_class'] = "{$try_class}_List";
-				if ( class_exists( $args['list_class'] ) ) {
-					break;
-				}
-
-			} while ( $try_class );
-
-		}
-
-		if ( ! $args[ 'list_class' ] ) {
-			/*
-			 * Give up and use default, i.e. WPLib_List_Default
-			 */
-			$args['list_class'] = $args[ 'default_list' ];
-
-		}
-
-		$list_class = $args[ 'list_class' ];
-
-		unset( $args[ 'list_class' ], $args[ 'list_default' ] );
-
-
-		$args[ 'instance_class' ] = WPLib::get_constant( 'INSTANCE_CLASS', $args[ 'list_owner' ] );
-
-		if ( ! ( $post_type = WPLib::get_constant( 'POST_TYPE', $args[ 'instance_class' ] ) ) ) {
-
-			$post_type = 'post';
-
-		}
-
-		if ( ! is_array( $query ) ) {
-
-			$query = wp_parse_args( $query );
-
-		}
-
-		$query = WPLib_Posts::get_query( wp_parse_args( $query, array(
-
-			'post_type' => $post_type,
-
-		)));
-
-		$list = isset( $query->posts ) ? new $list_class( $query->posts, $args ) : null;
-
-		return $list;
 	}
 
 	/**
@@ -540,5 +467,17 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 	}
 
+	/**
+	 * Query the posts, return a post list.
+	 *
+	 * @param array $args
+	 * @return WPLib_Post_Base[]
+	 */
+	static function get_posts( $args = array() ) {
+
+		$query = WPLib_Posts::get_query( $args );
+		return $query->posts;
+
+	}
 }
 WPLib_Posts::on_load();

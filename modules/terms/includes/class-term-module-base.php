@@ -142,4 +142,23 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 
 	}
 
+
+	/**
+	 * @param array|string|WPLib_Query $query
+	 * @param array $args
+	 * @return WPLib_Term_List_Default[]
+	 */
+	static function get_list( $query = array(), $args = array() ) {
+
+		$query['taxonomy'] = static::TAXONOMY;
+
+		$args = wp_parse_args( $args, array(
+
+			'list_owner' => get_called_class(),
+
+		));
+
+		return WPLib_Terms::get_list( $query, $args );
+
+	}
 }

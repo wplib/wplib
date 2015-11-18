@@ -26,7 +26,7 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	 */
 	function __construct( $term, $args = array() ) {
 
-		$this->_term = WPLib::get_term( $term, static::item_taxonomy() );
+		$this->_term = WPLib::get_term( $term, $args );
 
 		parent::__construct( $args );
 
