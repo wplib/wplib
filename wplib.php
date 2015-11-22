@@ -2305,6 +2305,42 @@ class WPLib {
 	}
 
 	/**
+	 * @param string $module_name
+	 * @param string|bool $app_class
+	 *
+	 * @return string
+	 */
+	static function get_module_class( $module_name, $app_class = false ) {
+
+		if ( ! $app_class ) {
+
+			$app_class = get_called_class();
+
+		}
+
+		do {
+
+			$module_class = null;
+
+			if ( empty( self::$_module_names[ $app_class ] ) ) {
+				break;
+			}
+
+			$app_modules = self::$_module_names[ $app_class ];
+
+			if ( empty( $app_modules[ $module_name ] ) ) {
+				break;
+			}
+
+			$module_class = $app_modules[ $module_name ];
+
+		} while ( false );
+
+		return $module_class;
+
+	}
+
+	/**
 	 * @param string $class_name
 	 *
 	 * @return mixed|null
