@@ -365,7 +365,7 @@ class WPLib {
 
 			}
 
-			$filepath = $dir ? "{dir}{$path}" : static::get_root_dir( $path );
+			$filepath = $dir ? "{$dir}{$path}" : static::get_root_dir( $path );
 
 		}
 
