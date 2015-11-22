@@ -242,7 +242,7 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 	 */
 	function app_class() {
 
-		return WPLib::app_class( $this );
+		return WPLib::app_class();
 
 	}
 

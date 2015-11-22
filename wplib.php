@@ -1352,46 +1352,15 @@ class WPLib {
 	/**
 	 * Returns the one app class defined.
 	 *
-	 * @note ASSUMES naming convention where App name is a subset of name of class, i.e. 'LawPress' and 'LawPress_Person'.
 	 * @note Currently only supports one app class.
 	 *
-	 * @var string|object $class_name
 	 * @return string|null
 	 */
-	static function app_class( $class_name ) {
+	static function app_class() {
 
-		if ( ! ( $app_class = WPLib::cache_get( $cache_key = "app_class" ) ) ) {
+		$app_classes = self::app_classes();
 
-			if ( is_object( $class_name ) ) {
-
-				$class_name = get_class( $class_name );
-
-			}
-
-			$found = false;
-			foreach ( self::app_classes() as $app_class ) {
-
-				$regex = '#^_?' . preg_quote( $app_class ) . '_.+$#';
-
-				if ( preg_match( $regex, $class_name ) ) {
-
-					$found = true;
-					break;
-
-				}
-
-			}
-
-			if ( ! $found ) {
-				$app_class = 'WPLib';
-			}
-
-
-			WPLib::cache_set( $cache_key, $app_class );
-
-		}
-
-		return $app_class;
+		return count( $app_classes ) ? $app_classes[0] : 'WPLib';
 
 	}
 
