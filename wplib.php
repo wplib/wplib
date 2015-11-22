@@ -1656,7 +1656,13 @@ class WPLib {
 	 */
 	static function register_template( $template, $called_class = false ) {
 
-		self::$_templates[ $called_class ? $called_class : get_called_class() ][ $template ] =
+		if ( ! $called_class ) {
+			$called_class = get_called_class();
+		}
+
+		$module_name = self::get_module_name( $called_class );
+
+		self::$_templates[ $module_name ][ $template ] =
 			self::maybe_make_abspath_relative( static::get_template_dir( $template ) );
 
 	}
