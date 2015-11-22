@@ -1644,66 +1644,6 @@ class WPLib {
 
 	}
 
-	/**
-	 * Generates output for templates that are shared by modules inside of a WPLib App.
-	 *
-	 * @param string $template
-	 * @param array|string $_template_vars
-	 * @param WPLib_Item_Base|object|string|null $item
-	 * @param string $class_name
-	 */
-	static function the_module_template( $template, $_template_vars = array(), $item = null, $class_name = null ) {
-
-		if ( is_null( $class_name ) ) {
-
-			$class_name = get_called_class();
-
-		}
-
-		$module_filepath = static::get_module_filepath( $class_name );
-
-		$templates_subdir = static::templates_subdir();
-
-		$template = "{$module_filepath}/{$templates_subdir}/{$template}";
-
-		static::the_template( $template, $_template_vars, $item );
-	}
-
-	/**
-	 * Generates output for templates that are shared by a WPLib App.
-	 *
-	 * @param string $template
-	 * @param array|string $_template_vars
-	 * @param WPLib_Item_Base|object|null $item
-	 */
-	static function the_app_template( $template, $_template_vars = array(), $item = null ) {
-
-		/**
-		 * Get the root directory for App defined for the item
-		 */
-		$class_name = is_object( $item ) && method_exists( $item, 'app_class' ) ? $item->app_class() : get_called_class();
-
-		if ( ! method_exists( $class_name, 'root_dir' ) ) {
-
-			$err_msg = __( "Class %s does not have method root_dir(), called from: %s::%s()", 'wplib' );
-
-			WPLib::trigger_error( sprintf( $err_msg, $class_name, __CLASS__, __METHOD__ ) );
-
-		} else {
-
-			$root_dir = call_user_func( array( $class_name, 'root_dir' ) );
-
-			$templates_subdir = static::templates_subdir();
-
-			$root_dir = WPLib::maybe_make_abspath_relative( $root_dir );
-
-			$template = "{$root_dir}/{$templates_subdir}/{$template}";
-
-			static::the_template( $template, $_template_vars, $item );
-
-		}
-
-	}
 
 	/**
 	 * Register all templates for WPLib, an App or a module.
