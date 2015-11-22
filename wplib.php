@@ -154,7 +154,7 @@ class WPLib {
 
 			$err_msg = __( 'The %s::on_load() method should not call its parent class, e.g. remove parent::on_load().', 'wplib' );
 
-			WPLib::trigger_error( sprintf( $err_msg, get_called_class() ) );
+			self::trigger_error( sprintf( $err_msg, get_called_class() ) );
 
 		}
 
@@ -269,13 +269,13 @@ class WPLib {
 	 */
 	static function _init_9() {
 
-		if ( ! WPLib::cache_get( $cache_key = 'module_classes_cached' ) ) {
+		if ( ! self::cache_get( $cache_key = 'module_classes_cached' ) ) {
 
 			self::$_init_9_ran = true;
 
 			self::autoload_all_classes();
 
-			WPLib::cache_set( $cache_key, true );
+			self::cache_set( $cache_key, true );
 		}
 
 	}
@@ -286,12 +286,12 @@ class WPLib {
 	 */
 	static function site_classes() {
 
-		if ( ! ( $site_classes = WPLib::cache_get( $cache_key = 'site_classes' ) ) ) {
+		if ( ! ( $site_classes = self::cache_get( $cache_key = 'site_classes' ) ) ) {
 
 			/**
 			 * Make sure we have all classes loaded.
 			 */
-			WPLib::autoload_all_classes();
+			self::autoload_all_classes();
 
 			$site_classes = array_reverse( array_slice( get_declared_classes(), self::$_non_app_class_count ) );
 			$site_classes = array_filter( $site_classes, function( $element ) {
@@ -300,7 +300,7 @@ class WPLib {
 				 */
 				return ! preg_match( '#^(WP|wp)_?#', $element );
 			});
-			WPLib::cache_set( $cache_key, $site_classes );
+			self::cache_set( $cache_key, $site_classes );
 
 		}
 
@@ -344,7 +344,7 @@ class WPLib {
 	 */
 	static function maybe_make_absolute_path( $filepath, $dir = false ) {
 
-		self::check_method_stability( __METHOD__, WPLib::EXPERIMENTAL );
+		self::check_method_stability( __METHOD__, self::EXPERIMENTAL );
 
 		$directory_separator = DIRECTORY_SEPARATOR;
 
@@ -493,9 +493,9 @@ class WPLib {
 				 	 continue;
 				}
 
-				if ( WPLib::is_development() && ! is_file( $filepath ) ) {
+				if ( self::is_development() && ! is_file( $filepath ) ) {
 
-					WPLib::trigger_error( sprintf( __( "Required file not found: %s", 'wplib' ), $filepath ) );
+					self::trigger_error( sprintf( __( "Required file not found: %s", 'wplib' ), $filepath ) );
 
 				}
 
@@ -584,7 +584,7 @@ class WPLib {
 
 			$class_key = implode( '|', $latest_classes );
 
-			$class_key = WPLib::is_production() ? md5( $class_key ) : $class_key;
+			$class_key = self::is_production() ? md5( $class_key ) : $class_key;
 
 			$autoload_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" );
 
@@ -709,7 +709,7 @@ class WPLib {
 		if ( ! self::$_init_9_ran ) {
 
 			$err_msg = "Cannot call WPLib::autoload_all_classes() prior to 'init' action, priority 9.";
-			WPLib::trigger_error( $err_msg );
+			self::trigger_error( $err_msg );
 
 		} else if ( ! $classes_loaded ) {
 
@@ -1336,13 +1336,13 @@ class WPLib {
 	 */
 	static function app_classes() {
 
-		if ( ! ( $app_classes = WPLib::cache_get( $cache_key = "app_classes" ) ) ) {
+		if ( ! ( $app_classes = self::cache_get( $cache_key = "app_classes" ) ) ) {
 
 			$app_classes = array_filter( self::site_classes(), function( $class_name ) {
 				return is_subclass_of( $class_name, 'WPLib_App_Base' );
 			});
 
-			WPLib::cache_set( $cache_key, $app_classes );
+			self::cache_set( $cache_key, $app_classes );
 
 		}
 		return $app_classes;
@@ -1990,7 +1990,7 @@ class WPLib {
 
 				$message = sprintf( __( 'Method %s not found for class %s.', 'wplib' ), $match[ 0 ], $class_name );
 
-				WPLib::trigger_error( $message, E_USER_ERROR );
+				self::trigger_error( $message, E_USER_ERROR );
 
 				$has_html_suffix = false;
 
@@ -2053,7 +2053,7 @@ class WPLib {
 
 		if ( ! self::$_theme ) {
 
-			foreach( WPLib::site_classes() as $class_name ) {
+			foreach( self::site_classes() as $class_name ) {
 
 				if ( is_subclass_of( $class_name, 'WPLib_Theme_Base' )  ) {
 
@@ -2099,7 +2099,7 @@ class WPLib {
 	 */
 	static function _get_child_classes( $type, $constant_name, $base_class ) {
 
-		if ( ! ( $child_classes = WPLib::cache_get( $cache_key = "{$type}_classes" ) ) ) {
+		if ( ! ( $child_classes = self::cache_get( $cache_key = "{$type}_classes" ) ) ) {
 
 			$child_classes = array();
 
@@ -2111,7 +2111,7 @@ class WPLib {
 						continue;
 					}
 
-					if ( ! is_null( $constant_value = WPLib::get_constant( $constant_name, $class_name ) ) ) {
+					if ( ! is_null( $constant_value = self::get_constant( $constant_name, $class_name ) ) ) {
 						continue;
 					}
 
@@ -2121,7 +2121,7 @@ class WPLib {
 
 			}
 
-			WPLib::cache_set( $cache_key, $child_classes );
+			self::cache_set( $cache_key, $child_classes );
 
 		}
 
@@ -2134,7 +2134,7 @@ class WPLib {
 	 */
 	static function short_prefix() {
 
-		return WPLib::get_constant( 'SHORT_PREFIX', get_called_class() );
+		return self::get_constant( 'SHORT_PREFIX', get_called_class() );
 
 	}
 
@@ -2256,7 +2256,7 @@ class WPLib {
 
 				$err_msg .= __(' To enable add "define( \'WPLIB_STABILITY\', %d );" to your config file.', 'wplib' );
 
-				WPLib::trigger_error( sprintf(
+				self::trigger_error( sprintf(
 					$err_msg,
 					$method_name,
 					$stability,
@@ -2280,7 +2280,7 @@ class WPLib {
 	 */
 	static function _ensure_only_one_class( $filename ) {
 
-		if ( WPLib::is_wp_debug() ) {
+		if ( self::is_wp_debug() ) {
 
 			preg_match_all(
 					'#\n\s*(abstract|final)?\s*class\s*(\w+)#i',
