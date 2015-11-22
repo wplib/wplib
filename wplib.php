@@ -91,6 +91,11 @@ class WPLib {
 	private static $_module_classes = array();
 
 	/**
+	 * @var string[] Names of loaded classes
+	 */
+	private static $_module_names = array();
+
+	/**
 	 * @var array List of classes that must be loaded on every page load.
 	 */
 	private static $_mustload_classes = array();
@@ -479,6 +484,7 @@ class WPLib {
 		$called_class = get_called_class();
 
 		$module_classes = isset( self::$_module_classes[ $called_class ] ) ? self::$_module_classes[ $called_class ] : array();
+		$module_names = isset( self::$_module_names[ $called_class ] ) ? self::$_module_names[ $called_class ] : array();
 
 		$abspath_regex = '#^' . preg_quote( ABSPATH ) . '(.+)' . DIRECTORY_SEPARATOR . '.+\.php$#';
 
@@ -508,6 +514,9 @@ class WPLib {
 
 				$classes = get_declared_classes();
 				$module_classes[ $module_class = end( $classes ) ] = $module_path = preg_replace( $abspath_regex, '~/$1', $filepath );
+				if ( $module_name = self::get_module_name( $module_class ) ) {
+					$module_names[ $module_name ] = $module_class;
+				}
 
 				call_user_func( array( $module_class, '_register_templates' ) );
 
@@ -521,6 +530,7 @@ class WPLib {
 		}
 
 		self::$_module_classes[ $called_class ] = $module_classes;
+		self::$_module_names[ $called_class ] = $module_names;
 
 		self::$_modules = array();
 
