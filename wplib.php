@@ -351,17 +351,15 @@ class WPLib {
 
 		self::check_method_stability( __METHOD__, self::EXPERIMENTAL );
 
-		$directory_separator = DIRECTORY_SEPARATOR;
+		if ( '/' != $filepath[0] ) {
 
-		if ( $directory_separator != $filepath[0] ) {
-
-			if ( preg_match( "#^~({$directory_separator}.*)$#", $filepath, $match ) ) {
+			if ( preg_match( "#^~/(.*)$#", $filepath, $match ) ) {
 
 				$path = $match[1];
 
 			} else {
 
-				$path = $directory_separator . ltrim( $filepath, $directory_separator );
+				$path = '/' . ltrim( $filepath, '/' );
 
 			}
 
