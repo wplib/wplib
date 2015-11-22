@@ -1298,16 +1298,15 @@ class WPLib {
 	/**
 	 * @param string $app_class
 	 *
-	 * @return string[]|null
+	 * @return string[]
 	 */
 	static function get_module_classes( $app_class ) {
 
 		$module_classes = self::module_classes();
 
-		return ! empty( $module_classes[ $app_class ] ) ? $module_classes[ $app_class ] : null;
+		return ! empty( $module_classes[ $app_class ] ) ? $module_classes[ $app_class ] : array();
 
 	}
-
 
 	/**
 	 * @param WPLib_Item_Base|string|bool $item_class
@@ -1330,7 +1329,7 @@ class WPLib {
 
 		$module_filepath = null;
 
-		foreach( self::get_module_classes( $app_class ) as $module_class => $module_dir ) {
+		foreach ( self::get_module_classes( $app_class ) as $module_class => $module_dir ) {
 
 			if ( 0 === strpos( $filepath, $module_dir ) ) {
 
@@ -1726,7 +1725,7 @@ class WPLib {
 			 */
 			$_filename = preg_replace( '#(.+)(\.php)?$#', '$1.php', ltrim( $template_slug, '/' ) );
 
-			foreach ( array( 'theme', 'module' ) as $template_type ) {
+			foreach ( array( 'theme', 'module', 'app' ) as $template_type ) {
 
 				switch ( $template_type ) {
 					case 'theme':
@@ -1751,6 +1750,8 @@ class WPLib {
 						/**
 						 * @note Not implemented yet.
 						 */
+						$template->dir    = call_user_func( array( $_app_class, 'root_dir' ) );
+						$template->subdir = 'templates';
 						break;
 
 				}
