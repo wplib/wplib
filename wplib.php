@@ -2136,6 +2136,8 @@ class WPLib {
 	 */
 	static function template_dir() {
 
+		self::check_method_stability( __METHOD__, self::EXPERIMENTAL );
+
 		return static::get_root_dir( 'templates' );
 
 	}
