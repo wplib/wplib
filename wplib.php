@@ -1310,34 +1310,41 @@ class WPLib {
 
 	}
 
+
 	/**
-	 * @param WPLib_Item_Base $item
+	 * @param WPLib_Item_Base|string|bool $item_class
 	 *
 	 * @return string|null
 	 */
-	static function get_module_filepath( $item = false ) {
+	static function get_module_dir( $item_class = false ) {
 
-		if ( ! $item ) {
-			$item = get_called_class();
+		if ( ! $item_class ) {
+			$item_class = get_called_class();
+		} else if ( is_object( $item_class ) ) {
+			$item_class = get_class( $item_class );
 		}
 
-		$reflector = new ReflectionClass( $item );
+		$reflector = new ReflectionClass( $item_class );
 
-		$filepath = WPLib::maybe_make_abspath_relative( $reflector->getFileName() );
+		$filepath = self::maybe_make_abspath_relative( $reflector->getFileName() );
 
-		$app_class = WPLib::app_class( $item );
+		$app_class = self::app_class();
 
-		foreach( self::get_module_classes( $app_class ) as $module_class => $module_filepath ) {
+		$module_filepath = null;
 
-			if ( 0 === strpos( $filepath, $module_filepath ) ) {
+		foreach( self::get_module_classes( $app_class ) as $module_class => $module_dir ) {
 
-				return $module_filepath;
+			if ( 0 === strpos( $filepath, $module_dir ) ) {
+
+				$module_filepath = self::maybe_make_absolute_path( $module_dir, ABSPATH );
+
+				break;
 
 			}
 
 		}
 
-		return null;
+		return $module_filepath;
 
 	}
 
