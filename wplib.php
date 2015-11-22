@@ -1660,7 +1660,7 @@ class WPLib {
 	}
 
 	/**
-	 * @param string $template
+	 * @param string $template_slug
 	 * @param array|string $_template_vars
 	 * @param WPLib_Item_Base|object $item
 	 *
@@ -1669,116 +1669,144 @@ class WPLib {
 	 *       use __call() and __callStatic() to allow it to be invoked.
 	 * @see  http://stackoverflow.com/a/7983863/102699
 	 */
-	static function the_template( $template, $_template_vars = array(), $item = null ) {
-
-		$_filename = preg_replace( '#(\.php)$#', '', ltrim( $template, '/' ) ) . '.php';
-
-		$template = new stdClass();
-		$template->dir = get_stylesheet_directory();
+	static function the_template( $template_slug, $_template_vars = array(), $item = null ) {
 
 		/*
-		 * If root path (i.e. "~/wp-content/...") add ABSPATH to the template file after removing ~
-		 * If not root path, assume the template file is in /templates/ inside the theme directory
+		 * Calculate the md5 value for caching this template filename
 		 */
-		$_templates_subdir = static::templates_subdir();
-		$template->filename = preg_match( '#^~[\/](.+)#', $_filename, $match )
-			? ABSPATH . $match[ 1 ]
-			: "{$template->dir}/{$_templates_subdir}/{$_filename}";
+		if ( ! self::is_development() ) {
 
-		if ( ! is_string( $_template_vars ) || false !== strpos( $_template_vars, '=' ) ) {
-
-			$_specialty = false;
-
-			if ( is_string( $_template_vars ) ) {
-
-				$_template_vars = wp_parse_args( $_template_vars );
-
-			}
-
-			if ( false === $_template_vars || is_null( $_template_vars ) ) {
-
-				$_template_vars = array();
-
-			} else if ( ! is_array( $_template_vars ) ) {
-
-				$message = __( 'Unexpected value for 2nd parameter passed to the_template(). Expected array, string, false or null but got %s.', 'wplib' );
-				WPLib::trigger_error( sprintf( $message, gettype( $_template_vars ) ) );
-
-			}
+			$_md5 = md5( serialize( array( $template_slug, $_template_vars, get_class( $item ) ) ) );
 
 		} else {
 
-			/**
-			 * If a string is passed assume it is for a more specific template and behave like get_template_part().
-			 */
-			$_specialty = esc_attr( $_template_vars );
-
-			$_template_vars	= array();
-
-			$_specialty = preg_replace( '#(\.php)$#', "-{$_specialty}$1", $template->filename );
+			$_md5 = $template_slug . '[' . get_class( $item ) . '][' . serialize( $_template_vars ) . ']';
 
 		}
 
-		if ( $_specialty && is_file( $_specialty )  ) {
-			/**
-			 * We found the special template before the general one.
-			 */
-			$template->filename = $_specialty;
+		if ( ! ( $template = self::cache_get( $_cache_key = "template_file[{$_md5}]" ) ) ) {
 
-			$_specialty = true;
+			$template = new stdClass();
+
+			$template->filenames_tried = array();
+
+			$template->found = false;
+
+			/**
+			 * Ensure $_template_vars is an array
+			 */
+			$template->vars = is_string( $_template_vars ) ? wp_parse_args( $_template_vars ) : $_template_vars;
+			if ( ! is_array( $template->vars ) ) {
+				$template->vars = array();
+			}
+
+			/*
+			 * Ensure filename does not have a leading slash ('/') but does have a trailing '.php'
+			 */
+			$_filename = preg_replace( '#(.+)(\.php)?$#', '$1.php', ltrim( $template_slug, '/' ) );
+
+			foreach ( array( 'theme', 'module' ) as $template_type ) {
+
+				switch ( $template_type ) {
+					case 'theme':
+						$template->dir    = get_stylesheet_directory();
+						$template->subdir = static::templates_subdir();
+						break;
+
+					case 'module':
+						$_app_class = ! empty( $template->vars['@app'] )
+							? $template->vars['@app']
+						    : self::app_class();
+
+						$_module_class = ! empty( $template->vars['@module'] )
+							? self::get_module_class( $template->vars['@module'], $_app_class )
+							: get_class( $item );
+
+						$template->dir    = self::get_module_dir( $_module_class );
+						$template->subdir = 'templates';
+						break;
+
+					case 'app':
+						/**
+						 * @note Not implemented yet.
+						 */
+						break;
+
+				}
+
+				$template->filename = "{$template->dir}/{$template->subdir}/{$_filename}";
+
+				if ( ! is_file( $template->filename ) ) {
+
+					$template->filenames_tried[ $template_type ] = $template->filename;
+
+				} else {
+
+					$template->found = true;
+
+					$template->var_name = self::get_constant( 'VAR_NAME', get_class( $item ) );
+
+					$template->comments = "<!--[TEMPLATE FILE: {$template->filename} -->";
+
+					break;
+
+				}
+
+			}
+
+			self::cache_set( $_cache_key, $template );
+
+
 
 		}
 
+		$template->add_comments = ! self::doing_ajax() && ! self::is_production();
 
-		if ( true !== $_specialty && ! is_file( $template->filename )  ) {
+		if ( ! $template->found ) {
 
-			/**
-			 * No speciality template and no template at all.
-			 */
-			$template->filename = $template->dir = false;
-
-			if ( ! WPLib::is_production() ) {
+			if ( $template->add_comments ) {
 
 				/**
-				 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
+				 * This can be used by theme developers with view source to see which templates failed.
+				 *
+				 * @note FOR CODE REVIEWERS:
+				 *
+				 * This is ONLY output of constant 'WPLIB_RUNMODE' is defined in wp-config.php.
+				 * In other words, this will NEVER run on your servers (unless you set WPLIB_RUNMODE.)
 				 */
-				echo "\n<!--[FAILED Template File: {$template->filename} -->\n";
+				echo "\n<!--[FAILED TEMPLATE FILE: {$template_slug}. Tried:\n";
+				foreach ( $template->filenames_tried as $template_type => $template_filename ) {
+					echo "\n\t{$template_type}: {$template_filename}";
+				}
+				echo "\n]-->";
 
 			}
-
-		}
-
-		if ( ! $template->filename ) {
-
-			$output = false;
 
 		} else {
 
-			if ( ! WPLib::doing_ajax() && ! WPLib::is_production() ) {
+			if ( $template->add_comments ) {
 
-				echo "\n<!--[Template File: {$template->filename} -->\n";
+				echo $template->comments;
 
 			}
 
-			extract( $_template_vars, EXTR_PREFIX_SAME, '_' );
+			extract( $template->vars, EXTR_PREFIX_SAME, '_' );
 
-			if ( $item && ( $_var_name = WPLib::get_constant( 'VAR_NAME', get_class( $item ) ) ) ) {
+			if ( $template->var_name ) {
 				/*
 				 * Assign the $item's preferred variable name in addition to '$item', i.e. '$brand'
 				 * This is a very controlled use of extract() i.e. I know what I am doing here.
 				 */
-				extract( array( $_var_name => $item ) );
+				extract( array( $template->var_name => $item ) );
 			}
-
-			$template->vars = $_template_vars;
 
 			unset(
 				$_template_vars,
-				$_templates_subdir,
 				$_filename,
 				$_cache_key,
-				$_var_name,
-				$_specialty
+				$_md5,
+				$_app_class,
+				$_module_class
 			);
 
 			ob_start();
@@ -1787,11 +1815,28 @@ class WPLib {
 			require( $template->filename );
 			self::$_file_loading = false;
 
-			$output = ob_get_clean();
+
+			if ( ! $template->add_comments ) {
+
+				echo ob_get_clean();
+
+			} else {
+
+				/**
+				 * This can be used by theme developers with view source to see which templates failed.
+				 *
+				 * @note FOR CODE REVIEWERS:
+				 *
+				 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
+				 * In other words, this will NEVER run on your servers (unless you set WPLIB_RUNMODE.)
+				 */
+				echo $template->comments;
+				echo ob_get_clean();
+				echo "\n<!--[END TEMPLATE FILE: {$template->filename} -->\n";
+
+			}
 
 		}
-
-		echo $output;
 
 	}
 
