@@ -2304,5 +2304,16 @@ class WPLib {
 		}
 	}
 
+	/**
+	 * @param string $class_name
+	 *
+	 * @return mixed|null
+	 */
+	static function get_module_name( $class_name ) {
+
+		return self::get_constant( 'MODULE_NAME', $class_name );
+
+	}
+
 }
 WPLib::on_load();
