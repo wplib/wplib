@@ -1353,9 +1353,9 @@ class WPLib {
 
 		if ( ! ( $app_classes = self::cache_get( $cache_key = "app_classes" ) ) ) {
 
-			$app_classes = array_filter( self::site_classes(), function( $class_name ) {
+			$app_classes = array_values( array_filter( self::site_classes(), function( $class_name ) {
 				return is_subclass_of( $class_name, 'WPLib_App_Base' );
-			});
+			}));
 
 			self::cache_set( $cache_key, $app_classes );
 
