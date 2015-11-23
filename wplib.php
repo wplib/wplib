@@ -39,7 +39,6 @@
  * @todo PHPDoc - https://github.com/wplib/wplib/issues/8
  * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11027141
  *
- *
  */
 class WPLib {
 
@@ -1626,7 +1625,6 @@ class WPLib {
 			: 'templates';
 
 	}
-
 
 	/**
 	 * Register all templates for WPLib, an App or a module.
