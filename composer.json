@@ -1,14 +1,53 @@
 {
-    "name": "wplib/wplib",
-    "description": "WPLib is a Foundation Library for building custom WordPress Sites.",
-    "type": "wordpress-library",
-    "license": "GPL-2.0+",
-    "authors": [
-        {
-            "name": "The WPLib Team",
-            "email": "wplib@newclarity.net",
-            "homepage": "http://wplib.org",
-            "role": "WordPress Developer and Architect"
-        }
-    ]
+	"name": "wplib/wplib",
+	"type": "library",
+	"description": "An MV* Foundation Library for Building Custom WordPress Sites",
+	"keywords": [ "wordpress", "php", "cli", "wplib", "scaffolding", "console" ],
+	"homepage": "http://github.com/wplib/wplib",
+ 	"license": "GPL-2.0+",
+	"authors": [
+		{
+			"name": "The WPLib Team",
+			"email": "team@wplib.org",
+			"homepage" : "http://wplib.org",
+			"role" :  "Supporting Organization"
+		},
+		{
+			"name": "Mike Schinkel",
+			"email": "mike@newclarity.net",
+			"homepage" : "http://about.me/mikeschinkel",
+			"role" :  "Architect and Developer"
+		},
+		{
+			"name": "Micah Wood",
+			"email": "micah@wpscholar.com",
+			"homepage": "http://wpscholar.com",
+			"role" :  "Developer"
+		},
+		{
+			"name": "Daryl Lozupone",
+			"email": "daryl@newclarity.net",
+			"homepage": "https://www.linkedin.com/in/daryllozupone",
+			"role" :  "DevOp and Developer"
+		}
+	],
+	"require": {
+		"php": ">=5.4.0"
+	},
+	"autoload": {
+		"psr-0": { "WPLib_": "includes/" }
+	},
+	"support": {
+		"email": "support@wplib.org",
+		"issues": "https://github.com/wplib/wplib/issues",
+		"forum": "https://wplib.slack.com/",
+		"source":"https://github.com/wplib/wplib",
+		"docs": "http://wplib.prg"
+	},
+	"suggest": {
+		"wplib/wplib-cli" : "A command-line scaffolding tool for WPLib",
+		"wplib/wplib-box" : "A Vagrant box for WPLib-specific WordPress development",
+		"wplib/lawpress" : "An sample WPLib App & Theme for developing with Law Firm websites",
+		"wplib/underscores4wplib" : "A port of the Underscores theme to demo WPLib",
+	}
 }
