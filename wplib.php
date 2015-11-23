@@ -2327,5 +2327,21 @@ class WPLib {
 
 	}
 
+	/**
+	 * @param string $string
+	 * @param bool|true $lowercase
+	 *
+	 * @return string
+	 */
+	static function dashify( $string, $lowercase = true ) {
+
+		$string = str_replace( array( '_', ' ' ), '-', $string );
+		if ( $lowercase ) {
+			$string = strtolower( $string );
+		}
+		return $string;
+
+	}
+
 }
 WPLib::on_load();
