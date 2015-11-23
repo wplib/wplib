@@ -39,7 +39,6 @@
  * @todo PHPDoc - https://github.com/wplib/wplib/issues/8
  * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11027141
  *
- *
  */
 class WPLib {
 
@@ -811,7 +810,7 @@ class WPLib {
 
 		if ( ! ( $mustload_classes = static::cache_get( $cache_key = "mustload_classes" ) ) ) {
 
-			array();
+			$mustload_classes = array();
 
 			do {
 				reset( self::$_mustload_classes );
@@ -1627,7 +1626,6 @@ class WPLib {
 
 	}
 
-
 	/**
 	 * Register all templates for WPLib, an App or a module.
 	 *
@@ -2326,6 +2324,22 @@ class WPLib {
 	static function get_module_name( $class_name ) {
 
 		return self::get_constant( 'MODULE_NAME', $class_name );
+
+	}
+
+	/**
+	 * @param string $string
+	 * @param bool|true $lowercase
+	 *
+	 * @return string
+	 */
+	static function dashify( $string, $lowercase = true ) {
+
+		$string = str_replace( array( '_', ' ' ), '-', $string );
+		if ( $lowercase ) {
+			$string = strtolower( $string );
+		}
+		return $string;
 
 	}
 
