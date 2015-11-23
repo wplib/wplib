@@ -5,6 +5,10 @@
  */
 class WPLib_Terms extends WPLib_Module_Base {
 
+	const TAXONOMY = 'any';
+
+	const INSTANCE_CLASS = null;
+
 	/**
 	 * The default term type labels for those labels not set for a term type.
 	 *
@@ -80,6 +84,16 @@ class WPLib_Terms extends WPLib_Module_Base {
 
 			$object_types = ! empty( self::$_object_types[ $taxonomy ] ) ? self::$_object_types[ $taxonomy ] : array();
 
+			/**
+			 * This filter hook is fired once per taxonomy and just
+			 * before WordPress' register_taxonomy() is called.
+			 *
+			 * @since 0.6.6
+			 *
+			 * @stability 1 - Experimental
+			 */
+			$taxonomy_args = apply_filters( 'wplib_taxonomy_args', $taxonomy_args, $taxonomy );
+
 			/*
 			 * For each of the term types that have been previously
 			 * initialized, register them for WordPress.
@@ -87,6 +101,24 @@ class WPLib_Terms extends WPLib_Module_Base {
 			register_taxonomy( $taxonomy, $object_types, $taxonomy_args );
 
 		}
+
+		/**
+		 * This action hook fires AFTER WPLib calls register_taxonomy()
+		 * (hence 'post' vs. 'pre') for all the taxonomies registered in
+		 * the on_load() for a subclass of WPLib_Term_Module_Base.
+		 *
+		 * This hook allows the calling self::attach_taxonomy() for a
+		 * subclass of WPLib_Post_Module_Base.
+		 *
+		 * @note The first 'post' in the hook name means "after"
+		 *       vs. 'pre' which would mean "before"
+		 *       (i.e. WordPress' 'pre_get_posts' hook.)
+		 *
+		 * @since 0.6.6
+		 *
+		 * @stability 1 - Experimental
+		 */
+		do_action( 'wplib_post_register_taxonomies' );
 
 	}
 
@@ -245,17 +277,19 @@ class WPLib_Terms extends WPLib_Module_Base {
 
 	/**
 	 * @param object|int|string $term
-	 * @param string $taxonomy
 	 * @param array $args
 	 * @return object|null
 	 */
-	static function get_term( $term, $taxonomy, $args = array() ) {
+	static function get_term( $term, $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 
-			'lookup_type' => 'id'
+			'lookup_type' => 'id',
+			'taxonomy'    => false,
 
 		));
+
+		$taxonomy = $args['taxonomy'] ? $args['taxonomy'] : get_taxonomies();
 
 		switch ( gettype( $term ) ) {
 
@@ -271,14 +305,14 @@ class WPLib_Terms extends WPLib_Module_Base {
 
 				do {
 
-					if( $slug_term = get_term_by( 'slug', $term, $args[ 'taxonomy' ] ) ) {
+					if( $slug_term = get_term_by( 'slug', $term, $taxonomy ) ) {
 
 						$term = $slug_term;
 						break;
 
 					}
 
-					if ( $name_term = get_term_by( 'name', $term, $args[ 'taxonomy' ] ) ) {
+					if ( $name_term = get_term_by( 'name', $term, $taxonomy ) ) {
 
 						$term = $name_term;
 						break;
@@ -292,6 +326,106 @@ class WPLib_Terms extends WPLib_Module_Base {
 		}
 
 		return $term;
+
+	}
+
+	/**
+	 * @param array|string|WPLib_Query $query
+	 * @param array $args
+	 * @return WPLib_Term_List_Default[]
+	 */
+	static function get_list( $query = array(), $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+
+			'default_list'  => 'WPLib_Term_List_Default',
+			'items'         =>
+				function( $query ) {
+					return WPLib_Terms::get_terms( $query );
+				},
+
+		));
+
+		return parent::get_list( $query, $args );
+
+	}
+
+	/**
+	 * @param array $args
+	 * @return object|null
+	 */
+	static function get_terms( $args = array() ) {
+
+		$taxonomy = empty( $args['taxonomy'] )
+			? get_taxonomies()
+			: $args['taxonomy'];
+
+		unset( $args['taxonomy'] );
+
+		if ( !isset( $args['hide_empty'] ) ) {
+			$args['hide_empty'] = false;
+		}
+
+		$terms = get_terms( $taxonomy, $args );
+
+		return $terms ? $terms : array();
+
+	}
+
+	/**
+	 * Create new Instance of a Term MVE
+	 *
+	 * @param WP_Term $term
+	 * @param array $args
+	 *
+	 * @return mixed
+	 */
+	static function make_new_item( $term, $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+			'instance_class' => false,
+			'list_owner' => 'WPLib_Terms',
+		));
+
+		if ( ! $args[ 'instance_class' ] ) {
+
+			$args['instance_class'] = WPLib::get_constant( 'INSTANCE_CLASS', $args['list_owner'] );
+
+		}
+
+		if ( ! $args[ 'instance_class' ] ) {
+
+			$args['instance_class'] = self::get_taxonomy_class( $term->taxonomy );
+
+		}
+
+		$instance_class = $args['instance_class'];
+
+		return $instance_class ? new $instance_class( $term ) : null;
+
+	}
+
+	/**
+	 * @param string $taxonomy
+	 *
+	 * @return string|null
+	 */
+	static function get_taxonomy_class( $taxonomy ) {
+
+		$classes = self::taxonomy_classes();
+
+		return ! empty( $classes[ $taxonomy ] ) ? $classes[ $taxonomy ] : null;
+
+	}
+
+	/**
+	 * @return string[]
+	 *
+	 * @todo Enhance this to support multiple classes per term type
+	 */
+	static function taxonomy_classes() {
+
+		return WPLib::_get_child_classes( 'taxonomy', 'TAXONOMY', 'WPLib_Term_Base' );
 
 	}
 

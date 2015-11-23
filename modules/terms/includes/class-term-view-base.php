@@ -9,6 +9,8 @@
  * @method WPLib_Term_Model_Base model()
  *
  * @property WPLib_Term_Base $owner
+ *
+ * @method string the_term_name()
  */
 abstract class WPLib_Term_View_Base extends WPLib_View_Base {
 

@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.6.4
+ * Version:     0.7.0
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -38,11 +38,20 @@
  *
  * @todo PHPDoc - https://github.com/wplib/wplib/issues/8
  * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11027141
+ *
  */
 class WPLib {
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
+
+	/**
+	 * Stability
+	 */
+	const DEPRECATED = 0;
+	const EXPERIMENTAL = 1;
+	const STABLE = 2;
+	const LOCKED = 3;
 
 	/**
 	 * Runmodes
@@ -81,6 +90,11 @@ class WPLib {
 	private static $_module_classes = array();
 
 	/**
+	 * @var string[] Names of loaded classes
+	 */
+	private static $_module_names = array();
+
+	/**
 	 * @var array List of classes that must be loaded on every page load.
 	 */
 	private static $_mustload_classes = array();
@@ -89,6 +103,11 @@ class WPLib {
 	 * @var array List of classes (as key) and filepaths (as value) to autoload.
 	 */
 	private static $_autoload_files = array();
+
+	/**
+	 * @var array Files for Parent Classes that are autoloaded during cache generation
+	 */
+	private static $_autoloaded_parents = array();
 
 	/**
 	 * @var bool Get's set if doing XMLRPC.
@@ -101,9 +120,9 @@ class WPLib {
 	private static $_file_loading = false;
 
 	/**
-	 * @var array Files to autoload in the find_autoload files.
+	 * @var array Files that have been loaded so they won't be reloaded.
 	 */
-	private static $_new_files;
+	private static $_loaded_include_files = array();
 
 	/**
 	 * @var int
@@ -130,7 +149,58 @@ class WPLib {
 	 */
 	static function on_load() {
 
-		if ( defined( 'WPLIB_RUNMODE' ) ) {
+		/**
+		 * @var bool Flag to ensure this method is only ever called once.
+		 */
+		static $done = false;
+
+		if ( $done ) {
+
+			$err_msg = __( 'The %s::on_load() method should not call its parent class, e.g. remove parent::on_load().', 'wplib' );
+
+			self::trigger_error( sprintf( $err_msg, get_called_class() ) );
+
+		}
+
+		if ( ! defined( 'WPLIB_STABILITY' ) ) {
+
+			/* @note THIS IS NOT WIDELY IMPLEMENTED YET.
+			 *
+			 * WPLib follows the convention of Node.js in having a Stability Index.
+			 * Every class, property, method, constant, etc. will have a Stability value,
+			 * except for those that do not (yet.)
+			 *
+			 * The stability will be specified by an @stability PHPDoc comment with one
+			 * of the following values:
+			 *
+			 *    Stability:  0 - Deprecated
+			 *    Stability:  1 - Experimental
+			 *    Stability:  2 - Stable
+			 *    Stability:  3 - Locked
+			 *
+			 * The default stability is 2 - Stable. However you can set the stability
+			 * you want in your wp-local-config.php file using the WPLIB_STABILITY constant.
+			 *
+			 * You can check (for example) for EXPERIMENTAL stability in a method using:
+			 *
+			 *      self::check_method_stability( __METHOD__, WPLib::EXPERIMENTAL );
+			 *
+			 * Internal methods -- ones with a leading underscore -- will not be marked with
+			 * a stability level.
+			 *
+			 * To read more about the concept of stability:
+			 *
+			 * @see https://nodejs.org/api/documentation.html#documentation_stability_index
+			 */
+			define( 'WPLIB_STABILITY', 2 );
+
+		}
+
+		if ( ! defined( 'WPLIB_RUNMODE' ) ) {
+
+			self::set_runmode( self::PRODUCTION );
+
+		} else {
 
 			$runmode = strtoupper( WPLIB_RUNMODE );
 
@@ -140,15 +210,23 @@ class WPLib {
 
 			}
 
-			if ( is_int( $runmode ) && self::DEVELOPMENT <= $runmode && self::PRODUCTION >= $runmode ) {
+			if ( ! is_numeric( $runmode ) ) {
 
-				self::set_runmode( $runmode );
+				$runmode = self::PRODUCTION;
+
+			} else {
+
+				$runmode = intval( $runmode );
+
+				if ( $runmode < self::DEVELOPMENT || self::PRODUCTION < $runmode ) {
+
+					$runmode = self::PRODUCTION;
+
+				}
 
 			}
 
-		} else {
-
-			self::set_runmode( self::PRODUCTION );
+			self::set_runmode( $runmode );
 
 		}
 
@@ -195,13 +273,13 @@ class WPLib {
 	 */
 	static function _init_9() {
 
-		if ( ! WPLib::cache_get( $cache_key = 'module_classes_cached' ) ) {
+		if ( ! self::cache_get( $cache_key = 'module_classes_cached' ) ) {
 
 			self::$_init_9_ran = true;
 
 			self::autoload_all_classes();
 
-			WPLib::cache_set( $cache_key, true );
+			self::cache_set( $cache_key, true );
 		}
 
 	}
@@ -212,12 +290,12 @@ class WPLib {
 	 */
 	static function site_classes() {
 
-		if ( ! ( $site_classes = WPLib::cache_get( $cache_key = 'site_classes' ) ) ) {
+		if ( ! ( $site_classes = self::cache_get( $cache_key = 'site_classes' ) ) ) {
 
 			/**
 			 * Make sure we have all classes loaded.
 			 */
-			WPLib::autoload_all_classes();
+			self::autoload_all_classes();
 
 			$site_classes = array_reverse( array_slice( get_declared_classes(), self::$_non_app_class_count ) );
 			$site_classes = array_filter( $site_classes, function( $element ) {
@@ -226,7 +304,7 @@ class WPLib {
 				 */
 				return ! preg_match( '#^(WP|wp)_?#', $element );
 			});
-			WPLib::cache_set( $cache_key, $site_classes );
+			self::cache_set( $cache_key, $site_classes );
 
 		}
 
@@ -241,12 +319,17 @@ class WPLib {
 
 		if ( isset( self::$_autoload_files[ $class_name ] ) ) {
 
-			require_once( self::$_autoload_files[ $class_name ] );
+			require_once( $filepath = self::$_autoload_files[ $class_name ] );
 
-			/**
+			/*
 			 * Don't need it anymore since we loaded it.
 			 */
-			unset( static::$_autoload_files[ $class_name ] );
+			unset( self::$_autoload_files[ $class_name ] );
+
+			/*
+			 * But we do need to make sure we don't load again.
+			 */
+			self::$_loaded_include_files[ $filepath ] = $class_name;
 
 		}
 
@@ -265,21 +348,21 @@ class WPLib {
 	 */
 	static function maybe_make_absolute_path( $filepath, $dir = false ) {
 
-		$directory_separator = DIRECTORY_SEPARATOR;
+		self::check_method_stability( __METHOD__, self::EXPERIMENTAL );
 
-		if ( $directory_separator != $filepath[0] ) {
+		if ( '/' != $filepath[0] ) {
 
-			if ( preg_match( "#^~({$directory_separator}.*)$#", $filepath, $match ) ) {
+			if ( preg_match( "#^~/(.*)$#", $filepath, $match ) ) {
 
 				$path = $match[1];
 
 			} else {
 
-				$path = $directory_separator . ltrim( $filepath, $directory_separator );
+				$path = '/' . ltrim( $filepath, '/' );
 
 			}
 
-			$filepath = $dir ? "{dir}{$path}" : static::get_root_dir( $path );
+			$filepath = $dir ? "{$dir}{$path}" : static::get_root_dir( $path );
 
 		}
 
@@ -326,7 +409,6 @@ class WPLib {
 
 		spl_autoload_register( $autoloader = array( __CLASS__, '_find_files_autoloader' ), true, true );
 
-
 		/**
 		 * Find all autoloading files from components that have been loaded by (1) plugins or (2) the theme.
 		 */
@@ -355,18 +437,34 @@ class WPLib {
 
 		$dirpath = dirname( self::$_file_loading );
 
-		$filename = self::dashify( $class_name );
+		$parts = explode( '_', strtolower( $class_name ) );
+		array_shift( $parts );
+		$filename = implode( '-', $parts );
 
-		$filepath = "{$dirpath}/{$filename}.php";
+		foreach( array( 'class', 'trait' ) as $type ) {
 
-		if ( is_file( $filepath ) ) {
+			$filepath = "{$dirpath}/{$type}-{$filename}.php";
 
-			require( $filepath );
+			if ( is_file( $filepath ) ) {
 
-			$new_files = array_flip( self::$_new_files );
-			unset( $new_files[ $filepath ] );
-			self::$_new_files = array_flip( $new_files );
+				require( $filepath );
 
+				/*
+				 * Capture the file and class loaded so that
+				 * we don't tryto load the file again.
+				 */
+				self::$_loaded_include_files[ $filepath ] = $class_name;
+
+				/*
+				 * Capture the class so that we don't try to autoload
+				 * class that has already been autoloaded because of
+				 * being a parent class.  This is needed to add to the
+				 * cache because they won't get autoloaded when the cache
+				 * is set.
+				 */
+				self::$_autoloaded_parents[ $class_name ] = $filepath;
+
+			}
 		}
 
 	}
@@ -383,6 +481,7 @@ class WPLib {
 		$called_class = get_called_class();
 
 		$module_classes = isset( self::$_module_classes[ $called_class ] ) ? self::$_module_classes[ $called_class ] : array();
+		$module_names = isset( self::$_module_names[ $called_class ] ) ? self::$_module_names[ $called_class ] : array();
 
 		$abspath_regex = '#^' . preg_quote( ABSPATH ) . '(.+)' . DIRECTORY_SEPARATOR . '.+\.php$#';
 
@@ -390,9 +489,16 @@ class WPLib {
 
 			foreach ( $priority as $filepath ) {
 
-				if ( WPLib::is_development() && ! is_file( $filepath ) ) {
+				if ( isset( self::$_loaded_include_files[ $filepath ] ) ) {
+				 	/*
+				 	 * Already loaded
+				 	 */
+				 	 continue;
+				}
 
-					WPLib::trigger_error( sprintf( __( "Required file not found: %s", 'wplib' ), $filepath ) );
+				if ( self::is_development() && ! is_file( $filepath ) ) {
+
+					self::trigger_error( sprintf( __( "Required file not found: %s", 'wplib' ), $filepath ) );
 
 				}
 
@@ -405,6 +511,9 @@ class WPLib {
 
 				$classes = get_declared_classes();
 				$module_classes[ $module_class = end( $classes ) ] = $module_path = preg_replace( $abspath_regex, '~/$1', $filepath );
+				if ( $module_name = self::get_module_name( $module_class ) ) {
+					$module_names[ $module_name ] = $module_class;
+				}
 
 				call_user_func( array( $module_class, '_register_templates' ) );
 
@@ -418,6 +527,7 @@ class WPLib {
 		}
 
 		self::$_module_classes[ $called_class ] = $module_classes;
+		self::$_module_names[ $called_class ] = $module_names;
 
 		self::$_modules = array();
 
@@ -481,14 +591,16 @@ class WPLib {
 
 			$class_key = implode( '|', $latest_classes );
 
-			$class_key = WPLib::is_production() ? md5( $class_key ) : $class_key;
+			$class_key = self::is_production() ? md5( $class_key ) : $class_key;
 
-			if ( ! ( self::$_new_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" ) ) ) {
+			$autoload_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" );
 
-				$autoload_files = array();
+			if ( ! $autoload_files || 0 === count( $autoload_files ) ) {
+
+				self::$_autoloaded_parents = $autoload_files = array();
 
 				/**
-				 * These were the files that were manually added
+				 * These were the files that were previously added
 				 */
 				$added_files = array_values( self::$_autoload_files );
 
@@ -509,49 +621,63 @@ class WPLib {
 					}
 
 					/**
-					 * Find out what classes are currently defined.
-					 */
-					$declared_classes = get_declared_classes();
-
-					/**
-					 * Diff the manually added files with the new ones scanned to get new files.
-					 */
-					self::$_new_files = array_diff( $found_files, $added_files );
-
-					/**
 					 * Load all the scanned files from the /include/ directory
 					 */
-					do {
-						self::$_file_loading = array_shift( self::$_new_files );
+					foreach( $found_files as $filepath ) {
+
+						if ( isset( self::$_loaded_include_files[ $filepath ] ) ) {
+							/**
+							 * If the class was already loaded by an autoloader
+							 */
+							continue;
+
+						}
+
+						if ( static::is_development() ) {
+							/*
+							 * We assume there is only one class per class file
+							 * so make sure we have only one.
+							 */
+							self::_ensure_only_one_class( $filepath );
+
+						}
+						/*
+						 * Keep track so that in case the file fails to load
+						 * we can display an error telling what file borked
+						 * in the self::_shutdown() hook.
+						 */
+						self::$_file_loading = $filepath;
+
 						require( self::$_file_loading );
+
 						self::$_file_loading = false;
 
-					} while ( count( self::$_new_files ) );
-
-					/**
-					 * Find the newly declared classes by comparing what was declared before with what is declared now.
-					 */
-					$loaded_classes = array_diff( get_declared_classes(), $declared_classes );
-
-					if ( count( $loaded_classes ) > count( $found_files ) ) {
-
-						$message = __( 'More than one class defined in \'/includes/\' directory of %s.', 'wplib' );
-						static::trigger_error( sprintf( $message, $class_name ) );
-
-					} else if ( count( $loaded_classes ) < count( $found_files ) ) {
-
-						$message = __( 'Files with no classes defined in \'/includes/\' directory of %s.', 'wplib' );
-						static::trigger_error( sprintf( $message, $class_name ) );
-
-					} else {
-
 						/**
-						 * Add them in for autoloading.
-						 * $loaded_classes should be in the same order as $found_files.
+						 * Get the class that was last defined.
 						 */
-						$autoload_files += array_combine( $loaded_classes, $found_files );
+						$declared_classes = get_declared_classes();
+						$autoload_files[ $class_name = end( $declared_classes ) ] = $filepath;
+
+						/*
+						 * Capture in self::$loaded_files so we can avoid loading parent classes twice.
+						 * Parents that have not been loaded will be loaded via an autoloader.
+						 */
+						self::$_loaded_include_files[ $filepath ] = $class_name;
+
 
 					}
+
+				}
+
+				if ( count( self::$_autoloaded_parents ) ) {
+
+					/**
+					 * Add in files for parent classes that were autoloaded.
+					 * If we don't do this then the cache would not have the
+					 * parent classes and the child class declarations when
+					 * they are needed would fail.
+					 */
+					$autoload_files += self::$_autoloaded_parents;
 
 				}
 
@@ -562,7 +688,7 @@ class WPLib {
 
 			}
 
-			if ( isset( $autoload_files ) ) {
+			if ( is_array( $autoload_files ) && count( $autoload_files ) ) {
 
 				/**
 				 * Set the mustload classes based on on_load() ordered by parent/child classes.
@@ -572,7 +698,7 @@ class WPLib {
 				/**
 				 * Add these new files to the list of files to autoload at the default priority.
 				 */
-				self::$_autoload_files = array_merge( self::$_autoload_files, $autoload_files );
+				self::$_autoload_files += $autoload_files;
 
 			}
 
@@ -590,7 +716,7 @@ class WPLib {
 		if ( ! self::$_init_9_ran ) {
 
 			$err_msg = "Cannot call WPLib::autoload_all_classes() prior to 'init' action, priority 9.";
-			WPLib::trigger_error( $err_msg );
+			self::trigger_error( $err_msg );
 
 		} else if ( ! $classes_loaded ) {
 
@@ -603,7 +729,6 @@ class WPLib {
 		}
 
 	}
-
 
 	/**
 	 *
@@ -659,12 +784,16 @@ class WPLib {
 	 */
 	private static function _load_mustload_classes( $mustload_classes ) {
 
-		foreach( $mustload_classes as $mustload_class ) {
+		if ( is_array( $mustload_classes ) ) {
 
-			/**
-			 * This will autoload the class file if it does not already exist.
-			 */
-			class_exists( $mustload_class );
+			foreach ( $mustload_classes as $mustload_class ) {
+
+				/**
+				 * This will autoload the class file if it does not already exist.
+				 */
+				class_exists( $mustload_class );
+
+			}
 
 		}
 
@@ -679,7 +808,7 @@ class WPLib {
 	 */
 	private static function _ordered_mustload_classes() {
 
-		if ( ! static::cache_get( $cache_key = "mustload_classes" ) ) {
+		if ( ! ( $mustload_classes = static::cache_get( $cache_key = "mustload_classes" ) ) ) {
 
 			$mustload_classes = array();
 
@@ -897,6 +1026,8 @@ class WPLib {
 			 */
 			$container = new stdClass();
 		}
+
+		$found = false;
 
 		/*
 		 * Check to see if the helper callable for this class and method is cached.
@@ -1166,44 +1297,50 @@ class WPLib {
 	/**
 	 * @param string $app_class
 	 *
-	 * @return string[]|null
+	 * @return string[]
 	 */
 	static function get_module_classes( $app_class ) {
 
 		$module_classes = self::module_classes();
 
-		return ! empty( $module_classes[ $app_class ] ) ? $module_classes[ $app_class ] : null;
+		return ! empty( $module_classes[ $app_class ] ) ? $module_classes[ $app_class ] : array();
 
 	}
 
 	/**
-	 * @param WPLib_Item_Base $item
+	 * @param WPLib_Item_Base|string|bool $item_class
 	 *
 	 * @return string|null
 	 */
-	static function get_module_filepath( $item = false ) {
+	static function get_module_dir( $item_class = false ) {
 
-		if ( ! $item ) {
-			$item = get_called_class();
+		if ( ! $item_class ) {
+			$item_class = get_called_class();
+		} else if ( is_object( $item_class ) ) {
+			$item_class = get_class( $item_class );
 		}
 
-		$reflector = new ReflectionClass( $item );
+		$reflector = new ReflectionClass( $item_class );
 
-		$filepath = WPLib::maybe_make_abspath_relative( $reflector->getFileName() );
+		$filepath = self::maybe_make_abspath_relative( $reflector->getFileName() );
 
-		$app_class = WPLib::app_class( $item );
+		$app_class = self::app_class();
 
-		foreach( self::get_module_classes( $app_class ) as $module_class => $module_filepath ) {
+		$module_filepath = null;
 
-			if ( 0 === strpos( $filepath, $module_filepath ) ) {
+		foreach ( self::get_module_classes( $app_class ) as $module_class => $module_dir ) {
 
-				return $module_filepath;
+			if ( 0 === strpos( $filepath, $module_dir ) ) {
+
+				$module_filepath = self::maybe_make_absolute_path( $module_dir, ABSPATH );
+
+				break;
 
 			}
 
 		}
 
-		return null;
+		return $module_filepath;
 
 	}
 
@@ -1212,13 +1349,13 @@ class WPLib {
 	 */
 	static function app_classes() {
 
-		if ( ! ( $app_classes = WPLib::cache_get( $cache_key = "app_classes" ) ) ) {
+		if ( ! ( $app_classes = self::cache_get( $cache_key = "app_classes" ) ) ) {
 
-			$app_classes = array_filter( self::site_classes(), function( $class_name ) {
+			$app_classes = array_values( array_filter( self::site_classes(), function( $class_name ) {
 				return is_subclass_of( $class_name, 'WPLib_App_Base' );
-			});
+			}));
 
-			WPLib::cache_set( $cache_key, $app_classes );
+			self::cache_set( $cache_key, $app_classes );
 
 		}
 		return $app_classes;
@@ -1228,33 +1365,15 @@ class WPLib {
 	/**
 	 * Returns the one app class defined.
 	 *
-	 * @note ASSUMES naming convention where App name is a subset of name of class, i.e. 'LawPress' and 'LawPress_Person'.
 	 * @note Currently only supports one app class.
 	 *
-	 * @var string|object $class_name
 	 * @return string|null
 	 */
-	static function app_class( $class_name ) {
+	static function app_class() {
 
-		if ( is_object( $class_name ) ) {
+		$app_classes = self::app_classes();
 
-			$class_name = get_class( $class_name );
-
-		}
-
-		foreach( self::app_classes() as $app_class ) {
-
-			$regex = '#^_?'. preg_quote( $app_class ) . '_.+$#';
-
-			if ( preg_match( $regex, $class_name ) ) {
-
-				return $app_class;
-
-			}
-
-		}
-
-		return 'WPLib';
+		return count( $app_classes ) ? $app_classes[0] : 'WPLib';
 
 	}
 
@@ -1508,68 +1627,58 @@ class WPLib {
 	}
 
 	/**
-	 * Generates output for templates that are shared by modules inside of a WPLib App.
+	 * Register all templates for WPLib, an App or a module.
 	 *
-	 * @param string $template
-	 * @param array|string $_template_vars
-	 * @param WPLib_Item_Base|object|string|null $item
-	 * @param string $class_name
+	 * @return array
 	 */
-	static function the_module_template( $template, $_template_vars = array(), $item = null, $class_name = null ) {
+	private static function _register_templates() {
 
-		if ( is_null( $class_name ) ) {
+		if ( count( $templates = glob( static::template_dir() . '/*.php' ) ) ) {
 
-			$class_name = get_called_class();
+			foreach( $templates as $template ) {
 
-		}
+				static::register_template( basename( $template, '.php' ) );
 
-		$module_filepath = static::get_module_filepath( $class_name );
-
-		$templates_subdir = static::templates_subdir();
-
-		$template = "{$module_filepath}/{$templates_subdir}/{$template}";
-
-		static::the_template( $template, $_template_vars, $item );
-	}
-
-	/**
-	 * Generates output for templates that are shared by a WPLib App.
-	 *
-	 * @param string $template
-	 * @param array|string $_template_vars
-	 * @param WPLib_Item_Base|object|null $item
-	 */
-	static function the_app_template( $template, $_template_vars = array(), $item = null ) {
-
-		/**
-		 * Get the root directory for App defined for the item
-		 */
-		$class_name = is_object( $item ) && method_exists( $item, 'app_class' ) ? $item->app_class() : get_called_class();
-
-		if ( ! method_exists( $class_name, 'root_dir' ) ) {
-
-			$err_msg = __( "Class %s does not have method root_dir(), called from: %s::%s()", 'wplib' );
-
-			WPLib::trigger_error( sprintf( $err_msg, $class_name, __CLASS__, __METHOD__ ) );
-
-		} else {
-
-			$root_dir = call_user_func( array( $class_name, 'root_dir' ) );
-
-			$templates_subdir = static::templates_subdir();
-
-			$root_dir = WPLib::maybe_make_abspath_relative( $root_dir );
-
-			$template = "{$root_dir}/{$templates_subdir}/{$template}";
-
-			static::the_template( $template, $_template_vars, $item );
+			}
 
 		}
 
 	}
 
 	/**
+	 * Register a template
+	 *
 	 * @param string $template
+	 * @param string|bool $called_class
+	 */
+	static function register_template( $template, $called_class = false ) {
+
+		if ( ! $called_class ) {
+			$called_class = get_called_class();
+		}
+
+		$module_name = self::get_module_name( $called_class );
+
+		self::$_templates[ $module_name ][ $template ] =
+			self::maybe_make_abspath_relative( static::get_template_dir( $template ) );
+
+	}
+
+	/**
+	 * Return the template filepath for the passed $template for the called class.
+	 *
+	 * @param string $template
+	 *
+	 * @return string
+	 */
+	static function get_template_dir( $template ) {
+
+		return static::template_dir() . '/' . basename( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
+
+	}
+
+	/**
+	 * @param string $template_slug
 	 * @param array|string $_template_vars
 	 * @param WPLib_Item_Base|object $item
 	 *
@@ -1578,116 +1687,146 @@ class WPLib {
 	 *       use __call() and __callStatic() to allow it to be invoked.
 	 * @see  http://stackoverflow.com/a/7983863/102699
 	 */
-	static function the_template( $template, $_template_vars = array(), $item = null ) {
-
-		$_filename = preg_replace( '#(\.php)$#', '', ltrim( $template, '/' ) ) . '.php';
-
-		$template = new stdClass();
-		$template->dir = get_stylesheet_directory();
+	static function the_template( $template_slug, $_template_vars = array(), $item = null ) {
 
 		/*
-		 * If root path (i.e. "~/wp-content/...") add ABSPATH to the template file after removing ~
-		 * If not root path, assume the template file is in /templates/ inside the theme directory
+		 * Calculate the md5 value for caching this template filename
 		 */
-		$_templates_subdir = static::templates_subdir();
-		$template->filename = preg_match( '#^~[\/](.+)#', $_filename, $match )
-			? ABSPATH . $match[ 1 ]
-			: "{$template->dir}/{$_templates_subdir}/{$_filename}";
+		if ( ! self::is_development() ) {
 
-		if ( ! is_string( $_template_vars ) || false !== strpos( $_template_vars, '=' ) ) {
-
-			$_specialty = false;
-
-			if ( is_string( $_template_vars ) ) {
-
-				$_template_vars = wp_parse_args( $_template_vars );
-
-			}
-
-			if ( false === $_template_vars || is_null( $_template_vars ) ) {
-
-				$_template_vars = array();
-
-			} else if ( ! is_array( $_template_vars ) ) {
-
-				$message = __( 'Unexpected value for 2nd parameter passed to the_template(). Expected array, string, false or null but got %s.', 'wplib' );
-				WPLib::trigger_error( sprintf( $message, gettype( $_template_vars ) ) );
-
-			}
+			$_md5 = md5( serialize( array( $template_slug, $_template_vars, get_class( $item ) ) ) );
 
 		} else {
 
-			/**
-			 * If a string is passed assume it is for a more specific template and behave like get_template_part().
-			 */
-			$_specialty = esc_attr( $_template_vars );
-
-			$_template_vars	= array();
-
-			$_specialty = preg_replace( '#(\.php)$#', "-{$_specialty}$1", $template->filename );
+			$_md5 = $template_slug . '[' . get_class( $item ) . '][' . serialize( $_template_vars ) . ']';
 
 		}
 
-		if ( $_specialty && is_file( $_specialty )  ) {
-			/**
-			 * We found the special template before the general one.
-			 */
-			$template->filename = $_specialty;
+		if ( ! ( $template = self::cache_get( $_cache_key = "template_file[{$_md5}]" ) ) ) {
 
-			$_specialty = true;
+			$template = new stdClass();
+
+			$template->filenames_tried = array();
+
+			$template->found = false;
+
+			/**
+			 * Ensure $_template_vars is an array
+			 */
+			$template->vars = is_string( $_template_vars ) ? wp_parse_args( $_template_vars ) : $_template_vars;
+			if ( ! is_array( $template->vars ) ) {
+				$template->vars = array();
+			}
+
+			/*
+			 * Ensure filename does not have a leading slash ('/') but does have a trailing '.php'
+			 */
+			$_filename = preg_replace( '#(.+)(\.php)?$#', '$1.php', ltrim( $template_slug, '/' ) );
+
+			foreach ( array( 'theme', 'module', 'app' ) as $template_type ) {
+
+				switch ( $template_type ) {
+					case 'theme':
+						$template->dir    = get_stylesheet_directory();
+						$template->subdir = static::templates_subdir();
+						break;
+
+					case 'module':
+						$_app_class = ! empty( $template->vars['@app'] )
+							? $template->vars['@app']
+						    : self::app_class();
+
+						$_module_class = ! empty( $template->vars['@module'] )
+							? self::get_module_class( $template->vars['@module'], $_app_class )
+							: get_class( $item );
+
+						$template->dir    = self::get_module_dir( $_module_class );
+						$template->subdir = 'templates';
+						break;
+
+					case 'app':
+						/**
+						 * @note Not implemented yet.
+						 */
+						$template->dir    = call_user_func( array( $_app_class, 'root_dir' ) );
+						$template->subdir = 'templates';
+						break;
+
+				}
+
+				$template->filename = "{$template->dir}/{$template->subdir}/{$_filename}";
+
+				if ( ! is_file( $template->filename ) ) {
+
+					$template->filenames_tried[ $template_type ] = $template->filename;
+
+				} else {
+
+					$template->found = true;
+
+					$template->var_name = self::get_constant( 'VAR_NAME', get_class( $item ) );
+
+					$template->comments = "<!--[TEMPLATE FILE: {$template->filename} -->";
+
+					break;
+
+				}
+
+			}
+
+			self::cache_set( $_cache_key, $template );
+
+
 
 		}
 
+		$template->add_comments = ! self::doing_ajax() && ! self::is_production();
 
-		if ( true !== $_specialty && ! is_file( $template->filename )  ) {
+		if ( ! $template->found ) {
 
-			/**
-			 * No speciality template and no template at all.
-			 */
-			$template->filename = $template->dir = false;
-
-			if ( ! WPLib::is_production() ) {
+			if ( $template->add_comments ) {
 
 				/**
-				 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
+				 * This can be used by theme developers with view source to see which templates failed.
+				 *
+				 * @note FOR CODE REVIEWERS:
+				 *
+				 * This is ONLY output of constant 'WPLIB_RUNMODE' is defined in wp-config.php.
+				 * In other words, this will NEVER run on your servers (unless you set WPLIB_RUNMODE.)
 				 */
-				echo "\n<!--[FAILED Template File: {$template->filename} -->\n";
+				echo "\n<!--[FAILED TEMPLATE FILE: {$template_slug}. Tried:\n";
+				foreach ( $template->filenames_tried as $template_type => $template_filename ) {
+					echo "\n\t{$template_type}: {$template_filename}";
+				}
+				echo "\n]-->";
 
 			}
-
-		}
-
-		if ( ! $template->filename ) {
-
-			$output = false;
 
 		} else {
 
-			if ( ! WPLib::doing_ajax() && ! WPLib::is_production() ) {
+			if ( $template->add_comments ) {
 
-				echo "\n<!--[Template File: {$template->filename} -->\n";
+				echo $template->comments;
 
 			}
 
-			extract( $_template_vars, EXTR_PREFIX_SAME, '_' );
+			extract( $template->vars, EXTR_PREFIX_SAME, '_' );
 
-			if ( $item && ( $_var_name = WPLib::get_constant( 'VAR_NAME', get_class( $item ) ) ) ) {
+			if ( $template->var_name ) {
 				/*
 				 * Assign the $item's preferred variable name in addition to '$item', i.e. '$brand'
 				 * This is a very controlled use of extract() i.e. I know what I am doing here.
 				 */
-				extract( array( $_var_name => $item ) );
+				extract( array( $template->var_name => $item ) );
 			}
-
-			$template->vars = $_template_vars;
 
 			unset(
 				$_template_vars,
-				$_templates_subdir,
 				$_filename,
 				$_cache_key,
-				$_var_name,
-				$_specialty
+				$_md5,
+				$_app_class,
+				$_module_class
 			);
 
 			ob_start();
@@ -1696,15 +1835,37 @@ class WPLib {
 			require( $template->filename );
 			self::$_file_loading = false;
 
-			$output = ob_get_clean();
+
+			if ( ! $template->add_comments ) {
+
+				echo ob_get_clean();
+
+			} else {
+
+				/**
+				 * This can be used by theme developers with view source to see which templates failed.
+				 *
+				 * @note FOR CODE REVIEWERS:
+				 *
+				 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
+				 * In other words, this will NEVER run on your servers (unless you set WPLIB_RUNMODE.)
+				 */
+				echo $template->comments;
+				echo ob_get_clean();
+				echo "\n<!--[END TEMPLATE FILE: {$template->filename} -->\n";
+
+			}
 
 		}
-
-		echo $output;
 
 	}
 
 	/**
+	 * Do "the_" Methods - Allow classes to delegate the "the_" logic processing here.
+	 *
+	 * The "the_" method can call virtual methods and/or delegate to a view or a model.
+	 * The view and model can both be the same object if needed.
+	 *
 	 * @param string|object $view
 	 * @param string|object $model
 	 * @param string $method_name
@@ -1803,7 +1964,7 @@ class WPLib {
 
 				$message = sprintf( __( 'Method %s not found for class %s.', 'wplib' ), $match[ 0 ], $class_name );
 
-				WPLib::trigger_error( $message, E_USER_ERROR );
+				self::trigger_error( $message, E_USER_ERROR );
 
 				$has_html_suffix = false;
 
@@ -1866,7 +2027,7 @@ class WPLib {
 
 		if ( ! self::$_theme ) {
 
-			foreach( WPLib::site_classes() as $class_name ) {
+			foreach( self::site_classes() as $class_name ) {
 
 				if ( is_subclass_of( $class_name, 'WPLib_Theme_Base' )  ) {
 
@@ -1891,6 +2052,7 @@ class WPLib {
 		return self::$_theme;
 
 	}
+
 	/**
 	 * @param WPLib_Theme_Base $theme
 	 */
@@ -1911,7 +2073,7 @@ class WPLib {
 	 */
 	static function _get_child_classes( $type, $constant_name, $base_class ) {
 
-		if ( ! ( $child_classes = WPLib::cache_get( $cache_key = "{$type}_classes" ) ) ) {
+		if ( ! ( $child_classes = self::cache_get( $cache_key = "{$type}_classes" ) ) ) {
 
 			$child_classes = array();
 
@@ -1923,7 +2085,7 @@ class WPLib {
 						continue;
 					}
 
-					if ( ! is_null( $constant_value = WPLib::get_constant( $constant_name, $class_name ) ) ) {
+					if ( ! is_null( $constant_value = self::get_constant( $constant_name, $class_name ) ) ) {
 						continue;
 					}
 
@@ -1933,7 +2095,7 @@ class WPLib {
 
 			}
 
-			WPLib::cache_set( $cache_key, $child_classes );
+			self::cache_set( $cache_key, $child_classes );
 
 		}
 
@@ -1946,7 +2108,7 @@ class WPLib {
 	 */
 	static function short_prefix() {
 
-		return WPLib::get_constant( 'SHORT_PREFIX', get_called_class() );
+		return self::get_constant( 'SHORT_PREFIX', get_called_class() );
 
 	}
 
@@ -1967,58 +2129,201 @@ class WPLib {
 	}
 
 	/**
-	 * Register all templates for WPLib, an App or a module.
-	 *
-	 * @return array
-	 */
-	private static function _register_templates() {
-
-		if ( count( $templates = glob( static::template_dir() . '/*.php' ) ) ) {
-
-			foreach( $templates as $template ) {
-
-				static::register_template( basename( $template, '.php' ) );
-
-			}
-
-		}
-
-	}
-
-	/**
-	 * Register a template
-	 *
-	 * @param string $template
-	 * @param string|bool $called_class
-	 */
-	static function register_template( $template, $called_class = false ) {
-
-		self::$_templates[ $called_class ? $called_class : get_called_class() ][ $template ] =
-			self::maybe_make_abspath_relative( static::get_template_dir( $template ) );
-
-	}
-
-	/**
-	 * Return the template filepath for the passed $template for the called class.
-	 *
-	 * @param string $template
-	 *
-	 * @return string
-	 */
-	static function get_template_dir( $template ) {
-
-		return static::template_dir() . '/' . basename( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
-
-	}
-
-	/**
 	 * Return the templates directory path for the called class.
 	 *
 	 * @return string
 	 */
 	static function template_dir() {
 
+		self::check_method_stability( __METHOD__, self::EXPERIMENTAL );
+
 		return static::get_root_dir( 'templates' );
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function is_wp_debug() {
+
+		return defined( 'WP_DEBUG' ) && WP_DEBUG;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	static function stability() {
+
+		return intval( WPLIB_STABILITY );
+
+	}
+
+	/**
+	 * Call at the start of a method to check stability level.
+	 *
+	 * Stability levels can be one of:
+	 *
+	 *      WPLib::DEPRECATED (0)
+	 *      WPLib::EXPERIMENTAL (1)
+	 *      WPLib::STABLE (2)
+	 *      WPLib::LOCKED (3)
+	 *
+	 * @example The follow illustrates how to check that the stability
+	 *          level is low enough to support EXPERIMENTAL methods.
+	 *
+	 *      /**
+	 *       * @stablity 1 - Experimental
+	 *       * /
+	 *      function foo() {
+	 *          self::check_method_stability( __METHOD__, WPLib::EXPERIMENTAL );
+	 *          // Do the work of foo()
+	 *          return;
+	 *      }
+	 *
+	 * @param string $method_name
+	 * @param int $stability
+	 */
+	static function check_method_stability( $method_name, $stability ) {
+
+		if ( WPLIB_STABILITY > $stability ) {
+
+			$err_msg = __(
+				'The %s method has been marked with a stability of %d ' .
+			        'but the current WPLIB_STABILITY requirement is set to %d. ' .
+					'You can enable this in wp-config-local.php but BE AWARE that ',
+				'wplib'
+			);
+
+			switch ( $stability ) {
+				case self::DEPRECATED:
+					$err_msg .= __(
+						'the method has been DEPRECATED and you ' .
+						'should really revise your code.', 'wplib'
+					);
+					break;
+
+				case self::EXPERIMENTAL:
+					$err_msg .= __(
+						'the method is EXPERIMENTAL so it is likely to ' .
+						'change thus forcing you to modify your own code ' .
+						'when it changes when you plan to upgrade to a ' .
+						'newer version of WPLib.', 'wplib'
+					);
+					break;
+
+				case self::STABLE:
+					$err_msg .= __(
+						'the method is STABLE so it is unlikely to change ' .
+						'but it has not yet been locked to it is possible ' .
+						'this it could change. If so you will need to modify ' .
+						'your own code when you plan to upgrade to a newer ' .
+						'version of WPLib.', 'wplib'
+					);
+					break;
+
+				default:
+					$err_msg = false;
+					break;
+
+			}
+
+			if ( $err_msg ) {
+
+				$err_msg .= __(' To enable add "define( \'WPLIB_STABILITY\', %d );" to your config file.', 'wplib' );
+
+				self::trigger_error( sprintf(
+					$err_msg,
+					$method_name,
+					$stability,
+					WPLIB_STABILITY,
+					$stability
+				));
+
+			}
+		}
+
+	}
+
+	/**
+	 * Scans the source file to ensure that only one PHP class is declared per file.
+	 *
+	 * This is important because we assume only one class for the autoloader.
+	 *
+	 * @note For use only during development
+	 *
+	 * @param $filename
+	 */
+	static function _ensure_only_one_class( $filename ) {
+
+		if ( self::is_wp_debug() ) {
+
+			preg_match_all(
+					'#\n\s*(abstract|final)?\s*class\s*(\w+)#i',
+					file_get_contents( $filename ),
+					$matches,
+					PREG_PATTERN_ORDER
+			);
+
+			if ( 1 < count( $matches[2] ) ) {
+
+				$message = __( 'Include files in WPLib Modules can can only contain one PHP class, %d found in %s: ' );
+
+				static::trigger_error( sprintf(
+						$message,
+						count( $matches[2] ),
+						$class_name,
+						implode( ', ', $matches[2] )
+				) );
+
+			}
+		}
+	}
+
+	/**
+	 * @param string $module_name
+	 * @param string|bool $app_class
+	 *
+	 * @return string
+	 */
+	static function get_module_class( $module_name, $app_class = false ) {
+
+		if ( ! $app_class ) {
+
+			$app_class = get_called_class();
+
+		}
+
+		do {
+
+			$module_class = null;
+
+			if ( empty( self::$_module_names[ $app_class ] ) ) {
+				break;
+			}
+
+			$app_modules = self::$_module_names[ $app_class ];
+
+			if ( empty( $app_modules[ $module_name ] ) ) {
+				break;
+			}
+
+			$module_class = $app_modules[ $module_name ];
+
+		} while ( false );
+
+		return $module_class;
+
+	}
+
+	/**
+	 * @param string $class_name
+	 *
+	 * @return mixed|null
+	 */
+	static function get_module_name( $class_name ) {
+
+		return self::get_constant( 'MODULE_NAME', $class_name );
 
 	}
 
@@ -2032,12 +2337,11 @@ class WPLib {
 
 		$string = str_replace( array( '_', ' ' ), '-', $string );
 		if ( $lowercase ) {
-			$string = strtolower(  $string );
+			$string = strtolower( $string );
 		}
 		return $string;
 
 	}
-
 
 }
 WPLib::on_load();

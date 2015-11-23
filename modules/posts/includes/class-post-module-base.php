@@ -138,24 +138,26 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 	/**
 	 * @param array|string|WPLib_Query $query
 	 * @param array $args
-	 * @return WPLib_Post_List_Base
+	 * @return WPLib_Post_List_Default[]
 	 */
 	static function get_list( $query = array(), $args = array() ) {
 
-		if ( is_array( $query ) ) {
+		if ( $query instanceof WP_Query ) {
 
-			$query = wp_parse_args( $query );
+			/**
+			 * @todo Trigger Error here if $query not
+			 *       all matching static::POST_TYPE.
+			 */
 
-			if ( $post_type = static::POST_TYPE ) {
+		} else {
 
-				$query[ 'post_type' ] = $post_type;
+			$query['post_type'] = static::POST_TYPE;
 
-			}
 		}
 
 		$args = wp_parse_args( $args, array(
 
-			'list_class' => static::post_type_list_class(),
+			'list_owner' => get_called_class(),
 
 		));
 
@@ -176,51 +178,18 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 				break;
 			}
 
-			/**
-			 * See if module has a POST_TYPE constant defined.
-			 */
-			if ( $instance_class = static::post_type_list_class() ) {
-			 	break;
-			}
-
+//			/**
+//			 * See if module has a POST_TYPE constant defined.
+//			 */
+//			if ( $instance_class = static::post_type_list_class() ) {
+//			 	break;
+//			}
+//
 			$instance_class = 'WPLib_Post_Default';
 
 		} while ( false );
 
 		return $instance_class;
-
-	}
-
-	/**
-	 * @return string
-	 */
-	static function post_type_list_class() {
-
-		$called_class = get_called_class();
-
-		if ( ! ( $post_type_list_class = WPLib::cache_get( $cache_key = "list_post_type_class[{$called_class}]" ) ) ) {
-
-			foreach ( WPLib::site_classes() as $class_name ) {
-
-				if ( is_subclass_of( $class_name, 'WPLib_Post_List_Base' ) && $post_type = static::get_constant( 'POST_TYPE', $class_name ) ) {
-
-					$post_type_list_class = $class_name;
-
-				}
-
-			}
-
-			if ( ! $post_type_list_class ) {
-
-				$post_type_list_class = 'WPLib_Post_List_Default';
-
-			}
-
-			WPLib::cache_get( $cache_key, $post_type_list_class );
-
-		}
-
-		return $post_type_list_class;
 
 	}
 
@@ -258,6 +227,31 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 		 */
 		global $wp_the_query;
 		return $wp_the_query->is_singular( static::POST_TYPE );
+	}
+
+	/**
+	 * Allows a post type to attach a taxonomy that is registered by someone else's code.
+	 *
+	 * @param string $taxonomy
+	 *
+	 * @stability 1 - Experimental
+	 */
+	static function attach_taxonomy( $taxonomy ) {
+
+		$VALID_HOOK = 'wplib_post_register_taxonomies';
+
+		if ( current_action() !== $VALID_HOOK ) {
+
+			$class_name = get_called_class();
+
+		    $err_msg = __( '%s::%s() will only work correctly if called within the action hook %s.', 'wplib' );
+
+			WPLib::trigger_error( sprintf( $err_msg, $class_name, __FUNCTION__, $VALID_HOOK ) );
+
+		}
+
+		register_taxonomy_for_object_type( $taxonomy, static::POST_TYPE );
+
 	}
 
 }
