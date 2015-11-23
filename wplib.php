@@ -810,7 +810,7 @@ class WPLib {
 
 		if ( ! ( $mustload_classes = static::cache_get( $cache_key = "mustload_classes" ) ) ) {
 
-			array();
+			$mustload_classes = array();
 
 			do {
 				reset( self::$_mustload_classes );
