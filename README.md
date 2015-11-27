@@ -19,7 +19,6 @@ WPLib is based on at least five (5) generations of code developed over five (5) 
 
 - Mike Schinkel ([mikeschinkel](https://github.com/mikeschinkel))
 - Micah Wood ([wpscholar](https://github.com/wpscholar))
-- Daryl Lozupone ([clubdeuce](https://github.com/clubdeuce))
 
 ##License 
 
