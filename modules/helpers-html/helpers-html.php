@@ -31,7 +31,6 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 	 *
 	 * @return string
 	 */
-
 	static function the_link( $href, $link_text, $args = array() ) {
 
 		echo wp_kses_post( self::get_link( $href, $link_text, $args ) );
@@ -43,29 +42,44 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 	 *
 	 * @param string $href
 	 * @param string $link_text
-	 * @param array $args
+	 * @param array $args {
+	 *
+	 *      @type string $before
+	 *      @type string $fragment
+	 *      @type string $class
+	 *      @type string $target
+	 *      @type string $rel
+	 *      @type string $onclick
+	 *      @type string $title_text
+	 *      @type string $link_target
+	 *      @type string[]|string $attributes
+	 *      @type string $before_text
+	 *      @type string $default_text
+	 *      @type string $after_text
+	 *      @type string $after
+	 *      @type bool $is_html
+	 * }
 	 *
 	 * @return string
 	 */
-
 	static function get_link( $href, $link_text, $args = array() ) {
 		$html = false;
 		if ( $href ) {
 			$args = wp_parse_args( $args, array(
-				'class'        => false,
-				'target'       => false,
-				'attributes'   => false,
-				'title_text'   => false,
-				'is_html'      => false,
-				'link_target'  => false,
-				'before'       => false,
-				'after'        => false,
-				'before_text'  => false,
-				'after_text'   => false,
-				'fragment'     => false,
-				'onclick'      => false,
-				'default_text' => false,
-				'rel'          => false,
+				'before'       => '',
+				'fragment'     => '',
+				'class'        => '',
+				'target'       => '',
+				'rel'          => '',
+				'onclick'      => '',
+				'title_text'   => '',
+				'link_target'  => '',
+				'attributes'   => array(),
+				'before_text'  => '',
+				'default_text' => '',
+				'after_text'   => '',
+				'after'        => '',
+				'is_html'      => true,
 			) );
 
 			if ( empty( $link_text ) ) {
@@ -90,21 +104,8 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 				$args['rel'] = esc_attr( $args['rel'] );
 				$args['rel'] = " rel=\"{$args['rel']}\"";
 			}
-			if ( ! is_array( $args['attributes'] ) ) {
-				parse_str( $args['attributes'], $args['attributes'] );
-			}
-			if ( is_array( $args['attributes'] ) ) {
-				$attributes = '';
-				foreach ( $args['attributes'] as $name => $value ) {
-					/**
-					 * @TODO Verify that sanitize_key() is the correct method to use here for security.
-					 */
-					$name  = sanitize_key( $name );
-					$value = esc_attr( $value );
-					$attributes .= " {$name}=\"{$value}\"";
-				}
-				$args['attributes'] = $attributes;
-			}
+
+			$args['attributes'] = self::get_html_attributes_html( $args['attributes'] );
 
 			if ( $args['fragment'] ) {
 				$href = "{$href}#{$args['fragment']}";
@@ -126,65 +127,456 @@ HTML;
 		return $html;
 	}
 
+	/**
+	 * Returns an HTML Ordered List of <li> elements
+	 *
+	 * @param string[] $li_elements
+	 * @param array $args {
+	 *
+	 *      @type string $before
+	 *      @type string $class
+	 *      @type string[]|string $attributes
+	 *      @type string $before_elements
+	 *      @type string $before_li
+	 *      @type string $li_class
+	 *      @type string[]|string $li_attributes
+	 *      @type string $before_text
+	 *      @type string $after_text
+	 *      @type string $after_li
+	 *      @type string $after_elements
+	 *      @type string $after
+	 *      @type callable $filter
+	 *
+	 * }
+	 * @return string
+	 */
+	static function the_html_ordered_list_html( $li_elements, $args = array() ) {
+
+		return self::_get_html_list_html( 'ol', $li_elements, $args );
+
+	}
+
 
 	/**
-	 * Return a string of attributes formatted for HTML elements from an associative array
+	 * Returns an HTML Unordered List of <li> elements
 	 *
-	 * @param array $args
+	 * @param string[] $li_elements
+	 * @param array $args {
+	 *
+	 *      @type string $before
+	 *      @type string $class
+	 *      @type string[]|string $attributes
+	 *      @type string $before_elements
+	 *      @type string $before_li
+	 *      @type string $li_class
+	 *      @type string[]|string $li_attributes
+	 *      @type string $before_text
+	 *      @type string $after_text
+	 *      @type string $after_li
+	 *      @type string $after_elements
+	 *      @type string $after
+	 *      @type callable $filter
+	 *
+	 * }
+	 * @return string
+	 */
+	static function the_html_unordered_list_html( $li_elements, $args = array() ) {
+
+		return self::_get_html_list_html( 'ul', $li_elements, $args );
+
+	}
+
+	/**
+	 * Returns an HTML Ordered List of <li> elements
+	 *
+	 * @param string[] $li_elements
+	 * @param array $args {
+	 *
+	 *      @type string $before
+	 *      @type string $class
+	 *      @type string[]|string $attributes
+	 *      @type string $before_elements
+	 *      @type string $before_li
+	 *      @type string $li_class
+	 *      @type string[]|string $li_attributes
+	 *      @type string $before_text
+	 *      @type string $after_text
+	 *      @type string $after_li
+	 *      @type string $after_elements
+	 *      @type string $after
+	 *      @type callable $filter
+	 *
+	 * }
+	 * @return string
+	 */
+	static function get_html_ordered_list_html( $li_elements, $args = array() ) {
+
+		return self::_get_html_list_html( 'ol', $li_elements, $args );
+
+	}
+
+	/**
+	 * Returns an HTML Unordered List of <li> elements
+	 *
+	 * @param string[] $li_elements
+	 * @param array $args {
+	 *
+	 *      @type string $before
+	 *      @type string $class
+	 *      @type string[]|string $attributes
+	 *      @type string $before_elements
+	 *      @type string $before_li
+	 *      @type string $li_class
+	 *      @type string[]|string $li_attributes
+	 *      @type string $before_text
+	 *      @type string $after_text
+	 *      @type string $after_li
+	 *      @type string $after_elements
+	 *      @type string $after
+	 *      @type callable $filter
+	 *
+	 * }
+	 * @return string
+	 */
+	static function get_html_unordered_list_html( $li_elements, $args = array() ) {
+
+		return self::_get_html_list_html( 'ul', $li_elements, $args );
+
+	}
+
+	/**
+	 * Returns an HTML List of <li> elements, Ordered or Unordered
+	 *
+	 * @param string $list_element
+	 * @param string[] $li_elements
+	 * @param array $args {
+	 *      @type string $before
+	 *      @type string $class
+	 *      @type string[]|string $attributes
+	 *      @type string $before_elements
+	 *      @type string $before_li
+	 *      @type string $li_class
+	 *      @type string[]|string $li_attributes
+	 *      @type string $before_text
+	 *      @type string $after_text
+	 *      @type string $after_li
+	 *      @type string $after_elements
+	 *      @type string $after
+	 *      @type callable $filter
+	 * }
+	 * @return string
+	 */
+	private static function _get_html_list_html( $list_element, $li_elements, $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+			'before'          => '',
+			'class'           => '',
+			'attributes'      => array(),
+			'before_elements' => '',
+			'before_li'       => '',
+			'li_class'        => '',
+			'li_attributes'   => array(),
+			'before_text'     => '',
+			'after_text'      => '',
+			'after_li'        => '',
+			'after_elements'  => '',
+			'after'           => '',
+			'filter'          => null,
+		) );
+
+		$list_element = WPLib::sanitize_html_name( $list_element );
+
+		if ( ! empty( $args['attributes']['class'] ) ) {
+
+			$args['class'] = esc_attr( "{$args['attributes']['class']} {$args['class']}" );
+			unset( $args['attributes']['class'] );
+
+		}
+
+		$attributes = WPLib::get_html_attributes_html( $args['attributes'] );
+
+		$list_html = self::get_html_li_elements_html( $li_elements, array(
+			'before'      => "{$args['before']}<{$list_element}{$attributes}" .
+			                 " class=\"{$args['class']}\">{$args['before_elements']}",
+			'before_li'   => $args['before_li'],
+			'class'       => $args['li_class'],
+			'attributes'  => $args['li_attributes'],
+			'before_text' => $args['before_text'],
+			'after_text'  => $args['after_text'],
+			'after_li'    => $args['after_li'],
+			'after'       => "{$args['after_elements']}</{$list_element}>{$args['after']}",
+			'filter'      => $args['filter'],
+		));
+
+		return $list_html;
+
+	}
+
+	/**
+	 * Outputs one or more HTML <li> elements
+	 *
+	 * @param string[] $li_elements
+	 * @param array $args {
+	 *
+	 *      @type string $before
+	 *      @type string $before_li
+	 *      @type string[]|string $attributes
+	 *      @type string $class
+	 *      @type string $after_li
+	 *      @type string $after
+	 *      @type callable $filter
+	 * }
 	 *
 	 * @return string
 	 */
-	static function to_html_attributes( $args = array() ) {
+	static function the_html_li_elements_html( $li_elements, $args = array() ) {
 
-		$args = wp_parse_args( $args );
+		echo self::get_html_li_elements_html( $li_elements, $args );
 
-		$attributes = array_map(
+	}
 
-			function( $name ) use ( $args ) {
+	/**
+	 * Returns  one or more HTML <li> elements
+	 *
+	 * @param string[] $li_elements
+	 * @param array $args {
+	 *
+	 *      @type string $before
+	 *      @type string $before_li
+	 *      @type string $before_text
+	 *      @type string[]|string $attributes
+	 *      @type string $class
+	 *      @type string $after_text
+	 *      @type string $after_li
+	 *      @type string $after
+	 *      @type callable $filter
+	 * }
+	 * @return string
+	 */
+	static function get_html_li_elements_html( $li_elements, $args = array() ) {
 
-				do {
-					$attribute = '';
+		$args = wp_parse_args( $args, array(
+			'before'      => '',
+			'before_li'   => '',
+			'class'       => '',
+			'attributes'  => array(),
+			'before_text' => '',
+			'after_text'  => '',
+			'after_li'    => '',
+			'after'       => '',
+			'filter'      => null,
+		));
 
-					if ( empty( $name ) || ! is_string( $name ) ) {
-						break;
-					}
+		$args['attributes'] = self::sanitize_html_attributes( $args['attributes'] );
 
-					$value = $args[ $name ];
+		$li_args             = $args;
+		$li_args['sanitize'] = false;
+		$li_args['elements'] = $li_elements;
+		$li_args['before']   = $li_args['before_li'];
+		$li_args['after']    = $li_args['after_li'];
+        unset( $li_args['before_li'], $li_args['after_li'] );
 
-					if ( preg_match( '#^(object|array)$#', gettype( $value ) ) ) {
-						break;
-					}
+		$elements_html = '';
 
-					$value = esc_attr( (string) $value );
+	    foreach( $li_elements as $index => $element_text ) {
 
-					if ( empty( $value ) ) {
-						break;
-					}
+	        $li_args['index'] = $index;
 
-					/**
-					 * Santitize Attribute Name
-					 * @see http://stackoverflow.com/a/13287707
-					 */
-					$name = preg_replace( '#[^\p{L}0-9_.-]#', '', $name );
+	        $elements_html .= self::get_html_li_element_html( $element_text, $li_args );
 
-					if ( empty( $name ) ) {
-						break;
-					}
+		}
 
-					$attribute = "{$name}=\"{$value}\"";
+		return ! empty( $elements_html )
+			? "{$args['before']}{$elements_html}{$args['after']}"
+			: '';
 
-				} while ( false );
+	}
 
-				return $attribute;
+	/**
+	 * Returns  one or more HTML <li> elements
+	 *
+	 * @param string $element_text
+	 * @param array $args {
+	 *
+	 *      @type string $before
+	 *      @type string $before_text
+	 *      @type string[]|string $attributes
+	 *      @type string $class
+	 *      @type string $after_text
+	 *      @type string $after
+	 *      @type callable $filter
+	 *      @type mixed $index
+	 * }
+	 * @return string
+	 */
+	static function get_html_li_element_html( $element_text, $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+			'before'      => '',
+			'class'       => '',
+			'attributes'  => array(),
+			'before_text' => '',
+			'after_text'  => '',
+			'after'       => '',
+			'filter'      => null,
+			'elements'    => array(),
+			'index'       => null,
+		));
+
+		$before_text  = $args['before_text'] ? esc_html( $args['before_text'] ) : '';
+		$element_text = $element_text ? esc_html( $element_text ) : '';
+		$after_text   = $args['after_text'] ? esc_html( $args['after_text'] ) : '';
+
+		if ( ! empty( $args['attributes']['class'] ) ) {
+
+			$args['class'] = esc_attr( "{$args['attributes']['class']} {$args['class']}" );
+			unset( $args['attributes']['class'] );
+
+		}
+
+		if ( $args['filter'] ) {
+
+			$args = call_user_func( $args['filter'], $args, $element_text, $args['elements'] );
+
+		}
+
+		$attributes = count( $args['attributes'] )
+		  ? $args['attributes']
+		  : '';
+
+		if ( $attributes ) {
+
+			$attributes = ' ' . WPLib::get_html_attributes_html( $attributes );
+
+		}
+
+		$elements_html .=<<<HTML
+{$args['before']}<li{$attributes} class="{$args['class']}">{$before_text}{$element_text}{$after_text}</li>{$args['after']}
+HTML;
+
+		return $elements_html;
+
+	}
+
+
+	/**
+	 * Output a string of one of more '<li>' elements given a list of attributes
+	 *
+	 * @param string[]|string $attributes An associate array or URL parameter formatted string of HTML attributes.
+	 *
+	 * @return string
+	 */
+	static function the_html_attributes_html( $attributes = array() ) {
+
+		echo self::get_html_attributes_html( $attributes );
+
+	}
+
+	/**
+	 * Return a string of one of more '<li>' elements given a list of attributes
+	 *
+	 * @param string[]|string $attributes An associate array or URL parameter formatted string of HTML attributes.
+	 *
+	 * @return string
+	 */
+	static function get_html_attributes_html( $attributes = array() ) {
+
+		$attributes = self::sanitize_html_attributes( $attributes );
+
+		return implode( ' ', array_map(
+
+			function( $name ) use ( $attributes ) {
+
+				return "{$name}=\"{$attributes[ $value ]}\"";
+
 			},
-
 			array_keys( $args )
 
-		);
+		));
 
-		$attributes = implode( ' ', $attributes );
+	}
 
-		return $attributes;
+	/**
+	 * Sanitize one or more HTML attributes
+	 *
+	 * @param string[]|string $attributes An associate array or URL parameter formatted string of HTML attributes.
+	 *
+	 * @return string[]
+	 */
+	static function sanitize_html_attributes( $attributes ) {
+
+		if ( ! is_array( $attributes ) ) {
+
+			parse_str( $attributes, $attributes );
+
+		}
+
+		$sanitized_attributes = array();
+
+		if ( is_array( $attributes ) ) {
+
+			foreach ( $attributes as $name => $value ) {
+
+				if ( is_numeric( $name ) ) {
+					/**
+					 * A name is passed in $args as a value in an array like this:
+					 *
+					 *  array( 'class' => 'person-email', 'selected' )
+					 */
+					$value = null;
+					$name = $value;
+
+				}
+
+				$name = self::sanitize_html_name( $name );
+
+				if ( empty( $name ) ) {
+
+					continue;
+
+				}
+
+				$value = $args[ $name ];
+
+				if ( preg_match( '#^(object|array)$#', gettype( $value ) ) ) {
+					continue;
+				}
+
+				$value = esc_attr( (string) $value );
+
+				if ( empty( $value ) ) {
+					/**
+					 * A name is passed in $args as a value in a string like this:
+					 *
+					 *  'class=person-email&selected'
+					 *
+					 */
+					$value = $name;
+
+				}
+
+				$sanitized_attributes[ $name ] = $value;
+
+			}
+		}
+
+		return $sanitized_attributes;
+
+	}
+
+	/**
+	 * Sanitize the name of an HTML attribute or element
+	 *
+	 * @param string $name
+	 *
+	 * @return string
+	 *
+	 * @see http://stackoverflow.com/a/13287707
+	 */
+	static function sanitize_html_name( $name ) {
+
+		return preg_replace( '#[^\p{L}0-9_.-]#', '', $name );
+
 	}
 
 }
