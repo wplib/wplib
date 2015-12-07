@@ -767,9 +767,8 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	/**
 	 * @param string $template
 	 * @param array|string $_template_vars
-	 * @param WPLib_Item_Base|object $item
 	 */
-	function the_template( $template, $_template_vars = array(), $item = null ) {
+	function the_template( $template, $_template_vars = array() ) {
 
 	 	WPLib::the_template( $template, $_template_vars, WPLib::theme() );
 
