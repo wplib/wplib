@@ -12,6 +12,7 @@
  * @method void the_ID()
  * @method void the_title()
  * @method void the_url()
+ * @method void the_url_attr()
  * @method void the_permalink()
  *
  * @todo Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
