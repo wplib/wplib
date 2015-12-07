@@ -288,5 +288,16 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 		}
 	}
 
+	/**
+	 * @return string
+	 */
+	function term_description() {
+
+		return $this->has_term() ? $this->_term->description : null;
+
+	}
+
+
+
 
 }
