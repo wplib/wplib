@@ -274,12 +274,7 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	 * @param bool|WP_Error $wp_error
 	 */
 	function update_field( $field_name, $new_value, $wp_error = false ) {
-		if ( $this->has_wp_term() ) {
-
-			/**
-			 * @var wpdb $wpdb
-			 */
-			global $wpdb;
+		if ( $this->has_term() ) {
 
 			$args         = (array) $this->term();
 			$args[ $field_name ] = sanitize_title_with_dashes( $new_value );
