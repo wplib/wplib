@@ -5,6 +5,9 @@
  *
  * The Model Base Class for Terms
  *
+ * @method WPLib_Term_View_Base view()
+ * @property WPLib_Term_View_Base $view
+ *
  * @property WPLib_Term_Base $owner
  */
 abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
