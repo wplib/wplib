@@ -38,7 +38,7 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 	}
 
 	/**
-	 * Create a hyperlink with URL, Link Text and optional title text.
+	 * Create a hyperlink <a> with URL, Link Text and optional attributes.
 	 *
 	 * @param string $href
 	 * @param string $link_text
@@ -577,6 +577,95 @@ HTML;
 
 		return preg_replace( '#[^\p{L}0-9_.-]#', '', $name );
 
+	}
+
+
+
+	/**
+	 * Create a hyperlink with URL, Link Text and optional title text.
+	 *
+	 * @param string $src
+	 * @param array $args {
+	 *
+	 *      @type string $before
+	 *      @type string $class
+	 *      @type string $alt_text
+	 *      @type string $fragment
+	 *      @type string $onclick
+	 *      @type string[]|string $attributes
+	 *      @type string $after
+	 *
+	 * }
+	 *
+	 * @return string
+	 */
+	static function the_img( $src, $args = array() ) {
+
+		echo self::get_img( $src, $args );
+
+	}
+
+	/**
+	 * Create a <img> take with URL and optional attributes.
+	 *
+	 * @param string $src
+	 * @param array $args {
+	 *
+	 *      @type string $before
+	 *      @type string $class
+	 *      @type string $alt_text
+	 *      @type string $fragment
+	 *      @type string $onclick
+	 *      @type string[]|string $attributes
+	 *      @type string $after
+	 *
+	 * }
+	 *
+	 * @return string
+	 */
+	static function get_img( $src, $args = array() ) {
+		$html = '';
+
+		if ( $src ) {
+
+			$args = wp_parse_args( $args, array(
+				'before'     => '',
+				'class'      => '',
+				'alt_text'   => '',
+				'fragment'   => '',
+				'onclick'    => '',
+				'attributes' => array(),
+				'after'      => '',
+			) );
+
+			if ( $args['alt_text'] ) {
+				$args['alt_text'] = esc_attr( $args['alt_text'] );
+				$args['alt_text'] = " alt=\"{$args['alt_text']}\"";
+			}
+
+			if ( $args['class'] ) {
+				$args['class'] = esc_attr( $args['class'] );
+				$args['class'] = " class=\"{$args['class']}\"";
+			}
+
+			$args['attributes'] = self::get_html_attributes_html( $args['attributes'] );
+
+			if ( $args['fragment'] ) {
+				$src = "{$src}#{$args['fragment']}";
+			}
+
+			$src = esc_url( $src );
+
+			if ( $args['onclick'] ) {
+				$args['onclick'] = ' onclick="' . esc_js( $args['onclick'] ) . '"';
+			}
+
+			$html = <<<HTML
+{$args['before']}<a{$args['onclick']}{$args['class']} src="{$src}" {$args['alt_text']}{$args['attributes']}>{$args['after']}
+HTML;
+		}
+
+		return $html;
 	}
 
 }
