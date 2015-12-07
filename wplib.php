@@ -578,10 +578,6 @@ class WPLib {
 
 				self::$_autoloaded_parents = $autoload_files = array();
 
-				/**
-				 * These were the files that were previously added
-				 */
-				$added_files = array_values( self::$_autoload_files );
 
 				/**
 				 * For each Site/App/Module/Lib/Theme class
