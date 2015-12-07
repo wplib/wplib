@@ -46,25 +46,14 @@ class WPLib {
 	const SHORT_PREFIX = 'wplib_';
 
 	/**
-	 * Stability
-	 */
-	const DEPRECATED = 0;
-	const EXPERIMENTAL = 1;
-	const STABLE = 2;
-	const LOCKED = 3;
-
-	/**
-	 * Runmodes
-	 */
-	const DEVELOPMENT = 0;
-	const TESTING = 1;
-	const STAGING = 2;
-	const PRODUCTION = 3;
-
-	/**
 	 * @var int The current runmode.
 	 */
-	private static $_runmode = self::PRODUCTION;
+	private static $_runmode;
+
+	/**
+	 * @var int The current stability constraint.
+	 */
+	private static $_stability;
 
 	/**
 	 * @var array $_helpers Array of class names that this class can delegate calls to.
@@ -183,7 +172,7 @@ class WPLib {
 			 *
 			 * You can check (for example) for EXPERIMENTAL stability in a method using:
 			 *
-			 *      self::check_method_stability( __METHOD__, WPLib::EXPERIMENTAL );
+			 *      self::stability()->check_method( __METHOD__, WPLib::EXPERIMENTAL );
 			 *
 			 * Internal methods -- ones with a leading underscore -- will not be marked with
 			 * a stability level.
@@ -192,43 +181,20 @@ class WPLib {
 			 *
 			 * @see https://nodejs.org/api/documentation.html#documentation_stability_index
 			 */
-			define( 'WPLIB_STABILITY', 2 );
+			define( 'WPLIB_STABILITY', WPLib_Stability::__default );
 
 		}
+
+		self::set_stability( new WPLib_Stability( WPLIB_STABILITY ) );
+
 
 		if ( ! defined( 'WPLIB_RUNMODE' ) ) {
 
-			self::set_runmode( self::PRODUCTION );
-
-		} else {
-
-			$runmode = strtoupper( WPLIB_RUNMODE );
-
-			if ( is_string( $runmode ) && defined( "self::{$runmode}" ) ) {
-
-				$runmode = intval( self::get_constant( strtoupper( $runmode ) ) );
-
-			}
-
-			if ( ! is_numeric( $runmode ) ) {
-
-				$runmode = self::PRODUCTION;
-
-			} else {
-
-				$runmode = intval( $runmode );
-
-				if ( $runmode < self::DEVELOPMENT || self::PRODUCTION < $runmode ) {
-
-					$runmode = self::PRODUCTION;
-
-				}
-
-			}
-
-			self::set_runmode( $runmode );
+			define( 'WPLIB_RUNMODE', WPLib_Runmode::__default );
 
 		}
+
+		self::set_runmode( new WPLib_Runmode( WPLIB_RUNMODE ) );
 
 		spl_autoload_register( array( __CLASS__, '_autoloader' ), true, true );
 
@@ -348,7 +314,7 @@ class WPLib {
 	 */
 	static function maybe_make_absolute_path( $filepath, $dir = false ) {
 
-		self::check_method_stability( __METHOD__, self::EXPERIMENTAL );
+		self::stability()->check_method( __METHOD__, WPLib_Stability::EXPERIMENTAL );
 
 		if ( '/' != $filepath[0] ) {
 
@@ -872,7 +838,31 @@ class WPLib {
 	}
 
 	/**
-	 * @return int
+	 * @return WPLib_Stability
+	 */
+	static function stability() {
+
+		return self::$_stability;
+
+	}
+
+	/**
+	 * @param int|WPLib_Stability $stability
+	 */
+	static function set_stability( $stability ) {
+
+		if ( ! $stability instanceof WPLib_Stability ) {
+
+			$stability = new WPLib_Stability( $stability );
+
+		}
+
+		self::$_stability = $stability;
+
+	}
+
+	/**
+	 * @return WPLib_Runmode
 	 */
 	static function runmode() {
 
@@ -881,11 +871,17 @@ class WPLib {
 	}
 
 	/**
-	 * @param int $runmode
+	 * @param int|WPLib_Runmode $runmode
 	 */
 	static function set_runmode( $runmode ) {
 
-		self::$_runmode = $runmode >= self::DEVELOPMENT && $runmode <= self::PRODUCTION ? $runmode : self::PRODUCTION;
+		if ( ! $runmode instanceof WPLib_Runmode ) {
+
+			$runmode = new WPLib_Runmode( $runmode );
+
+		}
+
+		self::$_runmode = $runmode;
 
 	}
 
@@ -894,7 +890,7 @@ class WPLib {
 	 */
 	static function is_development() {
 
-		return self::DEVELOPMENT == self::$_runmode;
+		return WPLib_Runmode::DEVELOPMENT === intval( (string) self::$_runmode );
 
 	}
 
@@ -903,7 +899,7 @@ class WPLib {
 	 */
 	static function is_testing() {
 
-		return self::TESTING == self::$_runmode;
+		return WPLib_Runmode::TESTING === intval( (string) self::$_runmode );
 
 	}
 
@@ -912,7 +908,7 @@ class WPLib {
 	 */
 	static function is_staging() {
 
-		return self::STAGING == self::$_runmode;
+		return WPLib_Runmode::STAGING === intval( (string)  self::$_runmode );
 
 	}
 
@@ -921,7 +917,7 @@ class WPLib {
 	 */
 	static function is_production() {
 
-		return self::PRODUCTION == self::$_runmode;
+		return WPLib_Runmode::PRODUCTION === intval( (string) self::$_runmode );
 
 	}
 
@@ -2016,6 +2012,8 @@ class WPLib {
 	 */
 	static function new_post_url() {
 
+		self::stability()->check_method( __METHOD__, WPLib_Stability::EXPERIMENTAL );
+
 		return admin_url( 'post-new.php' );
 
 	}
@@ -2135,7 +2133,7 @@ class WPLib {
 	 */
 	static function template_dir() {
 
-		self::check_method_stability( __METHOD__, self::EXPERIMENTAL );
+		self::stability()->check_method( __METHOD__, WPLib_Stability::EXPERIMENTAL );
 
 		return static::get_root_dir( 'templates' );
 
@@ -2150,100 +2148,6 @@ class WPLib {
 
 	}
 
-	/**
-	 * @return int
-	 */
-	static function stability() {
-
-		return intval( WPLIB_STABILITY );
-
-	}
-
-	/**
-	 * Call at the start of a method to check stability level.
-	 *
-	 * Stability levels can be one of:
-	 *
-	 *      WPLib::DEPRECATED (0)
-	 *      WPLib::EXPERIMENTAL (1)
-	 *      WPLib::STABLE (2)
-	 *      WPLib::LOCKED (3)
-	 *
-	 * @example The follow illustrates how to check that the stability
-	 *          level is low enough to support EXPERIMENTAL methods.
-	 *
-	 *      /**
-	 *       * @stablity 1 - Experimental
-	 *       * /
-	 *      function foo() {
-	 *          self::check_method_stability( __METHOD__, WPLib::EXPERIMENTAL );
-	 *          // Do the work of foo()
-	 *          return;
-	 *      }
-	 *
-	 * @param string $method_name
-	 * @param int $stability
-	 */
-	static function check_method_stability( $method_name, $stability ) {
-
-		if ( WPLIB_STABILITY > $stability ) {
-
-			$err_msg = __(
-				'The %s method has been marked with a stability of %d ' .
-			        'but the current WPLIB_STABILITY requirement is set to %d. ' .
-					'You can enable this in wp-config-local.php but BE AWARE that ',
-				'wplib'
-			);
-
-			switch ( $stability ) {
-				case self::DEPRECATED:
-					$err_msg .= __(
-						'the method has been DEPRECATED and you ' .
-						'should really revise your code.', 'wplib'
-					);
-					break;
-
-				case self::EXPERIMENTAL:
-					$err_msg .= __(
-						'the method is EXPERIMENTAL so it is likely to ' .
-						'change thus forcing you to modify your own code ' .
-						'when it changes when you plan to upgrade to a ' .
-						'newer version of WPLib.', 'wplib'
-					);
-					break;
-
-				case self::STABLE:
-					$err_msg .= __(
-						'the method is STABLE so it is unlikely to change ' .
-						'but it has not yet been locked to it is possible ' .
-						'this it could change. If so you will need to modify ' .
-						'your own code when you plan to upgrade to a newer ' .
-						'version of WPLib.', 'wplib'
-					);
-					break;
-
-				default:
-					$err_msg = false;
-					break;
-
-			}
-
-			if ( $err_msg ) {
-
-				$err_msg .= __(' To enable add "define( \'WPLIB_STABILITY\', %d );" to your config file.', 'wplib' );
-
-				self::trigger_error( sprintf(
-					$err_msg,
-					$method_name,
-					$stability,
-					WPLIB_STABILITY,
-					$stability
-				));
-
-			}
-		}
-
-	}
 
 	/**
 	 * Scans the source file to ensure that only one PHP class is declared per file.
