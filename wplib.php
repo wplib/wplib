@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.9.1
+ * Version:     0.9.s
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -148,6 +148,16 @@ class WPLib {
 			$err_msg = __( 'The %s::on_load() method should not call its parent class, e.g. remove parent::on_load().', 'wplib' );
 
 			self::trigger_error( sprintf( $err_msg, get_called_class() ) );
+
+		}
+
+		if ( ! class_exists( 'WPLib_Enum', false ) ) {
+			/**
+			 *  defines.php can be included in local-config.php, but if
+			 *  not then we need to include it here.
+			 */
+
+			require __DIR__ . '/defines.php';
 
 		}
 
