@@ -481,7 +481,10 @@ class WPLib {
 					$module_names[ $module_name ] = $module_class;
 				}
 
-				call_user_func( array( $module_class, '_register_templates' ) );
+				$register_templates = array( $module_class, '_register_templates' );
+				if ( is_callable( $register_templates ) ) {
+					call_user_func( $register_templates );
+				}
 
 				/**
 				 * Find all autoloading files defined by the above module.
@@ -1638,7 +1641,7 @@ class WPLib {
 	 *
 	 * @return array
 	 */
-	private static function _register_templates() {
+	static function _register_templates() {
 
 		if ( count( $templates = glob( static::template_dir() . '/*.php' ) ) ) {
 
