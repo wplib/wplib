@@ -978,4 +978,44 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 	}
 
+	/**
+	 * @param string $size
+	 * @param array $args {
+	 *      @type string $src
+	 *      @type string $class
+	 *      @type string $alt
+	 *      @type string $height
+	 *      @type string $width
+	 *      @type string $title
+	 * }
+	 * @return string
+	 */
+	function get_featured_image_html( $size = 'post-thumbnail', $args = array() ) {
+
+		return $this->has_post()
+			? get_the_post_thumbnail( $this->ID(), $size, $args )
+			: null;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function has_featured_image() {
+
+		return $this->has_post() && (bool) get_post_thumbnail_id( $this->ID() );
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function has_thumbnail_image() {
+
+		return $this->has_featured_image();
+
+	}
+
+
+
 }

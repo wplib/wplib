@@ -809,12 +809,19 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 	/**
 	 * @param string $size
+	 * @param array $args {
+	 *      @type string $src
+	 *      @type string $class
+	 *      @type string $alt
+	 *      @type string $height
+	 *      @type string $width
+	 *      @type string $title
+	 * }
 	 */
-	function the_featured_image_html( $size = 'post-thumbnail' ) {
-		$model = $this->model();
-		if ( $model->has_post() ) {
-			echo get_the_post_thumbnail( $model->ID(), $size );
-		}
+	function the_featured_image_html( $size = 'post-thumbnail', $args = array() ) {
+
+		echo $this->model()->get_featured_image_html( $size, $args );
+
 	}
 
 	/**
