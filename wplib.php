@@ -1250,6 +1250,17 @@ class WPLib {
 	}
 
 	/**
+	 * Return the simple asset path
+	 *
+	 * @return string
+	 */
+	static function assets_url() {
+
+		return rtrim( static::get_asset_url( '' ), '/' );
+
+	}
+
+	/**
 	 * Return the asset path
 	 *
 	 * @param string $asset_path

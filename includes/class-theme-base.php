@@ -1198,4 +1198,23 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	}
 
+	/**
+	 * @return string
+	 */
+	function assets_url() {
+
+		return WPLib::get_asset_url( '', get_called_class() );
+
+	}
+
+	/**
+	 * @param string $filepath
+	 * @return string
+	 */
+	function get_asset_url( $filepath ) {
+
+		return WPLib::get_asset_url( $filepath, get_called_class() );
+
+	}
+
 }
