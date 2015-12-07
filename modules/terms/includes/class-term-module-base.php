@@ -150,6 +150,8 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 	 */
 	static function get_list( $query = array(), $args = array() ) {
 
+		$query = wp_parse_args( $query );
+
 		$query['taxonomy'] = static::TAXONOMY;
 
 		$args = wp_parse_args( $args, array(
