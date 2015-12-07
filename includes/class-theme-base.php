@@ -284,7 +284,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		$link_text = $args['link_text'];
 		unset( $args['href'], $args['link_text'] );
 
-		return $this->get_link( $href, $link_text, $args );
+		return WPLib::get_link( $href, $link_text, $args );
 
 	}
 
