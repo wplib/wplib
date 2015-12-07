@@ -82,7 +82,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function the_site_name_link( $args = array() ) {
 
-		echo wp_kses_post( $this->site_name_link() );
+		echo wp_kses_post( $this->get_site_name_link( $args ) );
 
 	}
 
@@ -92,7 +92,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 * @param array $args
 	 * @return string
 	 */
-	function site_name_link( $args = array() ) {
+	function get_site_name_link( $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			'rel' => 'home'
