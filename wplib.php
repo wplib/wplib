@@ -1226,7 +1226,7 @@ class WPLib {
 
 		$filepath = '/' . ltrim( $filepath, '/' );
 
-		return self::real_url( self::$_root_urls[ $class_name ] . $filepath );
+		return self::get_real_url( self::$_root_urls[ $class_name ] . $filepath );
 
 	}
 
@@ -1235,7 +1235,7 @@ class WPLib {
 	 * @param string $url
 	 * @return string
 	 */
-	static function real_url( $url ) {
+	static function get_real_url( $url ) {
 
 	    foreach( array_keys( $url = explode( '/', $url ), '..' ) AS $keypos => $key) {
 	        array_splice( $url, $key - ($keypos * 2 + 1 ), 2 );
@@ -1243,7 +1243,6 @@ class WPLib {
 
 	    return str_replace( './', '', implode('/', $url ) );
 	}
-
 
 	/**
 	 * Echo the asset path
