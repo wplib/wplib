@@ -519,15 +519,30 @@ class WPLib {
 	/**
 	 * Returns the list of "Component" classes.  A Component is one of Lib, Site, App, Theme, Module.
 	 *
+	 * Returns the 'latest' or 'all' (default). This follows 'principle of least surprise'
+	 *
+	 * @param string $scope 'all' or 'latest'
 	 * @return array
 	 */
-	static function component_classes() {
+	static function component_classes( $scope = 'all' ) {
+
+		static $class_count = 0;
 
 		$component_classes = array();
 
-		foreach( get_declared_classes() as $class ) {
+		$offset = 'latest' == $scope ? $class_count : 0;
 
-			if ( is_subclass_of( $class, __CLASS__ ) || __CLASS__ == $class ) {
+		$latest_classes = array_slice( get_declared_classes(), $offset );
+
+		if ( 'latest' == $scope  ) {
+
+			$class_count += count( $latest_classes );
+
+		}
+
+		foreach( $latest_classes as $class ) {
+
+			if ( is_subclass_of( $class, __CLASS__ ) || __CLASS__ === $class ) {
 
 				$component_classes[] = $class;
 
@@ -548,15 +563,10 @@ class WPLib {
 	 *      3 & 4: Find all autoloading files defined by modules specified by (1) plugins or (2) the theme.
 	 */
 	private static function _find_autoload_files() {
-		static $class_count = 0;
 
-		$classes = static::component_classes();
-
-		$latest_classes = array_slice( $classes, $class_count );
+		$latest_classes = static::component_classes( 'latest' );
 
 		if ( count( $latest_classes ) ) {
-
-			$class_count += count( $latest_classes );
 
 			$class_key = implode( '|', $latest_classes );
 
