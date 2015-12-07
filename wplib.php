@@ -578,6 +578,7 @@ class WPLib {
 
 				self::$_autoloaded_parents = $autoload_files = array();
 
+				$is_development = static::is_development();
 
 				/**
 				 * For each Site/App/Module/Lib/Theme class
@@ -608,7 +609,7 @@ class WPLib {
 
 						}
 
-						if ( static::is_development() ) {
+						if ( $is_development ) {
 							/*
 							 * We assume there is only one class per class file
 							 * so make sure we have only one.
