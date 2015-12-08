@@ -1947,40 +1947,59 @@ class WPLib {
 
 			$method_name = $match[ 1 ];
 			$suffix = 3 == count( $match ) ? $match[ 2 ] : false;
+			$has_html_suffix = self::has_html_suffix( $suffix );
 
-			if ( is_callable( $callable = array( $view, $suffix_method = "{$method_name}{$suffix}" ) ) && method_exists( $view, $suffix_method ) ) {
-
-				/**
-				 * @note Reading this and want to know why do we use both is_callable() and method_exists()?
-				 * @see "More details" section and comments of http://jmfeurprier.com/2010/01/03/method_exists-vs-is_callable/
-				 */
-
-				$has_html_suffix = preg_match( '#^_(html|link)$#', $suffix );
+			if ( $callable = self::get_callable( $view, "get_{$method_name}{$suffix}" ) ) {
 
 				/*
-				 * Check $view to see if the suffixed method exist.
+				 * Call the $view method: 'get_whatever_suffix()'
 				 */
 				$value = call_user_func_array( $callable, $args );
 
-			} else if ( is_callable( $callable = array( $model, $suffix_method ) ) && method_exists( $model, $suffix_method ) )  {
+			} else if ( $callable = self::get_callable( $view, "{$method_name}{$suffix}" ) ) {
 
 				/*
-				 * Check $model to see if the $suffix_method exists.
+				 * Call the $view method: 'whatever_suffix()'
 				 */
 				$value = call_user_func_array( $callable, $args );
 
-				$has_html_suffix = '_html' === $suffix;
+			} else if ( $callable = self::get_callable( $model, "get_{$method_name}{suffix}" ) ) {
 
-			} else if ( is_callable( $callable = array( $model, $method_name ) ) && method_exists( $model, $method_name ) )  {
+				$has_html_suffix = self::has_html_suffix( $suffix );
 
 				/*
-				 * Check $model to see if the $method_name exists.
+				 * Call the $model method: 'get_whatever_suffix()'
 				 */
 				$value = call_user_func_array( $callable, $args );
+
+			} else if ( $callable = self::get_callable( $model, "get_{$method_name}" ) ) {
+
+				$has_html_suffix = self::has_html_suffix( $suffix );
+
+				/*
+				 * Call the $model method: 'get_whatever()'
+				 */
+				$value = call_user_func_array( $callable, $args );
+
+			} else if ( ! $has_html_suffix && $callable = self::get_callable( $model, "{$method_name}{$suffix}" ) ) {
+
+				/*
+				 * Call the $model method: 'whatever_suffix()'
+				 */
+				$value = call_user_func_array( $callable, $args );
+
+			} else if ( ! $has_html_suffix && $callable = self::get_callable( $model, $method_name ) ) {
 
 				$has_html_suffix = false;
 
+				/*
+				 * Call the $model method: "{$method_name}" (as passed)
+				 */
+				$value = call_user_func_array( $callable, $args );
+
 			} else {
+
+				$has_html_suffix = false;
 
 				/*
 				 * Not found, throw an error.
@@ -1991,8 +2010,6 @@ class WPLib {
 				$message = sprintf( __( 'Method %s not found for class %s.', 'wplib' ), $match[ 0 ], $class_name );
 
 				self::trigger_error( $message, E_USER_ERROR );
-
-				$has_html_suffix = false;
 
 			}
 
@@ -2025,6 +2042,37 @@ class WPLib {
 
 		}
 
+
+	}
+
+	/**
+	 * Given an object/class name and method name return a callable or null if can't be called.
+	 *
+	 * @note Are you reading this and want to know why do we use both is_callable() and method_exists()?
+	 * @see "More details" section and comments of http://jmfeurprier.com/2010/01/03/method_exists-vs-is_callable/
+	 *
+	 * @param string|object $object
+	 * @param string $method_name
+	 * @return callable|null
+	 */
+	static function get_callable( $object, $method_name ) {
+
+		$callable = array( $object, $method_name );
+
+		return is_callable( $callable ) && method_exists( $model, $method_name )
+			? $callable
+			: null;
+
+	}
+
+	/**
+	 * @param string|false $suffix
+	 *
+	 * @return bool
+	 */
+	static function has_html_suffix( $suffix ) {
+
+		return (bool)( $suffix && preg_match( '#^_(html|link)$#', $suffix ) );
 
 	}
 
