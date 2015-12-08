@@ -1963,7 +1963,7 @@ class WPLib {
 				 */
 				$value = call_user_func_array( $callable, $args );
 
-			} else if ( $callable = self::get_callable( $model, "get_{$method_name}{suffix}" ) ) {
+			} else if ( $callable = self::get_callable( $model, "get_{$method_name}{$suffix}" ) ) {
 
 				$has_html_suffix = self::has_html_suffix( $suffix );
 
@@ -1988,7 +1988,7 @@ class WPLib {
 				 */
 				$value = call_user_func_array( $callable, $args );
 
-			} else if ( ! $has_html_suffix && $callable = self::get_callable( $model, $method_name ) ) {
+			} else if ( $callable = self::get_callable( $model, $method_name ) ) {
 
 				$has_html_suffix = false;
 
@@ -2059,7 +2059,7 @@ class WPLib {
 
 		$callable = array( $object, $method_name );
 
-		return is_callable( $callable ) && method_exists( $model, $method_name )
+		return is_callable( $callable ) && method_exists( $object, $method_name )
 			? $callable
 			: null;
 
