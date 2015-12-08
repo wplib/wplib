@@ -47,7 +47,7 @@
 	"suggest": {
 		"wplib/wplib-cli" : "A command-line scaffolding tool for WPLib",
 		"wplib/wplib-box" : "A Vagrant box for WPLib-specific WordPress development",
-		"wplib/lawpress" : "An sample WPLib App & Theme for developing with Law Firm websites",
+		"wplib/lawpress" : "A sample WPLib App for developing with Law Firm websites",
 		"wplib/underscores4wplib" : "A port of the Underscores theme to demo WPLib"
 	}
 }
