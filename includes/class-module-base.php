@@ -151,6 +151,10 @@ abstract class WPLib_Module_Base extends WPLib {
 
 			do {
 
+				/**
+				 * @todo Provide a more robust mechanism for discovering 'list_class'
+				 */
+
 				/*
 				 * Add '_Default' to last list class checked,
 				 * i.e. WPLib_Post_List_Default for WPLib_Posts::get_list()
