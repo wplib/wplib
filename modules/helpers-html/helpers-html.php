@@ -490,7 +490,7 @@ HTML;
 				return "{$name}=\"{$attributes[ $value ]}\"";
 
 			},
-			array_keys( $args )
+			array_keys( $attributes )
 
 		));
 
@@ -536,7 +536,7 @@ HTML;
 
 				}
 
-				$value = $args[ $name ];
+				$value = $attributes[ $name ];
 
 				if ( preg_match( '#^(object|array)$#', gettype( $value ) ) ) {
 					continue;
