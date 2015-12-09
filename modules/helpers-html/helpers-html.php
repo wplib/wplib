@@ -450,7 +450,7 @@ HTML;
 
 		}
 
-		$elements_html .=<<<HTML
+		$elements_html =<<<HTML
 {$args['before']}<li{$attributes} class="{$args['class']}">{$before_text}{$element_text}{$after_text}</li>{$args['after']}
 HTML;
 
