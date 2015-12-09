@@ -161,50 +161,21 @@ class WPLib {
 
 		}
 
-		if ( ! defined( 'WPLIB_STABILITY' ) ) {
+		if ( is_null( WPLib_Stability::initialized_value() ) ) {
 
-			/* @note THIS IS NOT WIDELY IMPLEMENTED YET.
-			 *
-			 * WPLib follows the convention of Node.js in having a Stability Index.
-			 * Every class, property, method, constant, etc. will have a Stability value,
-			 * except for those that do not (yet.)
-			 *
-			 * The stability will be specified by an @stability PHPDoc comment with one
-			 * of the following values:
-			 *
-			 *    Stability:  0 - Deprecated
-			 *    Stability:  1 - Experimental
-			 *    Stability:  2 - Stable
-			 *    Stability:  3 - Locked
-			 *
-			 * The default stability is 2 - Stable. However you can set the stability
-			 * you want in your wp-local-config.php file using the WPLIB_STABILITY constant.
-			 *
-			 * You can check (for example) for EXPERIMENTAL stability in a method using:
-			 *
-			 *      self::stability()->check_method( __METHOD__, WPLib::EXPERIMENTAL );
-			 *
-			 * Internal methods -- ones with a leading underscore -- will not be marked with
-			 * a stability level.
-			 *
-			 * To read more about the concept of stability:
-			 *
-			 * @see https://nodejs.org/api/documentation.html#documentation_stability_index
-			 */
-			define( 'WPLIB_STABILITY', WPLib_Stability::__default );
-
+			WPLib_Stability::initialize( WPLib_Stability::__default );
 		}
 
-		self::set_stability( new WPLib_Stability( WPLIB_STABILITY ) );
+		self::set_stability( WPLib_Stability::initialized_value() );
 
 
-		if ( ! defined( 'WPLIB_RUNMODE' ) ) {
+		if ( is_null( WPLib_Runmode::initialized_value() ) ) {
 
-			define( 'WPLIB_RUNMODE', WPLib_Runmode::__default );
-
+			WPLib_Runmode::initialize( WPLib_Runmode::__default );
 		}
 
-		self::set_runmode( new WPLib_Runmode( WPLIB_RUNMODE ) );
+		self::set_runmode( WPLib_Runmode::initialized_value() );
+
 
 		spl_autoload_register( array( __CLASS__, '_autoloader' ), true, true );
 

@@ -83,13 +83,16 @@ class WPLib_Stability extends WPlib_Enum {
 
 			if ( $err_msg ) {
 
+				/**
+				 * @todo update to mention Enums instead of constants.
+				 */
 				$err_msg .= __(' To enable add "define( \'WPLIB_STABILITY\', %d );" to your config file.', 'wplib' );
 
 				WPLib::trigger_error( sprintf(
 					$err_msg,
 					$method_name,
 					$stability,
-					WPLIB_STABILITY,
+					static::initialized_value(),
 					$stability
 				));
 
