@@ -654,15 +654,13 @@ HTML;
 				$src = "{$src}#{$args['fragment']}";
 			}
 
-			$src = esc_url( $src );
-
 			if ( $args['onclick'] ) {
 				$args['onclick'] = ' onclick="' . esc_js( $args['onclick'] ) . '"';
 			}
 
-			$html = <<<HTML
-{$args['before']}<a{$args['onclick']}{$args['class']} src="{$src}" {$args['alt_text']}{$args['attributes']}>{$args['after']}
-HTML;
+			$src = ' src="' . esc_url( $src ) . '"';
+
+			$html = "{$args['before']}<img{$src}{$args['onclick']}{$args['class']}{$args['alt_text']}{$args['attributes']}>{$args['after']}";
 		}
 
 		return $html;
