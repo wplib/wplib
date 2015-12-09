@@ -131,11 +131,6 @@ abstract class WPLib_Module_Base extends WPLib {
 			$args['instance_class'] = WPLib::get_constant( 'INSTANCE_CLASS', $args['list_owner'] );
 
 		}
-		if ( ! isset( $args['instance_class'] ) && 'WPLib' !== get_parent_class( get_called_class() ) ) {
-
-			$args['instance_class'] = parent::instance_class();
-
-		}
 
 		$try_class = $args['instance_class'];
 
