@@ -1518,7 +1518,7 @@ class WPLib {
 	 */
 	static function __callStatic( $method, $args ) {
 
-		return self::call_helper( get_called_class(), $method, $args );
+		return static::call_helper( get_called_class(), $method, $args );
 
 	}
 
