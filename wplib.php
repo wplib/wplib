@@ -1084,7 +1084,7 @@ class WPLib {
 					 * Store it for future calls
 					 */
 
-					wp_cache_set( "{$parent_class}::{$helper_method}()", $container->callable, $group );
+					//wp_cache_set( $cache_key, $container->callable, $group );
 
 					$found = true;
 
