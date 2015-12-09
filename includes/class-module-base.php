@@ -9,68 +9,68 @@ abstract class WPLib_Module_Base extends WPLib {
 
 	const INSTANCE_CLASS = null;
 
-	/**
-	 * Delegate calls to an instance class if the class has a INSTANCE_CLASS constant or plural name adds 's', otherwise delegate to WPLib.
-	 *
-	 * @param string $method_name
-	 * @param array $args
-	 *
-	 * @return mixed
-	 */
-	static function __callStatic( $method_name, $args ) {
-
-		/**
-		 * Get the instance class for this module
-		 */
-		if ( $instance_class = static::instance_class() ) {
-
-			/**
-			 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
-			 */
-			if ( ! is_callable( array( $instance_class, $method_name ) ) ) {
-
-				/**
-				 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
-				 * If no, delegate to parent
-				 */
-				$instance_class = null;
-
-			} else {
-
-				/**
-				 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
-				 * If yes verify it is a static method.
-				 */
-				$reflector = new ReflectionMethod( $instance_class, $method_name );
-
-				if ( ! $reflector->isStatic() ) {
-
-					$instance_class = null;
-
-				}
-
-			}
-
-		}
-
-		if ( $instance_class ) {
-			/**
-			 * Whichever we have, INSTANCE_CLASS or singular with existing method name, call it.
-			 */
-			$value = call_user_func_array( array( $instance_class, $method_name ), $args );
-
-		} else {
-			/**
-			 * No method, delegate to parent.
-			 */
-
-			$value = parent::__callStatic( $method_name, $args );
-
-		}
-
-		return $value;
-
-	}
+//	/**
+//	 * Delegate calls to an instance class if the class has a INSTANCE_CLASS constant or plural name adds 's', otherwise delegate to WPLib.
+//	 *
+//	 * @param string $method_name
+//	 * @param array $args
+//	 *
+//	 * @return mixed
+//	 */
+//	static function __callStatic( $method_name, $args ) {
+//
+//		/**
+//		 * Get the instance class for this module
+//		 */
+//		if ( $instance_class = static::instance_class() ) {
+//
+//			/**
+//			 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
+//			 */
+//			if ( ! is_callable( array( $instance_class, $method_name ) ) ) {
+//
+//				/**
+//				 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
+//				 * If no, delegate to parent
+//				 */
+//				$instance_class = null;
+//
+//			} else {
+//
+//				/**
+//				 * Whichever we have, INSTANCE_CLASS or singular, see if their is such a method.
+//				 * If yes verify it is a static method.
+//				 */
+//				$reflector = new ReflectionMethod( $instance_class, $method_name );
+//
+//				if ( ! $reflector->isStatic() ) {
+//
+//					$instance_class = null;
+//
+//				}
+//
+//			}
+//
+//		}
+//
+//		if ( $instance_class ) {
+//			/**
+//			 * Whichever we have, INSTANCE_CLASS or singular with existing method name, call it.
+//			 */
+//			$value = call_user_func_array( array( $instance_class, $method_name ), $args );
+//
+//		} else {
+//			/**
+//			 * No method, delegate to parent.
+//			 */
+//
+//			$value = parent::__callStatic( $method_name, $args );
+//
+//		}
+//
+//		return $value;
+//
+//	}
 
 	/**
 	 * @return mixed|null
@@ -129,11 +129,6 @@ abstract class WPLib_Module_Base extends WPLib {
 		if ( ! isset( $args['instance_class'] ) ) {
 
 			$args['instance_class'] = WPLib::get_constant( 'INSTANCE_CLASS', $args['list_owner'] );
-
-		}
-		if ( ! isset( $args['instance_class'] ) ) {
-
-			$args['instance_class'] = parent::instance_class();
 
 		}
 
@@ -200,6 +195,19 @@ abstract class WPLib_Module_Base extends WPLib {
 			? call_user_func( $args['items'], $query, $args )
 			: null;
 
+		if ( is_null( $args['instance_class'] ) ) {
+
+			$message = __( 'No constant %s::INSTANCE_CLASS defined.', 'wplib' );
+			WPLib::trigger_error( sprintf( $message, $args['list_owner'] ) );
+
+			$list = array();
+
+		} else {
+
+			$list = ! is_null( $items ) ? new $list_class( $items, $args ) : array();
+
+		}
+
 		unset(
 			$args['list_owner'],
 			$args['list_class'],
@@ -207,8 +215,6 @@ abstract class WPLib_Module_Base extends WPLib {
 			$args['default_list'],
 			$args['items']
 		);
-
-		$list = ! is_null( $items ) ? new $list_class( $items, $args ) : array();
 
 		return $list;
 	}
