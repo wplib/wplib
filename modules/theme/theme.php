@@ -8,6 +8,8 @@
  */
 class WPLib_Theme extends WPLib_Module_Base {
 
+	private static $_this_template;
+
 	/**
 	 * Sets hooks required by all themes.
 	 */
@@ -109,13 +111,21 @@ class WPLib_Theme extends WPLib_Module_Base {
 
 			}
 
-			include( $template );
+
+			if ( WPLib::is_development() ) {
+				/*
+				 * Output template file name in a comment.
+				 */
+				self::add_class_action( 'wp_head', 0 );
+
+			}
+
+			include( self::$_this_template = $template );
 
 		}
 		return false;
 
 	}
-
 
 	/**
 	 * Theme method for setting a theme instance for unit test mocking.
@@ -129,6 +139,18 @@ class WPLib_Theme extends WPLib_Module_Base {
 		WPLib::set_theme( $theme );
 
 	}
+
+	/**
+	 *  Output template file name in a comment.
+	 */
+	static function _wp_head_0() {
+
+		$template = esc_url( self::$_this_template );
+		echo "<!--[WPLIB] Theme Template File: {$template} -->\n";
+
+	}
+
+
 
 }
 
