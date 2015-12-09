@@ -200,6 +200,19 @@ abstract class WPLib_Module_Base extends WPLib {
 			? call_user_func( $args['items'], $query, $args )
 			: null;
 
+		if ( is_null( $args['instance_class'] ) ) {
+
+			$message = __( 'No constant %s::INSTANCE_CLASS defined.', 'wplib' );
+			WPLib::trigger_error( sprintf( $message, $args['list_owner'] ) );
+
+			$list = array();
+
+		} else {
+
+			$list = ! is_null( $items ) ? new $list_class( $items, $args ) : array();
+
+		}
+
 		unset(
 			$args['list_owner'],
 			$args['list_class'],
@@ -207,8 +220,6 @@ abstract class WPLib_Module_Base extends WPLib {
 			$args['default_list'],
 			$args['items']
 		);
-
-		$list = ! is_null( $items ) ? new $list_class( $items, $args ) : array();
 
 		return $list;
 	}
