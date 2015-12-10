@@ -1352,13 +1352,15 @@ class WPLib {
 
 		$app_class = self::app_class();
 
-		$module_filepath = null;
+		$module_dir = null;
 
-		foreach ( self::get_module_classes( $app_class ) as $module_class => $module_dir ) {
+		foreach ( self::get_module_classes( $app_class ) as $module_class => $module_filepath ) {
 
-			if ( 0 === strpos( $filepath, $module_dir ) ) {
+			$try_dir = dirname( $module_filepath );
 
-				$module_filepath = self::maybe_make_absolute_path( $module_dir, ABSPATH );
+			if ( 0 === strpos( $filepath, $try_dir ) ) {
+
+				$module_dir = self::maybe_make_absolute_path( $try_dir, ABSPATH );
 
 				break;
 
@@ -1366,7 +1368,7 @@ class WPLib {
 
 		}
 
-		return $module_filepath;
+		return $module_dir;
 
 	}
 
