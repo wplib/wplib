@@ -463,7 +463,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 */
 	static function post_type_classes() {
 
-		return WPLib::_get_child_classes( 'post_type', 'POST_TYPE', 'WPLib_Post_Base' );
+		return WPLib::_get_child_classes( 'WPLib_Post_Base', 'POST_TYPE' );
 
 	}
 

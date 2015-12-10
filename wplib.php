@@ -2143,15 +2143,16 @@ class WPLib {
 	/**
 	 * Returns array of class names $base_class children with positive values for $base_class::$contant_name.
 	 *
-	 * @param $type
-	 * @param $constant_name
 	 * @param $base_class
 	 *
+	 * @param $constant_name
+	 *
 	 * @return string[]
+	 * @internal param $type
 	 */
-	static function _get_child_classes( $type, $constant_name, $base_class ) {
+	static function _get_child_classes( $base_class, $constant_name ) {
 
-		if ( ! ( $child_classes = self::cache_get( $cache_key = "{$type}_classes" ) ) ) {
+		if ( ! ( $child_classes = self::cache_get( $cache_key = "classes[{$base_class}::{$constant_name}]" ) ) ) {
 
 			$child_classes = array();
 
@@ -2163,7 +2164,7 @@ class WPLib {
 						continue;
 					}
 
-					if ( ! is_null( $constant_value = self::get_constant( $constant_name, $class_name ) ) ) {
+					if ( is_null( $constant_value = self::get_constant( $constant_name, $class_name ) ) ) {
 						continue;
 					}
 

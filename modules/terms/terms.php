@@ -373,7 +373,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	}
 
 	/**
-	 * Create new Instance of a Term MVE
+	 * Create new Instance of a Term Item
 	 *
 	 * @param WP_Term $term
 	 * @param array $args
@@ -425,7 +425,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 */
 	static function taxonomy_classes() {
 
-		return WPLib::_get_child_classes( 'taxonomy', 'TAXONOMY', 'WPLib_Term_Base' );
+		return WPLib::_get_child_classes( 'WPLib_Term_Base', 'TAXONOMY' );
 
 	}
 
