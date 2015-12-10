@@ -1419,7 +1419,9 @@ class WPLib {
 
 		}
 
-		$cache = wp_cache_get( $key, static::_filter_group( $group ) );
+		$cache = ! defined( 'WPLIB_BYPASS_CACHE' )
+			? wp_cache_get( $key, static::_filter_group( $group ) )
+			: null;
 
 		return $cache;
 
