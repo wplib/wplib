@@ -2143,12 +2143,13 @@ class WPLib {
 	/**
 	 * Returns array of class names $base_class children with positive values for $base_class::$contant_name.
 	 *
+	 * @internal
+	 *
 	 * @param $base_class
 	 *
 	 * @param $constant_name
 	 *
 	 * @return string[]
-	 * @internal param $type
 	 */
 	static function _get_child_classes( $base_class, $constant_name ) {
 
