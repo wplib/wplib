@@ -447,6 +447,9 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 * @param string $post_type
 	 *
 	 * @return string|null
+	 *
+	 * @todo Rename to get_post_class() and deprecate this name
+	 *
 	 */
 	static function get_post_type_class( $post_type ) {
 
@@ -460,6 +463,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 * @return string[]
 	 *
 	 * @todo Enhance this to support multiple classes per post type
+	 * @todo Rename to post_classes() and deprecate this name
 	 */
 	static function post_type_classes() {
 

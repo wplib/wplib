@@ -409,6 +409,8 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 * @param string $taxonomy
 	 *
 	 * @return string|null
+	 *
+	 * @todo Rename to get_term_class() and deprecate this name
 	 */
 	static function get_taxonomy_class( $taxonomy ) {
 
@@ -422,6 +424,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 * @return string[]
 	 *
 	 * @todo Enhance this to support multiple classes per term type
+	 * @todo Rename to term_classes() and deprecate this name
 	 */
 	static function taxonomy_classes() {
 
