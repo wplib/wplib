@@ -375,17 +375,50 @@ class WPLib_Terms extends WPLib_Module_Base {
 	/**
 	 * Create new Instance of a Term Item
 	 *
-	 * @param WP_Term $term
-	 * @param array $args
+	 * @param WP_Term|int $term
+	 * @param array $args {
 	 *
+	 *      @type string $taxonomy
+	 *      @type string $instance_class
+	 *      @type string $list_owner
+	 *
+	 *}
 	 * @return mixed
+	 *
+	 * @todo Alias this with make_new_term() so it can be called as WPLib::make_new_term( $term_id )
 	 */
 	static function make_new_item( $term, $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			'instance_class' => false,
+			'taxonomy' => false,
 			'list_owner' => 'WPLib_Terms',
 		));
+
+		if ( is_numeric( $term ) ) {
+
+			if ( $args['taxonomy'] ) {
+
+				$term = WP_Term::get_instance( $term, $args['taxonomy'] );
+
+			} else {
+
+				global $wp_version;
+				if ( version_compare( $wp_version, '4.3', '<' ) ) {
+					/**
+					 * This only works in WordPress DBs created since 4.3+.
+					 *
+					 * @see https://make.wordpress.org/core/2015/06/09/eliminating-shared-taxonomy-terms-in-wordpress-4-3/
+					 */
+					$err_msg = __( "Cannot call %s() without \$args['taxonomy'] set in WordPress version 4.2 or earlier.", 'wplib' );
+					WPLib::trigger_error( $err_msg, __METHOD__ );
+				} else {
+
+					$term = WP_Term::get_instance( $term );
+
+				}
+			}
+		}
 
 		if ( ! $args[ 'instance_class' ] ) {
 

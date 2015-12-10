@@ -391,12 +391,18 @@ class WPLib_Posts extends WPLib_Module_Base {
 	}
 
 	/**
-	 * Create new Instance of a Post MVE
+	 * Create new Instance of a Post MVI
 	 *
-	 * @param WP_Post $post
-	 * @param array $args
+	 * @param WP_Post|int $post
+	 * @param array $args {
 	 *
+	 *      @type string $instance_class
+	 *      @type string $list_owner
+	 *
+	 *}
 	 * @return mixed
+	 *
+	 * @todo Alias this with make_new_post() so it can be called as WPLib::make_new_post( $post_id )
 	 */
 	static function make_new_item( $post, $args = array() ) {
 
@@ -404,6 +410,12 @@ class WPLib_Posts extends WPLib_Module_Base {
 			'instance_class' => false,
 			'list_owner' => 'WPLib_Posts',
 		));
+
+		if ( is_numeric( $post ) ) {
+
+			$post = WP_Post::get_instance( $post );
+
+		}
 
 		if ( ! $args[ 'instance_class' ] ) {
 
