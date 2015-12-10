@@ -48,5 +48,28 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 
 	}
 
+	/**
+	 * Returns the "current screen."
+	 *
+	 * Same as WordPress' get_current_screen() but will call set_current_screen() if is null.
+	 *
+	 * @since 0.9.9
+	 * @return WP_Screen
+	 */
+	static function current_screen() {
+
+		if ( is_null( $current_screen = get_current_screen() ) ) {
+			/*
+			 * set_current_screen() has to be called before
+			 * get_current_screen() will return a non-null value.
+			 */
+			set_current_screen();
+			$current_screen = get_current_screen();
+		}
+
+		return $current_screen;
+
+	}
+
 }
 _WPLib_WP_Helpers::on_load();
