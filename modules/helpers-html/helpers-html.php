@@ -641,11 +641,12 @@ HTML;
 			if ( $args['alt_text'] ) {
 				$args['alt_text'] = esc_attr( $args['alt_text'] );
 				$args['alt_text'] = " alt=\"{$args['alt_text']}\"";
+				$args['alt_text'] = ' alt=' . esc_attr( $args['alt_text'] ) . '"';
 			}
 
 			if ( $args['class'] ) {
 				$args['class'] = esc_attr( $args['class'] );
-				$args['class'] = " class=\"{$args['class']}\"";
+				$args['class'] = ' class=' . esc_attr( $args['class'] ) . '"';
 			}
 
 			$args['attributes'] = self::get_html_attributes_html( $args['attributes'] );
