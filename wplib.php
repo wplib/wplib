@@ -221,7 +221,7 @@ class WPLib {
 		self::register_module( 'helpers-wp', 0 );
 		self::register_module( 'theme', 0 );
 
-		self::register_module( 'commit-revision', 0 );
+		self::register_module( 'commit-reviser', 0 );
 
 		/**
 		 * Register default User Roles
