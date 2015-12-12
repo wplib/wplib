@@ -42,6 +42,8 @@
  */
 class WPLib {
 
+	const LATEST_COMMIT = '5500b95';
+
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
 
@@ -218,6 +220,8 @@ class WPLib {
 		self::register_module( 'helpers-html', 0 );
 		self::register_module( 'helpers-wp', 0 );
 		self::register_module( 'theme', 0 );
+
+		self::register_module( 'commit-reviser', 0 );
 
 		/**
 		 * Register default User Roles
