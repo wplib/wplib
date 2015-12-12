@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Class WPLib_Commit_Revision
+ * Class WPLib_Commit_Reviser
  */
-class WPLib_Commit_Revision extends WPLib_Module_Base {
+class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 	const MISSING_COMMIT = '0000000';
 
@@ -181,4 +181,4 @@ class WPLib_Commit_Revision extends WPLib_Module_Base {
 	}
 
 }
-WPLib_Commit_Revision::on_load();
+WPLib_Commit_Reviser::on_load();
