@@ -5,6 +5,8 @@
  */
 class WPLib_Stability extends WPlib_Enum {
 
+	const SLUG = 'stability';
+
     const __default = self::STABLE;
 
 	const DEPRECATED = 0;

@@ -48,16 +48,6 @@ class WPLib {
 	const SHORT_PREFIX = 'wplib_';
 
 	/**
-	 * @var int The current runmode.
-	 */
-	private static $_runmode;
-
-	/**
-	 * @var int The current stability constraint.
-	 */
-	private static $_stability;
-
-	/**
 	 * @var array $_helpers Array of class names that this class can delegate calls to.
 	 *
 	 * WPLib_Base::$_helpers is indexed by class name. Each element is a numerically indexed array of static methods.
@@ -193,20 +183,34 @@ class WPLib {
 			 *
 			 * @see https://nodejs.org/api/documentation.html#documentation_stability_index
 			 */
-			define( 'WPLIB_STABILITY', WPLib_Stability::__default );
+			define( 'WPLIB_STABILITY', is_null( self::stability() )
+				? WPLib_Stability::__default
+				: self::stability()->get_value()
+			);
 
 		}
 
-		self::set_stability( new WPLib_Stability( WPLIB_STABILITY ) );
+		if ( is_null( self::stability() ) ) {
+
+			self::set_stability( new WPLib_Stability( WPLIB_STABILITY ) );
+
+		}
 
 
 		if ( ! defined( 'WPLIB_RUNMODE' ) ) {
 
-			define( 'WPLIB_RUNMODE', WPLib_Runmode::__default );
+			define( 'WPLIB_RUNMODE', is_null( self::runmode() )
+				? WPLib_Runmode::__default
+				: self::runmode()->get_value()
+			);
 
 		}
 
-		self::set_runmode( new WPLib_Runmode( WPLIB_RUNMODE ) );
+		if ( is_null( self::runmode() ) ) {
+
+			self::set_runmode( new WPLib_Runmode( WPLIB_RUNMODE ) );
+
+		}
 
 		spl_autoload_register( array( __CLASS__, '_autoloader' ), true, true );
 
@@ -866,7 +870,7 @@ class WPLib {
 	 */
 	static function stability() {
 
-		return self::$_stability;
+		return WPLib_Enum::get_enum( __FUNCTION__ );
 
 	}
 
@@ -881,7 +885,7 @@ class WPLib {
 
 		}
 
-		self::$_stability = $stability;
+		WPLib_Enum::set_enum( 'stability', $stability );
 
 	}
 
@@ -890,7 +894,7 @@ class WPLib {
 	 */
 	static function runmode() {
 
-		return self::$_runmode;
+		return WPLib_Enum::get_enum( __FUNCTION__ );
 
 	}
 
@@ -905,7 +909,7 @@ class WPLib {
 
 		}
 
-		self::$_runmode = $runmode;
+		WPLib_Enum::set_enum( 'runmode', $runmode );
 
 	}
 
@@ -914,7 +918,15 @@ class WPLib {
 	 */
 	static function is_development() {
 
-		return WPLib_Runmode::DEVELOPMENT === intval( (string) self::$_runmode );
+		static $is_development = null;
+
+		if ( is_null( $is_development ) ) {
+
+			$is_development =
+				WPLib_Runmode::DEVELOPMENT === self::runmode()->get_value();
+
+		}
+		return $is_development;
 
 	}
 
@@ -923,7 +935,15 @@ class WPLib {
 	 */
 	static function is_testing() {
 
-		return WPLib_Runmode::TESTING === intval( (string) self::$_runmode );
+		static $is_testing = null;
+
+		if ( is_null( $is_testing ) ) {
+
+			$is_testing =
+				WPLib_Runmode::TESTING === self::runmode()->get_value();
+
+		}
+		return $is_testing;
 
 	}
 
@@ -932,7 +952,15 @@ class WPLib {
 	 */
 	static function is_staging() {
 
-		return WPLib_Runmode::STAGING === intval( (string)  self::$_runmode );
+		static $is_staging = null;
+
+		if ( is_null( $is_staging ) ) {
+
+			$is_staging =
+				WPLib_Runmode::STAGING === self::runmode()->get_value();
+
+		}
+		return $is_staging;
 
 	}
 
@@ -941,7 +969,15 @@ class WPLib {
 	 */
 	static function is_production() {
 
-		return WPLib_Runmode::PRODUCTION === intval( (string) self::$_runmode );
+		static $is_production = null;
+
+		if ( is_null( $is_production ) ) {
+
+			$is_production =
+				WPLib_Runmode::PRODUCTION === self::runmode()->get_value();
+
+		}
+		return $is_production;
 
 	}
 

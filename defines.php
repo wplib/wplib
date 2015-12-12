@@ -24,6 +24,13 @@ function wplib_define( $enum_class, $setting ) {
 
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG || defined( 'WPLIB_CHECK_ENUMS' ) ) {
 
+			if ( ! class_exists( 'WPLib_Enum' ) ) {
+
+				$message = 'The class WPLib_Enum has not been declared yet.';
+				break;
+
+			}
+
 			if ( ! class_exists( $enum_class ) ) {
 
 				$message = sprintf( "No Enum class %s.", $enum_class );
@@ -47,7 +54,7 @@ function wplib_define( $enum_class, $setting ) {
 
 		}
 
-		call_user_func( array( $enum_class, 'initialize' ), $value );
+		WPLib_Enum::set_enum( $enum_class, $value );
 
 	} while ( false );
 
