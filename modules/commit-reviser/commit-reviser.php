@@ -17,13 +17,32 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	}
 
 	/**
-	 *
+	 * Inspect the LATEST_COMMIT for both WPLib and WPLib::app_class()
+	 * and if changed call 'wplib_commit_revised' hook and update
+	 * option in database.
 	 */
 	static function _wp_loaded() {
 
 		foreach( array( 'WPLib', WPLib::app_class() ) as $class_name ) {
 
 			$latest_commit = self::get_latest_commit( $class_name );
+
+			if ( WPLib::is_development() ) {
+				/**
+				 * During development look at file LATEST_COMMIT
+				 * that a git commit-hook will hopefully have added
+				 */
+				self::_maybe_update_class( $class_name );
+
+				$loaded_commit = self::load_latest_commit( $class_name );
+
+				if ( $loaded_commit !== $latest_commit ) {
+
+					$latest_commit = $loaded_commit;
+
+				}
+
+			}
 
 			$prefix = strtolower( $class_name );
 
@@ -34,12 +53,6 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 				do_action( 'wplib_commit_revised', $class_name, $latest_commit, $previous_commit );
 
 				update_option( $option_name, $latest_commit );
-
-			}
-
-			if ( WPLib::is_development() ) {
-
-				self::_maybe_update_class( $class_name );
 
 			}
 
@@ -70,23 +83,29 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 			$source_code = file_get_contents( $source_file );
 
-			if ( $not_exists ) {
+			$source_size = strlen( $source_code );
 
-				$marker = 'const\s+LATEST_COMMIT\s+=\s+"([^"]*)"\s*;\s*\n';
+			if ( preg_match( "#const\s+LATEST_COMMIT#", $source_code ) ) {
 
-				$replacer = "const LATEST_COMMIT = \"{$latest_commit}\"\n";
+				$marker = "const\s+LATEST_COMMIT\s*=\s*'[^']*'\s*;\s*(//.*)?\s*\n";
+
+				$replacer = "const LATEST_COMMIT = '{$loaded_commit}'; $1\n\n";
 
 			} else {
 
 				$marker = "class\s+{$class_name}\s+(extends\s+\w+)?\s*\{\s*\n";
 
-				$replacer = "$0\\tconst LATEST_COMMIT = \"{$latest_commit}\"\n";
+				$replacer = "$0\tconst LATEST_COMMIT = '{$loaded_commit}';\n\n";
 
 			}
 
-			$source_code = preg_replace( $marker, $replacer, $source_code );
+			$new_code = preg_replace( "#{$marker}#", $replacer, $source_code );
 
-			file_put_contents( $source_file, $source_code );
+			if ( $new_code && strlen( $new_code ) >= $source_size ) {
+
+				file_put_contents( $source_file, $new_code );
+
+			}
 
 		}
 
@@ -126,15 +145,6 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 			}
 
-			$latest_commit = self::load_latest_commit( $class_name );
-
-			if ( is_null( $latest_commit ) ) {
-
-				$latest_commit = self::MISSING_COMMIT;
-				break;
-
-			}
-
 		} while ( false );
 
 		return substr( $latest_commit, 0, 7 );
@@ -142,6 +152,12 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	}
 
 	/**
+	 * Load 7 char commit number from the system.
+	 *
+	 * Look for a file LATEST_COMMIT if a Git post-commit hook exists and created it
+	 * otherwise call Git using shell_exec().
+	 *
+	 *
 	 * @param string $class_name
 	 *
 	 * @return null
@@ -150,9 +166,22 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 		$filepath = self::get_latest_commit_file( $class_name );
 
-		return is_file( $filepath )
-			? file_get_contents( $filepath )
+		$latest_commit = is_file( $filepath )
+			? trim( file_get_contents( $filepath ) )
 			: null;
+
+		if ( is_null( $latest_commit ) && WPLib::is_development() ) {
+			/**
+			 * Call `git log` via shell_exec()
+			 */
+			$root_dir = $class_name::root_dir();
+			$output = shell_exec( "cd {$root_dir} && git log -1 --oneline && cd -" );
+
+			$latest_commit = substr( $output, 0, 7 );
+
+		}
+
+		return $latest_commit;
 
 	}
 
@@ -164,7 +193,7 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	static function get_latest_commit_file( $class_name ) {
 
 		return self::can_have_latest_commit( $class_name )
-			? $class_name::get_root_url( 'LATEST_COMMIT' )
+			? $class_name::get_root_dir( 'LATEST_COMMIT' )
 			: null;
 
 	}
