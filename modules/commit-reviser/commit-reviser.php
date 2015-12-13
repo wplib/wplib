@@ -2,6 +2,8 @@
 
 /**
  * Class WPLib_Commit_Reviser
+ *
+ * @since 0.10.0
  */
 class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
@@ -152,11 +154,10 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	}
 
 	/**
-	 * Load 7 char commit number from the system.
+	 * Load 7 char abbreviated hash for commit from the system (file or exec).
 	 *
 	 * Look for a file LATEST_COMMIT if a Git post-commit hook exists and created it
 	 * otherwise call Git using shell_exec().
-	 *
 	 *
 	 * @param string $class_name
 	 *
@@ -172,12 +173,21 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 		if ( is_null( $latest_commit ) && WPLib::is_development() ) {
 			/**
-			 * Call `git log` via shell_exec()
+			 * Call `git log` via exec()
 			 */
 			$root_dir = $class_name::root_dir();
-			$output = shell_exec( "cd {$root_dir} && git log -1 --oneline && cd -" );
+			$command = "cd {$root_dir} && git log -1 --oneline && cd -";
+			exec( $command, $output, $return_value );
 
-			$latest_commit = substr( $output, 0, 7 );
+			if ( 0 === $return_value && isset( $output[0] ) ) {
+				/**
+				 * If no git repo in dir, $return_value==127 and $output==array()
+				 * If no git on system, $return_value==128 and $output==array()
+				 * If good, first 7 chars of $output[0] has abbreviated hash for commit
+				 */
+				$latest_commit = substr( $output[0], 0, 7 );
+
+			}
 
 		}
 
