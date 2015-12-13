@@ -42,7 +42,7 @@
  */
 class WPLib {
 
-	const LATEST_COMMIT = 'fb790ef'; 
+	const LATEST_COMMIT = 'fb790ef';
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -216,6 +216,7 @@ class WPLib {
 
 		self::register_module( 'posts', 0 );
 		self::register_module( 'terms', 0 );
+		self::register_module( 'roles', 0 );
 		self::register_module( 'users', 0 );
 		self::register_module( 'post-type-post', 0 );
 		self::register_module( 'post-type-page', 0 );
@@ -2185,17 +2186,23 @@ class WPLib {
 	/**
 	 * Returns array of class names $base_class children with positive values for $base_class::$contant_name.
 	 *
-	 * @internal
-	 *
 	 * @param $base_class
 	 *
 	 * @param $constant_name
 	 *
 	 * @return string[]
 	 */
-	static function _get_child_classes( $base_class, $constant_name ) {
+	static function get_child_classes( $base_class, $constant_name ) {
 
-		if ( ! ( $child_classes = self::cache_get( $cache_key = "classes[{$base_class}::{$constant_name}]" ) ) ) {
+		$cache_key = "classes[{$base_class}::{$constant_name}]";
+
+		if ( ! WPLib::is_development() ) {
+			$cache_key = md5( $cache_key );
+		}
+
+		if ( ! ( $child_classes = self::cache_get( $cache_key ) ) ) {
+
+			WPLib::autoload_all_classes();
 
 			$child_classes = array();
 
