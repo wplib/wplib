@@ -76,6 +76,8 @@ abstract class WPLib_Enum {
 	 * @param string|object $enum Classname or object
 	 *
 	 * @return mixed|null
+	 *
+	 * @since 0.10.0
 	 */
 	static function get_slug( $enum ) {
 
@@ -92,6 +94,8 @@ abstract class WPLib_Enum {
 	 * @param string $enum_name
 	 *
 	 * @return mixed|null
+	 *
+	 * @since 0.10.0
 	 */
 	static function get_enum( $enum_name ) {
 
@@ -104,6 +108,8 @@ abstract class WPLib_Enum {
 	/**
 	 * @param string $enum_slug
 	 * @return string
+	 *
+	 * @since 0.10.0
 	 */
 	static function get_enum_class( $enum_slug ) {
 
@@ -115,6 +121,8 @@ abstract class WPLib_Enum {
 
 	/**
 	 * @return string[]
+	 *
+	 * @since 0.10.0
 	 */
 	static function get_enum_classes() {
 
@@ -154,6 +162,8 @@ abstract class WPLib_Enum {
 	 * @param mixed $value
 	 *
 	 * @return mixed|null
+	 *
+	 * @since 0.10.0
 	 */
 	static function set_enum( $enum_name, $value ) {
 
