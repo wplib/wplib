@@ -28,22 +28,19 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 	 */
 	static function on_load() {
 
-		self::add_class_action( 'wp_loaded' );
+		self::add_class_action( 'wplib_commit_revised' );
 
 	}
 
 	/**
-	 *
+	 * @param string $class_name
+	 * @param string $latest_commit
+	 * @param string $previous_commit
 	 */
-	static function _wp_loaded() {
+	static function _wplib_commit_revised( $class_name, $latest_commit, $previous_commit ) {
 
-		if ( ! WPLib::cache_get( $cache_key = 'roles_initialized' ) ) {
+		self::_initialize_roles( $class_name, $latest_commit, $previous_commit );
 
-			self::_initialize_roles();
-
-			WPLib::cache_set( $cache_key, true );
-
-		}
 	}
 
 	/**
@@ -52,59 +49,64 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 	 *
 	 * @note Using this approach disables administrator changes of roles and get_capabilities.
 	 *
+	 * @param string $class_name
+	 * @param string $latest_commit
+	 * @param string $previous_commit
 	 */
-	private static function _initialize_roles() {
+	private static function _initialize_roles( $class_name, $latest_commit, $previous_commit ) {
 
-		$roles = new WP_Roles();
-
-		foreach( self::$_capabilities as $role_slug => $capabilities ) {
-
-			if ( empty( $role_slug ) ) {
-
-				continue;
-
-			}
-
-			if ( ! isset( $roles->roles[ $role_slug ] ) ) {
-
-				$add_role = true;
-
-			} else if ( self::get_role_name( $role_slug ) != $roles->role_names[ $role_slug ] ) {
-
-				$add_role = true;
-
-			} else {
-
-				$saved_capabilities = $roles->role_objects[ $role_slug ]->capabilities;
-
-				if ( count( $capabilities ) === count( array_intersect( $saved_capabilities, $capabilities ) ) ) {
-
-					$add_role = false;
-
-				} else {
-
-					$add_role = true;
-
-				}
-
-			}
-
-			if ( $add_role ) {
-
-				/**
-				 * @note: Just FYI, this will remove the legacy get_capabilities of level_0..level_10.
-				 * @note: Should not be an issue for a modern WP app. If it becomes an issue we can test for them too.
-				 */
-				remove_role( $role_slug );
-
-				$capabilities = array_fill_keys( $capabilities, true );
-
-				add_role( $role_slug, self::get_role_name( $role_slug ), $capabilities );
-
-			}
-
-		}
-
+//		$option_name = strtolower( $class_name ) . '_roles';
+//
+//		$wp_roles = new WP_Roles();
+//
+//		foreach( self::$_roles as $role_slug => $role ) {
+//
+//			if ( empty( $role_slug ) ) {
+//
+//				continue;
+//
+//			}
+//
+//			if ( ! isset( $wp_roles->roles[ $role_slug ] ) ) {
+//
+//				$add_role = true;
+//
+//			} else if ( self::get_role_name( $role_slug ) != $wp_roles->role_names[ $role_slug ] ) {
+//
+//				$add_role = true;
+//
+//			} else {
+//
+//				$saved_capabilities = $wp_roles->role_objects[ $role_slug ]->capabilities;
+//
+//				if ( count( $capabilities ) === count( array_intersect( $saved_capabilities, $capabilities ) ) ) {
+//
+//					$add_role = false;
+//
+//				} else {
+//
+//					$add_role = true;
+//
+//				}
+//
+//			}
+//
+//			if ( $add_role ) {
+//
+//				/**
+//				 * @note: Just FYI, this will remove the legacy get_capabilities of level_0..level_10.
+//				 * @note: Should not be an issue for a modern WP app. If it becomes an issue we can test for them too.
+//				 */
+//				remove_role( $role_slug );
+//
+//				$capabilities = array_fill_keys( $capabilities, true );
+//
+//				add_role( $role_slug, self::get_role_name( $role_slug ), $capabilities );
+//
+//			}
+//
+//		}
+//
 	}
 
 //	/**
@@ -199,7 +201,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 	 */
 	static function get_role_name( $role_slug = false ) {
 
-		return self::$_display_names[ $role_slug ? $role_slug : static::role_slug() ];
+		return '';//self::$_display_names[ $role_slug ? $role_slug : static::role_slug() ];
 
 	}
 

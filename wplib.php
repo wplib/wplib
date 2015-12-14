@@ -31,6 +31,7 @@
  * @mixin WPLib_Posts
  * @mixin WPLib_Terms
  * @mixin WPLib_Users
+ * @mixin WPLib_Roles
  * @mixin _WPLib_Html_Helpers
  * @mixin _WPLib_WP_Helpers
  *
@@ -42,7 +43,7 @@
  */
 class WPLib {
 
-	const LATEST_COMMIT = 'fb790ef';
+	const LATEST_COMMIT = '41a9840'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -231,11 +232,11 @@ class WPLib {
 		/**
 		 * Register default User Roles
 		 */
-		self::register_module( 'user-role-administrator', 4 );
-		self::register_module( 'user-role-contributor', 4 );
-		self::register_module( 'user-role-subscriber', 4 );
-		self::register_module( 'user-role-editor', 4 );
-		self::register_module( 'user-role-author', 4 );
+		self::register_module( 'role-administrator', 4 );
+		self::register_module( 'role-contributor', 4 );
+		self::register_module( 'role-subscriber', 4 );
+		self::register_module( 'role-editor', 4 );
+		self::register_module( 'role-author', 4 );
 
 		self::add_class_action( 'init', 9 );
 		self::add_class_action( 'plugins_loaded', 11 );
