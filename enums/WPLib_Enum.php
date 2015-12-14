@@ -177,7 +177,11 @@ abstract class WPLib_Enum {
 
 		if ( isset( self::$_enums[ $enum_slug ] ) ) {
 
-			self::$_enums[ $enum_slug ]->set_value( $value );
+			/**
+			 * @var WPLib_Enum $enum
+			 */
+			$enum = self::$_enums[ $enum_slug ];
+			$enum->set_value( $value );
 
 		} else {
 
@@ -230,7 +234,7 @@ abstract class WPLib_Enum {
 	 */
 	static function has_enum_value( $value ) {
 
-		return array_key_exists( $value, static::get_enum_consts() );
+		return array_key_exists( $value, self::get_enum_consts( get_called_class() ) );
 
 	}
 
@@ -260,26 +264,26 @@ abstract class WPLib_Enum {
 	/**
 	 * Return the values defined in the child class.
 	 *
-	 * @param bool $include_default
+	 * @param WPLib_Enum|string $enum
 	 *
 	 * @return array
 	 */
-	function get_enum_values( $include_default = false ) {
+	static function get_enum_values( $enum = null ) {
 
-		static $enums;
+		if ( is_string( $enum ) ) {
 
-		if ( ! isset( $enums ) ) {
+			$class_name = $enum;
 
-			$class = isset( $this ) ? get_class( $this ) : get_called_class();
+		} else {
 
-			$reflector = new ReflectionClass( $class );
-			$enums     = $reflector->getConstants();
-
-			if ( ! $include_default ) {
-				unset( $enums['__default'] );
-			}
+			$class_name = ! is_null( $enum ) ? get_class( $enum ) : get_called_class();
 
 		}
+
+		$reflector = new ReflectionClass( $class_name );
+		$enums     = $reflector->getConstants();
+
+		unset( $enums['__default'] );
 
 		return $enums;
 
@@ -294,7 +298,7 @@ abstract class WPLib_Enum {
 	 */
 	function has_enum_const( $const ) {
 
-		return array_key_exists( strtoupper( $const ), $this->get_enum_values() );
+		return array_key_exists( strtoupper( $const ), self::get_enum_values( $this ) );
 
 	}
 
@@ -310,7 +314,7 @@ abstract class WPLib_Enum {
 		/*
 		 * Get an array with names as keys and constant values as values
 		 */
-		$values = $this->get_enum_values();
+		$values = self::get_enum_values( $this );
 
 		/*
 		 * Look for a matching constant value first
@@ -346,13 +350,13 @@ abstract class WPLib_Enum {
 	/**
 	 * Return the constants defined in the child class.
 	 *
-	 * @param bool $include_default
+	 * @param WPLib_Enum|string $enum
 	 *
 	 * @return array
 	 */
-	static function get_enum_consts( $include_default = false ) {
+	static function get_enum_consts( $enum = null ) {
 
-		return array_flip( static::get_enum_values( $include_default ) );
+		return array_flip( static::get_enum_values( $enum ) );
 
 	}
 
