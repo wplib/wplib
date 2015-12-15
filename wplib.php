@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.11.0
+ * Version:     0.11.1
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -1473,10 +1473,11 @@ class WPLib {
 	 * @param string $key
 	 * @param mixed $value
 	 * @param string $group
+	 * @param int $expire
 	 */
-	static function cache_set( $key, $value, $group = '' ) {
+	static function cache_set( $key, $value, $group = '', $expire = 0 ) {
 
-		wp_cache_set( $key, $value, static::_filter_group( $group ) );
+		wp_cache_set( $key, $value, static::_filter_group( $group ), $expire );
 
 	}
 
