@@ -7,8 +7,6 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 	const ROLE = null;
 
-	static $CAPABILITIES = array();
-
 	const INSTANCE_CLASS = null;
 
 	/**
@@ -21,6 +19,15 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 	 * }
 	 */
 	private static $_roles = array();
+
+
+	static function _CAPABILITIES() {
+
+		return array();
+
+	}
+
+
 
 	/**
 	 * Add the code to trigger inspection of roles upon commit revision.
@@ -324,13 +331,13 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 		$parent_of_called = get_parent_class( $class_name );
 
-		$parent_capabilities = property_exists( $parent_of_called, 'CAPABILITIES' )
+		$parent_capabilities = method_exists( $parent_of_called, '_CAPABILITIES' )
 			? call_user_func( array( $parent_of_called, 'capabilities' ) )
 			: array();
 
 		$capabilities = count( $parent_capabilities )
-			? array_merge( $parent_capabilities, static::$CAPABILITIES )
-			: static::$CAPABILITIES;
+			? array_merge( $parent_capabilities, static::_CAPABILITIES() )
+			: static::_CAPABILITIES();
 
 		return array_unique( $capabilities );
 

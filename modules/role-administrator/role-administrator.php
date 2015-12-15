@@ -9,24 +9,28 @@ class WPLib_Administrators extends WPLib_Administrator_Module_Base {
 
 	const ROLE = 'administrator';
 
-	static $CAPABILITIES = array(
+	static function _CAPABILITIES() {
 
-		'update_core',
-		'update_plugins',
-		'update_themes',
-		'install_plugins',
-		'install_themes',
-		'delete_themes',
-		'delete_plugins',
-		'edit_plugins',
-		'edit_themes',
-		'edit_files',
-		'edit_users',
-		'create_users',
-		'delete_users',
-		'unfiltered_html',
+		return array(
 
-	);
+			'update_core',
+			'update_plugins',
+			'update_themes',
+			'install_plugins',
+			'install_themes',
+			'delete_themes',
+			'delete_plugins',
+			'edit_plugins',
+			'edit_themes',
+			'edit_files',
+			'edit_users',
+			'create_users',
+			'delete_users',
+			'unfiltered_html',
+
+		);
+
+	}
 
 	static function on_load() {
 
