@@ -288,7 +288,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	/**
 	 * @param array|string|WPLib_Query $query
 	 * @param array $args
-	 * @return WPLib_Post_List_Default[]
+	 * @return WPLib_Post_List_Default
 	 */
 	static function get_list( $query = array(), $args = array() ) {
 
