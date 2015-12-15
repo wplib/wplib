@@ -7,13 +7,7 @@ class WPLib_Contributors extends WPLib_Role_Module_Base {
 
 	const ROLE = 'contributor';
 
-	const CAPABILITIES = array(
-
-		'delete_posts',
-		'edit_posts',
-		'read',
-
-	);
+	const CAPABILITIES = 'delete_posts|edit_posts|read';
 
 	static function on_load() {
 

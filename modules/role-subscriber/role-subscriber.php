@@ -6,11 +6,7 @@
 class WPLib_Subscribers extends WPLib_Role_Module_Base {
 
 	const ROLE = 'subscriber';
-	const CAPABILITIES = array(
-
-		'read',
-
-	);
+	const CAPABILITIES = 'read';
 
 	static function on_load() {
 
