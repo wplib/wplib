@@ -7,40 +7,47 @@
  */
 class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
-	const MISSING_COMMIT = '0000000';
-
 	/**
 	 *
 	 */
 	static function on_load() {
 
-		self::add_class_action( 'wp_loaded' );
+		if ( is_admin() ) {
+			/**
+			 * We only need to do this in the admin.
+			 * Let's not add even a tiny bit of slow to the front end.
+			 */
+			self::add_class_action( 'wp_loaded' );
+
+		}
 
 	}
 
 	/**
-	 * Inspect the LATEST_COMMIT for both WPLib and WPLib::app_class()
+	 * Inspect the RECENT_COMMIT for both WPLib and WPLib::app_class()
 	 * and if changed call 'wplib_commit_revised' hook and update
 	 * option in database.
 	 */
 	static function _wp_loaded() {
 
+		$commit_revised = false ;
+
 		foreach( array( 'WPLib', WPLib::app_class() ) as $class_name ) {
 
-			$latest_commit = self::get_latest_commit( $class_name );
+			$recent_commit = self::get_recent_commit( $class_name );
 
 			if ( WPLib::is_development() ) {
 				/**
-				 * During development look at file LATEST_COMMIT
+				 * During development look at file RECENT_COMMIT
 				 * that a git commit-hook will hopefully have added
 				 */
 				self::_maybe_update_class( $class_name );
 
-				$loaded_commit = self::load_latest_commit( $class_name );
+				$loaded_commit = self::load_recent_commit( $class_name );
 
-				if ( $loaded_commit !== $latest_commit ) {
+				if ( $loaded_commit !== $recent_commit ) {
 
-					$latest_commit = $loaded_commit;
+					$recent_commit = $loaded_commit;
 
 				}
 
@@ -48,36 +55,127 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 			$prefix = strtolower( $class_name );
 
-			$previous_commit = get_option( $option_name = "{$prefix}_latest_commit" );
+			$previous_commit = get_option( $option_name = "{$prefix}_recent_commit" );
 
-			if ( $latest_commit !== $previous_commit ) {
+			if ( $recent_commit !== $previous_commit ) {
 
-				do_action( 'wplib_commit_revised', $class_name, $latest_commit, $previous_commit );
-
-				update_option( $option_name, $latest_commit );
+				$commit_revised = true;
+				break;
 
 			}
+
+		}
+
+
+		if ( $commit_revised ) {
+
+			update_option( $option_name, $recent_commit );
+
+			do_action( 'wplib_commit_revised', $recent_commit, $previous_commit );
+
 
 		}
 
 	}
 
 	/**
-	 * Update the LATEST_COMMIT constant for WPLib or the App Class.
+	 * @return null|string
+	 */
+	static function recent_commit() {
+
+		return static::get_recent_commit( get_called_class() );
+
+	}
+
+	/**
+	 * @param $class_name
+	 * @param bool $defined
 	 *
-	 * The update does not affect the current value for LATEST_COMMIT until next page load.
+	 * @return mixed|null|string
+	 */
+	static function get_recent_commit( $class_name, &$defined = null ) {
+
+		do {
+
+			$recent_commit = $defined = null;
+
+			if ( ! self::_can_have_recent_commit( $class_name ) ) {
+				break;
+			}
+
+			$const_ref = "{$class_name}::RECENT_COMMIT";
+
+			if ( $defined = defined( $const_ref ) ) {
+
+				$recent_commit = constant( $const_ref );
+				break;
+
+			}
+
+		} while ( false );
+
+		return substr( $recent_commit, 0, 7 );
+
+	}
+
+	/**
+	 * Load 7 char abbreviated hash for commit from the system (file or exec).
+	 *
+	 * Look for a file RECENT_COMMIT if a Git post-commit hook exists and created it
+	 * otherwise call Git using shell_exec().
+	 *
+	 * @param string $class_name
+	 *
+	 * @return null
+	 */
+	static function load_recent_commit( $class_name ) {
+
+		$filepath = self::_get_recent_commit_file( $class_name );
+
+		$recent_commit = is_file( $filepath )
+			? trim( file_get_contents( $filepath ) )
+			: null;
+
+		if ( is_null( $recent_commit ) && WPLib::is_development() ) {
+			/**
+			 * Call `git log` via exec()
+			 */
+			$root_dir = self::_get_class_root_dir( $class_name );
+			$command = "cd {$root_dir} && git log -1 --oneline && cd -";
+			exec( $command, $output, $return_value );
+
+			if ( 0 === $return_value && isset( $output[0] ) ) {
+				/**
+				 * If no git repo in dir, $return_value==127 and $output==array()
+				 * If no git on system, $return_value==128 and $output==array()
+				 * If good, first 7 chars of $output[0] has abbreviated hash for commit
+				 */
+				$recent_commit = substr( $output[0], 0, 7 );
+
+			}
+
+		}
+
+		return $recent_commit;
+
+	}
+
+	/**
+	 * Update the RECENT_COMMIT constant for WPLib or the App Class.
+	 *
+	 * The update does not affect the current value for RECENT_COMMIT until next page load.
 	 *
 	 * @param string $class_name
 	 */
 	private static function _maybe_update_class( $class_name ) {
 
-		$latest_commit = self::get_latest_commit( $class_name, $defined );
+		$recent_commit = self::get_recent_commit( $class_name, $defined );
 
-		$not_exists = ! $defined || is_null( $latest_commit );
+		$not_exists = ! $defined || is_null( $recent_commit );
 
-		$loaded_commit = self::load_latest_commit( $class_name );
+		$loaded_commit = self::load_recent_commit( $class_name );
 
-		if ( $not_exists || ( ! is_null( $loaded_commit ) && $latest_commit !== $loaded_commit ) ) {
+		if ( $not_exists || ( ! is_null( $loaded_commit ) && $recent_commit !== $loaded_commit ) ) {
 
 			$reflector = new ReflectionClass( $class_name );
 
@@ -87,17 +185,17 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 			$source_size = strlen( $source_code );
 
-			if ( preg_match( "#const\s+LATEST_COMMIT#", $source_code ) ) {
+			if ( preg_match( "#const\s+RECENT_COMMIT#", $source_code ) ) {
 
-				$marker = "const\s+LATEST_COMMIT\s*=\s*'[^']*'\s*;\s*(//.*)?\s*\n";
+				$marker = "const\s+RECENT_COMMIT\s*=\s*'[^']*'\s*;\s*(//.*)?\s*\n";
 
-				$replacer = "const LATEST_COMMIT = '{$loaded_commit}'; $1\n\n";
+				$replacer = "const RECENT_COMMIT = '{$loaded_commit}'; $1\n\n";
 
 			} else {
 
 				$marker = "class\s+{$class_name}\s+(extends\s+\w+)?\s*\{\s*\n";
 
-				$replacer = "$0\tconst LATEST_COMMIT = '{$loaded_commit}';\n\n";
+				$replacer = "$0\tconst RECENT_COMMIT = '{$loaded_commit}';\n\n";
 
 			}
 
@@ -114,96 +212,14 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	}
 
 	/**
-	 * @return null|string
-	 */
-	static function latest_commit() {
-
-		return static::get_latest_commit( get_called_class() );
-
-	}
-
-	/**
-	 * @param $class_name
-	 * @param bool $defined
-	 *
-	 * @return mixed|null|string
-	 */
-	static function get_latest_commit( $class_name, &$defined = null ) {
-
-		do {
-
-			$latest_commit = $defined = null;
-
-			if ( ! self::can_have_latest_commit( $class_name ) ) {
-				break;
-			}
-
-			$const_ref = "{$class_name}::LATEST_COMMIT";
-
-			if ( $defined = defined( $const_ref ) ) {
-
-				$latest_commit = constant( $const_ref );
-				break;
-
-			}
-
-		} while ( false );
-
-		return substr( $latest_commit, 0, 7 );
-
-	}
-
-	/**
-	 * Load 7 char abbreviated hash for commit from the system (file or exec).
-	 *
-	 * Look for a file LATEST_COMMIT if a Git post-commit hook exists and created it
-	 * otherwise call Git using shell_exec().
-	 *
 	 * @param string $class_name
 	 *
 	 * @return null
 	 */
-	static function load_latest_commit( $class_name ) {
+	private static function _get_recent_commit_file( $class_name ) {
 
-		$filepath = self::get_latest_commit_file( $class_name );
-
-		$latest_commit = is_file( $filepath )
-			? trim( file_get_contents( $filepath ) )
-			: null;
-
-		if ( is_null( $latest_commit ) && WPLib::is_development() ) {
-			/**
-			 * Call `git log` via exec()
-			 */
-			$root_dir = $class_name::root_dir();
-			$command = "cd {$root_dir} && git log -1 --oneline && cd -";
-			exec( $command, $output, $return_value );
-
-			if ( 0 === $return_value && isset( $output[0] ) ) {
-				/**
-				 * If no git repo in dir, $return_value==127 and $output==array()
-				 * If no git on system, $return_value==128 and $output==array()
-				 * If good, first 7 chars of $output[0] has abbreviated hash for commit
-				 */
-				$latest_commit = substr( $output[0], 0, 7 );
-
-			}
-
-		}
-
-		return $latest_commit;
-
-	}
-
-	/**
-	 * @param string $class_name
-	 *
-	 * @return null
-	 */
-	static function get_latest_commit_file( $class_name ) {
-
-		return self::can_have_latest_commit( $class_name )
-			? $class_name::get_root_dir( 'LATEST_COMMIT' )
+		return self::_can_have_recent_commit( $class_name )
+			? self::_get_class_root_dir( $class_name, 'RECENT_COMMIT' )
 			: null;
 
 	}
@@ -213,9 +229,21 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	 *
 	 * @return bool
 	 */
-	static function can_have_latest_commit( $class_name ) {
+	private static function _can_have_recent_commit( $class_name ) {
 
 		return 'WPLib' === $class_name || is_subclass_of( $class_name, 'WPLib_App_Base' );
+
+	}
+
+	/**
+	 * @param string $class_name
+	 * @param string $path
+	 *
+	 * @return string
+	 */
+	private static function _get_class_root_dir( $class_name, $path = '' ) {
+
+		return call_user_func( array( $class_name, 'get_root_dir') , $path );
 
 	}
 
