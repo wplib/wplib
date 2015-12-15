@@ -517,7 +517,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 			$categories = get_categories( $args );
 
-			set_transient( $cache_key, $category_count = count( $categories ) );
+			WPLib::cache_set( $cache_key, $category_count = count( $categories ), null, 15*60 );
 		}
 
 		return intval( $category_count ) - 1;
