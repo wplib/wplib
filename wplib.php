@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const LATEST_COMMIT = '41a9840'; 
+	const RECENT_COMMIT = 'cc8f1f7'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -1349,7 +1349,7 @@ class WPLib {
 	 */
 	static function register_module( $module, $priority = 10 ) {
 
-		self::$_modules[ $priority ][] = static::get_root_dir( "modules/{$module}/{$module}.php" );
+		self::$_modules[ $priority ][ $module ] = static::get_root_dir( "modules/{$module}/{$module}.php" );
 
 	}
 
