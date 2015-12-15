@@ -28,6 +28,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 	static function on_load() {
 
 		self::add_class_action( 'wplib_commit_revised' );
+		self::add_class_action( 'wp_loaded', 11 );
 
 	}
 
@@ -45,15 +46,23 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 	}
 
 	/**
+	 * Release the memory used for the roles.
+	 */
+	static function _wp_loaded_11() {
+
+		self::$_roles = null;
+
+	}
+
+	/**
 	 * Initialize roles, if needed, when commits are revised.
 	 *
-	 * @param string $app_class
-	 * @param string $latest_commit
+	 * @param string $recent_commit
 	 * @param string $previous_commit
 	 */
-	static function _wplib_commit_revised( $app_class, $latest_commit, $previous_commit ) {
+	static function _wplib_commit_revised( $recent_commit, $previous_commit ) {
 
-		self::_initialize_roles( $app_class, $latest_commit, $previous_commit );
+		self::_initialize_roles( $recent_commit, $previous_commit );
 
 	}
 
@@ -61,21 +70,33 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 	 * Runs through all the registered roles and ensures that all roles and get_capabilities
 	 * are set as defined in the classes.
 	 *
-	 * @param string $app_class         The App Class (or WPLib) that "owns" the roles
-	 * @param string $latest_commit
+	 * @param string $recent_commit
 	 * @param string $previous_commit
 	 */
-	private static function _initialize_roles( $app_class, $latest_commit, $previous_commit ) {
+	private static function _initialize_roles( $recent_commit, $previous_commit ) {
 
 		WPLib::autoload_all_classes();
 
-		$option = get_option( $option_name = strtolower( $app_class ) . '_roles', array() );
+		$app_slug = strtolower( WPLib::app_class() );
+
+		$option = get_option( $option_name = "{$app_slug}_roles", array() );
 
 		$wp_roles = new WP_Roles();
 
 		$dirty = false;
 
 		foreach( self::$_roles as $role_slug => $role ) {
+
+			if ( preg_match( '#^WPLib_(Administrators|Editors|Contributors|Subscribers|Authors)$#', $role['class_name'] ) ) {
+
+				/*
+				 * Easier just to punt on these for right now.
+				 * WordPress does some weird things with built-in roles,
+				 * especially with Administrator related to Multisite
+				 */
+				continue;
+
+			}
 
 			if ( empty( $role_slug ) ) {
 
@@ -86,14 +107,14 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 			}
 
-			$capabilities = self::get_capabilities( $role['class_name'] );
+			$capabilities = call_user_func( array( $role['class_name'], 'capabilities' ) );
 
 			if ( ! isset( $option[ $role_slug ] ) ) {
 
 				$option[ $role_slug ] = array(
 
 					'prior_capabilities' => $capabilities,
-					'latest_commit'      => $latest_commit,
+					'recent_commit'      => $recent_commit,
 					'previous_commit'    => $previous_commit,
 
 				);
@@ -109,7 +130,31 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 			/*
 			 * Get the capabilities
 			 */
-			$current_capabilities = $wp_roles->role_objects[ $role_slug ]->capabilities;
+			if ( is_null( $current_capabilities = $wp_roles->role_objects[ $role_slug ]->capabilities ) ) {
+
+				$current_capabilities = array();
+
+			} else {
+
+				/**
+				 * Remove all the legacy level_0 through level_10 capabilities.
+				 */
+				for ( $i = 0; $i <= 10; $i ++ ) {
+
+					unset( $current_capabilities["level_{$i}"] );
+
+				}
+
+			}
+
+			if ( empty( $prior_capabilities ) ) {
+
+				/**
+				 * First time in, let's assume previous are same as current.
+				 */
+				$prior_capabilities = $current_capabilities;
+
+			}
 
 			/**
 			 * Filter the capabilities that should be applied for the role.
@@ -128,14 +173,20 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 			 */
 			$capabilities = apply_filters( 'wplib_role_capabilities', $capabilities, $role_slug, $role );
 
-			if ( ! isset( $wp_roles->roles[ $role_slug ] ) ) {
+			$capabilities = array_fill_keys( $capabilities, true );
+
+			if ( defined( 'WPLIB_UPDATE_ROLES' ) && WPLIB_UPDATE_ROLES ) {
+
+			    $change_role = true;
+
+			} else if ( ! isset( $wp_roles->roles[ $role_slug ] ) ) {
 
 				/*
 				 * Whelp, the role does not exists, so let's add it.
 				 */
 				$change_role = true;
 
-			} else if ( ! self::_arrays_are_equivalent( $capabilities, $current_capabilities ) ) {
+			} else if ( isset( $merged ) || ! self::_arrays_are_equivalent( $capabilities, $current_capabilities ) ) {
 
 				/*
 				 * The new capabilities are different than the current ones, AND
@@ -161,7 +212,16 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 				 * Does not seem there is a reason to change.
 				 */
 				$change_role = false;
+
+			} else {
+
+				/*
+				 * Bah. Don't change it. No evidence we need to.
+				 */
+				$change_role = false;
+
 			}
+
 
 			if ( $change_role ) {
 
@@ -171,13 +231,11 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 				 */
 				remove_role( $role_slug );
 
-				$capabilities = array_fill_keys( $capabilities, true );
-
 				add_role( $role_slug, $display_name, $capabilities );
 
 				$option[ $role_slug ]= array(
 					'prior_capabilities' => $capabilities,
-					'latest_commit'      => $latest_commit,
+					'recent_commit'      => $recent_commit,
 					'previous_commit'    => $previous_commit,
 				);
 
@@ -186,20 +244,23 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 			}
 
 		}
+		self::$_roles = array();
 
 		if ( $dirty ) {
 
 			update_option( $option_name, $option, 'no' );
 
+			/**
+			 * @todo Change this to redirect to the same URL they were on
+			 *       Which means adding something like WPLib::current_url().
+			 *       Maybe even a WPLib::redirect_to_self().
+			 *       But I want to sleep on that a few days first.
+			 */
+			wp_safe_redirect( home_url( '/' ) );
+			exit;
+
 		}
 
-		/**
-		 * @todo Change this to redirect to the same URL they were on
-		 *       Which means adding something like WPLib::current_url().
-		 *       Maybe even a WPLib::redirect_to_self().
-		 *       But I want to sleep on that a few days first.
-		 */
-		wp_safe_redirect( home_url( '/' ) );
 
 	}
 
@@ -271,7 +332,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 			? array_merge( $parent_capabilities, static::CAPABILITIES )
 			: static::CAPABILITIES;
 
-		return $capabilities;
+		return array_unique( $capabilities );
 
 	}
 
