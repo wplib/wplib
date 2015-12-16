@@ -52,12 +52,20 @@ class WPLib_Administrators extends WPLib_Administrator_Module_Base {
 
 		$parent_capabilities = WPLib_Administrator_Module_Base::get_capabilities( $class_name );
 
-		return is_multisite()
-			? $parent_capabilities
-			: array_merge(
-				$parent_capabilities,
-				call_user_func( array( $class_name, 'get_capabilities' ), $class_name )
-			  );
+		if ( is_multisite() ) {
+
+			$capabilities = $parent_capabilities;
+
+		} else {
+
+			$capabilities = call_user_func( array( get_parent_class(), 'get_capabilities' ), $class_name );
+
+			$capabilities = array_merge( $parent_capabilities, $capabilities );
+
+		}
+
+		return $capabilities;
+
 	}
 
 }
