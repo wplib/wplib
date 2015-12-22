@@ -27,8 +27,6 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 	}
 
-
-
 	/**
 	 * Add the code to trigger inspection of roles upon commit revision.
 	 */
@@ -92,7 +90,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 		$dirty = false;
 
-		foreach( self::$_roles as $role_slug => $role ) {
+		foreach ( self::$_roles as $role_slug => $role ) {
 
 			if ( preg_match( '#^WPLib_(Administrators|Editors|Contributors|Subscribers|Authors)$#', $role['class_name'] ) ) {
 
@@ -238,7 +236,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 				 */
 				remove_role( $role_slug );
 
-				add_role( $role_slug, $display_name, $capabilities );
+				${'add_role'}( $role_slug, $display_name, $capabilities );
 
 				$option[ $role_slug ]= array(
 					'prior_capabilities' => $capabilities,

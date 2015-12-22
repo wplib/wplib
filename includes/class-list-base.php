@@ -136,7 +136,7 @@ abstract class WPLib_List_Base
 
 			$elements = array();
 
-			foreach( $this->_elements as $element ) {
+			foreach ( $this->_elements as $element ) {
 
 				if ( ! ( $index = $this->get_element_index( $element ) ) ) {
 					/*
@@ -154,7 +154,7 @@ abstract class WPLib_List_Base
 			/*
 			 * Only use the new index if all elements had an index
 			 */
-			if ( count( $this->_elements ) == count( $elements ) ) {
+			if ( count( $this->_elements ) === count( $elements ) ) {
 
 				$this->_elements = $elements;
 

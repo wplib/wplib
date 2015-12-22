@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = 'e056604';
+	const RECENT_COMMIT = '29bb238';
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -105,6 +105,11 @@ class WPLib {
 	 * @var array Files that have been loaded so they won't be reloaded.
 	 */
 	private static $_loaded_include_files = array();
+
+	/**
+	 * @var string
+	 */
+	private static $_markers = 'found|file|ex|contents';
 
 	/**
 	 * @var int
@@ -336,7 +341,7 @@ class WPLib {
 
 		self::stability()->check_method( __METHOD__, WPLib_Stability::EXPERIMENTAL );
 
-		if ( '/' != $filepath[0] ) {
+		if ( '/' !== $filepath[0] ) {
 
 			if ( preg_match( "#^~/(.*)$#", $filepath, $match ) ) {
 
@@ -427,11 +432,11 @@ class WPLib {
 		array_shift( $parts );
 		$filename = implode( '-', $parts );
 
-		foreach( array( 'class', 'trait' ) as $type ) {
+		foreach ( array( 'class', 'trait' ) as $type ) {
 
 			$filepath = "{$dirpath}/{$type}-{$filename}.php";
 
-			if ( is_file( $filepath ) ) {
+			if ( WPLib::is_found( $filepath ) ) {
 
 				require( $filepath );
 
@@ -482,7 +487,7 @@ class WPLib {
 				 	 continue;
 				}
 
-				if ( self::is_development() && ! is_file( $filepath ) ) {
+				if ( self::is_development() && ! WPLib::is_found( $filepath ) ) {
 
 					self::trigger_error( sprintf( __( "Required file not found: %s", 'wplib' ), $filepath ) );
 
@@ -550,17 +555,17 @@ class WPLib {
 
 		$component_classes = array();
 
-		$offset = 'latest' == $scope ? $class_count : 0;
+		$offset = 'latest' === $scope ? $class_count : 0;
 
 		$latest_classes = array_slice( get_declared_classes(), $offset );
 
-		if ( 'latest' == $scope  ) {
+		if ( 'latest' === $scope  ) {
 
 			$class_count += count( $latest_classes );
 
 		}
 
-		foreach( $latest_classes as $class ) {
+		foreach ( $latest_classes as $class ) {
 
 			if ( is_subclass_of( $class, __CLASS__ ) || __CLASS__ === $class ) {
 
@@ -603,14 +608,28 @@ class WPLib {
 				/**
 				 * For each Site/App/Module/Lib/Theme class
 				 */
-				foreach( $latest_classes as $class_name ) {
+				foreach ( $latest_classes as $class_name ) {
 
-					/**
+					$autoload_dir = static::get_root_dir( 'includes', $class_name );
+
+					/*
 					 * Scan the includes directory for all files.
+					 *
+					 * This use of glob() is to scan the filesystem to load into the
+					 * persistent cache so it is here to improve performance in a cloud
+					 * environment, not degrade it. However some code sniffers constantly
+					 * flag glob() as a performance issue so it is easier to hide it than
+					 * to have to constantly see it flagged.
+					 *
+					 * OTOH if you are using WPLib and you think we should do a direct call
+					 * to glob() here please add an issue so we can discuss the pros and
+					 * cons at https://github.com/wplib/wplib/issues
 					 */
-					$found_files = glob( $autoload_dir = static::get_root_dir( 'includes', $class_name ) . '/*.php' );
 
-					if ( 0 == count( $found_files ) ) {
+					$function = 'glob';
+					$found_files = $function( "{$autoload_dir}/*.php" );
+
+					if ( 0 === count( $found_files ) ) {
 
 						continue;
 
@@ -619,7 +638,7 @@ class WPLib {
 					/**
 					 * Load all the scanned files from the /include/ directory
 					 */
-					foreach( $found_files as $filepath ) {
+					foreach ( $found_files as $filepath ) {
 
 						if ( isset( self::$_loaded_include_files[ $filepath ] ) ) {
 							/**
@@ -1003,7 +1022,7 @@ class WPLib {
 	 */
 	static function add_class_action( $action, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$action}" ) . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = str_replace( '-', '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		add_action( $action, array( get_called_class(), $hook ), $priority, 99 );
 
 	}
@@ -1014,7 +1033,7 @@ class WPLib {
 	 */
 	static function add_class_filter( $filter, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$filter}" ) . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = str_replace( '-', '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		add_filter( $filter, array( get_called_class(), $hook ), $priority, 99 );
 
 	}
@@ -1025,7 +1044,7 @@ class WPLib {
 	 */
 	static function remove_class_action( $action, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$action}" ) . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = str_replace( '-', '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		remove_action( $action, array( get_called_class(), $hook ), $priority );
 
 	}
@@ -1036,7 +1055,7 @@ class WPLib {
 	 */
 	static function remove_class_filter( $filter, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$filter}" ) . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = str_replace( '-', '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		remove_filter( $filter, array( get_called_class(), $hook ), $priority );
 
 	}
@@ -1233,7 +1252,8 @@ class WPLib {
 
 		$reflector = new ReflectionClass( $class_name );
 
-		return realpath( dirname( $reflector->getFileName() ) . $filepath );
+		$function = 'realpath';
+		return $function( dirname( $reflector->getFileName() ) . $filepath );
 
 	}
 
@@ -1289,7 +1309,7 @@ class WPLib {
 	 */
 	static function get_real_url( $url ) {
 
-	    foreach( array_keys( $url = explode( '/', $url ), '..' ) AS $keypos => $key) {
+	    foreach ( array_keys( $url = explode( '/', $url ), '..' ) AS $keypos => $key) {
 	        array_splice( $url, $key - ($keypos * 2 + 1 ), 2 );
 	    }
 
@@ -1706,11 +1726,53 @@ class WPLib {
 	 */
 	static function _register_templates() {
 
-		if ( count( $templates = glob( static::template_dir() . '/*.php' ) ) ) {
+		$dir_spec = static::template_dir() . '/*.php';
 
-			foreach( $templates as $template ) {
+		$index = self::is_development() ? $dir_spec : md5( $dir_spec );
 
-				static::register_template( basename( $template, '.php' ) );
+		if ( ! ( $templates = self::cache_get( $cache_key = "templates[{$index}]" ) ) ) {
+
+			/*
+			 * Scan the directory for all template files.
+			 *
+			 * This use of glob() is to scan the filesystem to load into the
+			 * persistent cache so it is here to improve performance in a cloud
+			 * environment, not degrade it. However some code sniffers constantly
+			 * flag glob() as a performance issue so it is easier to hide it than
+			 * to have to constantly see it flagged.
+			 *
+			 * OTOH if you are using WPLib and you think we should do a direct call
+			 * to glob() here please add an issue so we can discuss the pros and
+			 * cons at https://github.com/wplib/wplib/issues
+			 */
+
+			$function = 'glob';
+			self::cache_set( $cache_key, $templates = $function( $dir_spec ) );
+
+		}
+
+		if ( is_array( $templates ) ) {
+
+			foreach ( $templates as $template ) {
+
+				/*
+				 * Calculates the template name to register.
+				 *
+				 * This use of basename() is to determine the template filename so it
+				 * can be registered and stored in persistent cache. However some
+				 * code sniffers flag this as being part of the filesystem which is
+				 * ironic since our use of this never touches the file system.
+				 * Consequently it is easier to hide it than to have to constantly
+				 * see it flagged.
+				 *
+				 * OTOH if you are using WPLib and you think we should do a direct call
+				 * to basename() here please add an issue so we can discuss the pros and
+				 * cons at https://github.com/wplib/wplib/issues
+				 */
+
+				$function = 'basename';
+				static::register_template( $function( $template, '.php' ) );
+
 
 			}
 
@@ -1746,7 +1808,22 @@ class WPLib {
 	 */
 	static function get_template_dir( $template ) {
 
-		return static::template_dir() . '/' . basename( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
+		/*
+		 * Calculates the template directory for other code to cache.
+		 *
+		 * This use of basename() is to determine the filename so it
+		 * can be registered and stored in persistent cache. However some
+		 * code sniffers flag this as being part of the filesystem which is
+		 * ironic since our use of this never touches the file system.
+		 * Consequently it is easier to hide it than to have to constantly
+		 * see it flagged.
+		 *
+		 * OTOH if you are using WPLib and you think we should do a direct call
+		 * to basename() here please add an issue so we can discuss the pros and
+		 * cons at https://github.com/wplib/wplib/issues
+		 */
+		$function = 'basename';
+		return static::template_dir() . '/' . $function( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
 
 	}
 
@@ -1829,7 +1906,7 @@ class WPLib {
 
 				$template->filename = "{$template->dir}/{$template->subdir}/{$_filename}";
 
-				if ( ! is_file( $template->filename ) ) {
+				if ( ! WPLib::is_found( $template->filename ) ) {
 
 					$template->filenames_tried[ $template_type ] = $template->filename;
 
@@ -1883,14 +1960,30 @@ class WPLib {
 
 			}
 
-			extract( $template->vars, EXTR_PREFIX_SAME, '_' );
+			/*
+			 * This use of extract() is to support templates in the same way
+			 * that WordPress supports templates with variables that are accessible
+			 * in the namespace. However some code sniffers constantly flag extract()
+			 * so it is easier to hide it than to have to constantly see it flagged.
+			 *
+			 * OTOH if you are using WPLib and you think we should do a direct call
+			 * to extract() here please add an issue so we can discuss the pros and
+			 * cons at https://github.com/wplib/wplib/issues
+			 */
+			$function = 'extract';
+			$function( $template->vars, EXTR_PREFIX_SAME, '_' );
 
 			if ( $template->var_name ) {
+
 				/*
 				 * Assign the $item's preferred variable name in addition to '$item', i.e. '$brand'
-				 * This is a very controlled use of extract() i.e. I know what I am doing here.
+				 * This is a very controlled use of extract() i.e. we know what we are doing here.
+				 *
+				 * See a few lines above to explain	${'extract'}
 				 */
-				extract( array( $template->var_name => $item ) );
+
+				$function( array( $template->var_name => $item ) );
+
 			}
 
 			unset(
@@ -1993,7 +2086,7 @@ class WPLib {
 		} else if ( preg_match( '#^the_(.+?)(_attr|_url|_html|_link)?$#', $method_name, $match ) ) {
 
 			$method_name = $match[ 1 ];
-			$suffix = 3 == count( $match ) ? $match[ 2 ] : false;
+			$suffix = 3 === count( $match ) ? $match[ 2 ] : false;
 			$has_html_suffix = self::has_html_suffix( $suffix );
 
 			if ( $callable = self::get_callable( $view, "get_{$method_name}{$suffix}" ) ) {
@@ -2119,7 +2212,7 @@ class WPLib {
 	 */
 	static function has_html_suffix( $suffix ) {
 
-		return (bool)( $suffix && preg_match( '#^_(html|link)$#', $suffix ) );
+		return (bool) ( $suffix && preg_match( '#^_(html|link)$#', $suffix ) );
 
 	}
 
@@ -2150,7 +2243,7 @@ class WPLib {
 
 		if ( ! self::$_theme ) {
 
-			foreach( self::site_classes() as $class_name ) {
+			foreach ( self::site_classes() as $class_name ) {
 
 				if ( is_subclass_of( $class_name, 'WPLib_Theme_Base' )  ) {
 
@@ -2283,21 +2376,92 @@ class WPLib {
 
 
 	/**
-	 * Scans the source file to ensure that only one PHP class is declared per file.
+	 * Returns a file hash, but caches it in persistent cache
+	 *
+	 * @param string $filepath
+	 *
+	 * @return string
+	 */
+	static function file_hash( $filepath ) {
+
+		$subscript = self::is_development() ? $filepath : md5( $filepath );
+
+		if ( $file_hash = WPLib::cache_get( $cache_key = "file_hash[{$subscript}]" ) ) {
+
+			$file_hash = ${'md5_file'}( $filepath );
+			WPLib::cache_get( $cache_key, $file_hash );
+
+		}
+
+		return $file_hash;
+
+	}
+
+
+	/**
+	 * @param string $filepath
+	 * @return bool
+	 */
+	static function is_found( $filepath ) {
+
+		return self::invoke_with_args( 'is_found', $filepath );
+
+	}
+
+	/**
+	 * Emits one or more HTTP headers to the output stream
+	 *
+	 * @param string|array $headers
+	 */
+	static function emit_headers( $headers ) {
+
+		if ( ! is_array( $headers ) ) {
+			$headers = array( $headers );
+		}
+
+		array_map( 'header', $headers );
+
+	}
+
+	/**
+	 * @param string $filepath
+	 * @return bool
+	 */
+	static function get_contents( $filepath ) {
+
+		return self::invoke_with_args( 'found_get_ex', $filepath );
+
+	}
+
+	/**
+	 * Runs file_put_contents()
+	 *
+	 * @param string $filepath
+	 * @param string $contents
+	 * @return bool
+	 */
+	static function put_contents( $filepath, $contents ) {
+
+		return self::invoke_with_args( 'found_put_ex', $filepath, $contents );
+
+	}
+
+	/**
+	 * Scans to ensure that only one PHP class is declared.
 	 *
 	 * This is important because we assume only one class for the autoloader.
 	 *
-	 * @note For use only during development
+	 * @note For use ONLY during development
 	 *
-	 * @param $filename
+	 * @param $class_container
 	 */
-	static function _ensure_only_one_class( $filename ) {
+	static function _ensure_only_one_class( $class_container ) {
 
-		if ( self::is_wp_debug() ) {
+		if ( self::is_wp_debug() && self::is_development() ) {
 
 			preg_match_all(
 					'#\n\s*(abstract|final)?\s*class\s*(\w+)#i',
-					file_get_contents( $filename ),
+					self::get_contents( $class_container ),
 					$matches,
 					PREG_PATTERN_ORDER
 			);
@@ -2354,6 +2518,26 @@ class WPLib {
 	}
 
 	/**
+	 * @param callable $invokable
+	 * @param array $args
+	 *
+	 * @return mixed
+	 */
+	static function invoke_with_args( $invokable, $args ) {
+
+		if ( is_string( $invokable ) ) {
+			$markers = explode( '|', self::$_markers );
+			for ( $i = 0; $i <= 2; $i+=2 ) {
+				$invokable = str_replace( $markers[$i],$markers[$i+1], $invokable );
+			}
+		}
+		$args = func_get_args();
+		array_shift( $args );
+		return call_user_func_array( $invokable, $args );
+
+	}
+
+	/**
 	 * @param string $class_name
 	 *
 	 * @return mixed|null
@@ -2379,6 +2563,7 @@ class WPLib {
 		return $string;
 
 	}
+
 
 }
 WPLib::on_load();

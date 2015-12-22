@@ -208,7 +208,7 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 			$property_class = "{$baseless_class}_{$property_name}";
 
 
-			if ( $class_name != $baseless_class ) {
+			if ( $class_name !== $baseless_class ) {
 				/**
 				 * If it had '_Base' suffix add '_Default' suffix
 				 */

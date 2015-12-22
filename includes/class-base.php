@@ -42,7 +42,7 @@ abstract class WPLib_Base {
 
 		foreach ( $args as $name => $value ) {
 
-			if ( 'extra_args' != $name && property_exists( $this, $name ) ) {
+			if ( 'extra_args' !== $name && property_exists( $this, $name ) ) {
 
 				$this->{$name} = $value;
 
@@ -79,7 +79,7 @@ abstract class WPLib_Base {
 	 */
 	static function add_class_action( $action, $priority = 10 ) {
 
-		$hook = "_{$action}" . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = "_{$action}" . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		add_action( $action, array( get_called_class(), $hook ), $priority, 99 );
 
 	}
@@ -90,7 +90,7 @@ abstract class WPLib_Base {
 	 */
 	static function add_class_filter( $filter, $priority = 10 ) {
 
-		$hook = "_{$filter}" . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = "_{$filter}" . ( 10 !==  intval( $priority ) ? "_{$priority}" : '' );
 		add_filter( $filter, array( get_called_class(), $hook ), $priority, 99 );
 
 	}
@@ -101,7 +101,7 @@ abstract class WPLib_Base {
 	 */
 	static function remove_class_action( $action, $priority = 10 ) {
 
-		$hook = "_{$action}" . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = "_{$action}" . ( 10 !==  intval( $priority ) ? "_{$priority}" : '' );
 		remove_action( $action, array( get_called_class(), $hook ), $priority );
 
 	}
@@ -112,7 +112,7 @@ abstract class WPLib_Base {
 	 */
 	static function remove_class_filter( $filter, $priority = 10 ) {
 
-		$hook = "_{$filter}" . ( 10 != $priority ? "_{$priority}" : '' );
+		$hook = "_{$filter}" . ( 10 !==  intval( $priority ) ? "_{$priority}" : '' );
 		remove_filter( $filter, array( get_called_class(), $hook ), $priority );
 
 	}

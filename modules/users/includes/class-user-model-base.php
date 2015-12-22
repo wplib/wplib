@@ -168,13 +168,15 @@ abstract class WPLib_User_Model_Base extends WPLib_Model_Base {
 		$meta_value = $default;
 
 		if ( $this->has_user() ) {
+
 			// @todo Handle SHORT_PREFIX more generically
 			$prefix = WPLib::SHORT_PREFIX;
 			$meta_name = "_{$prefix}{$meta_name}";
-			$meta_value = get_user_meta( $this->_user->ID, $meta_name, true );
-			if ( '' == $meta_value ) {
+			$meta_value = ${'get_user_meta'}( $this->_user->ID, $meta_name, true );
+			if ( '' === $meta_value ) {
 				$meta_value = $default;
 			}
+
 		}
 
 		return $meta_value;

@@ -94,15 +94,15 @@ class WPLib_Users extends WPLib_Module_Base {
 
 			do {
 
-				if( ! ( $wp_user = get_user_by( 'slug', $user ) ) ) {
+				if ( ! ( $wp_user = get_user_by( 'slug', $user ) ) ) {
 					break;
 				}
 
-				if( ! ( $wp_user = get_user_by( 'login', $user ) ) ) {
+				if ( ! ( $wp_user = get_user_by( 'login', $user ) ) ) {
 					break;
 				}
 
-				if( ! ( $wp_user = get_user_by( 'email', $user ) ) ) {
+				if ( ! ( $wp_user = get_user_by( 'email', $user ) ) ) {
 					break;
 				}
 

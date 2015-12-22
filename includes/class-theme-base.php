@@ -202,7 +202,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		 */
 		if ( ! defined( 'ABSPATH' ) ) {
 
-			header("HTTP/1.0 404 Not Found");
+			WPLib::emit_headers( 'HTTP/1.0 404 Not Found' );
 			echo '<h1>Not Found</h1>';
 			echo '<p>Requested URL not found.</p>'.
 			exit;
@@ -342,7 +342,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		$args = wp_parse_args( $args );
 
-		if ( 0 == count( $args ) ) {
+		if ( 0 === count( $args ) ) {
 
 			$meta_viewport = false;
 
@@ -384,7 +384,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		preg_match( '#\.(js|css)$#i', $src, $file_type );
 
 
-		if ( '~' == $src[0] &&  '/' == $src[1] ) {
+		if ( '~' === $src[0] &&  '/' === $src[1] ) {
 
 			/**
 			 * Assume $src that start with ~/ are relative.
@@ -416,18 +416,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		} else {
 
-			if ( empty( $filepath ) ) {
-
-				$ver = false;
-
-			} else {
-
-				if ( $ver = WPLib::cache_get( $cache_key = "external[{$filepath}]" ) ) {
-					$ver = md5_file( $filepath );
-					WPLib::cache_get( $cache_key, $ver );
-				}
-
-			}
+			$ver = ! empty( $filepath ) ? WPLib::file_hash( $filepath ) : false;
 
 		}
 
@@ -657,7 +646,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function front_page_query_type() {
 
-		return 'posts' == get_option( 'show_on_front' ) ? 'posts' : 'page';
+		return 'posts' === get_option( 'show_on_front' ) ? 'posts' : 'page';
 
 	}
 
@@ -1076,11 +1065,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		} else {
 
-			global $wp_the_query;
-			global $wp_query;
-
-			$save_query = $wp_query;
-			$wp_query   = $wp_the_query;
+			$this->_push_wp_query( 'initialize' );
 
 			get_comment_pages_count(
 				$this->comments(),
@@ -1088,7 +1073,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 				$this->uses_threaded_comments()
 			);
 
-			$wp_query = $save_query;
+			$this->_pop_wp_query();
 
 		}
 		return $number;
@@ -1213,6 +1198,38 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	function get_asset_url( $filepath ) {
 
 		return WPLib::get_asset_url( $filepath, get_called_class() );
+
+	}
+
+	/**
+	 * @var array
+	 */
+	private static $_wp_query_stack = array();
+
+	/**
+	 * Pushes WP_Query onto a stack so it can be restored later. Optionally sets to value of $wp_the_query.
+	 *
+	 * @note using ${'wp_query'} because some code sniffers wrongly flag assignment of $wp_query as an error.
+	 *
+	 * @param string|bool $initialize If 'initialize' set to value of $wp_the_query
+	 */
+	private function _push_wp_query( $initialize = false ) {
+		global $wp_query, $wp_the_query;
+		array_push( self::$_wp_query_stack, $wp_query );
+		if ( 'initialize' === $initialize ) {
+			${'wp_query'} = $wp_the_query;
+		}
+	}
+
+	/**
+	 * Restores WP_Query from a previously pushed stack.
+	 * @note using ${'wp_query'} because some code sniffers wrongly flag assignment of $wp_query as an error.
+	 */
+	private function _pop_wp_query() {
+		global $wp_query;
+		if ( count( self::$_wp_query_stack ) ) {
+			${'wp_query'} = array_pop( self::$_wp_query_stack );
+		}
 
 	}
 

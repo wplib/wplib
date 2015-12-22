@@ -83,7 +83,7 @@ abstract class WPLib_User_Base extends WPLib_Item_Base {
 	 */
 	function is_current_user() {
 
-		return $this->ID() == get_current_user_id();
+		return $this->ID() === get_current_user_id();
 
 	}
 

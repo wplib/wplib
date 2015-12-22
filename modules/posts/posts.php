@@ -37,7 +37,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 		/**
 		 * Add this class as a helper to WPLib
 		 */
-		self::register_helper( __CLASS__, 'WPLib' );
+		WPLib::register_helper( __CLASS__ );
 
 		/*
 		 * Process these templates once for language translation.
@@ -66,7 +66,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 */
 	static function _init() {
 
-		foreach( self::$_post_type_args as $post_type => $post_type_args ) {
+		foreach ( self::$_post_type_args as $post_type => $post_type_args ) {
 
 			/**
 			 * This filter hook is fired once per post type and called
@@ -117,7 +117,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		global $wp_post_types;
 
-		foreach( $wp_post_types as $post_type => $post_type_object ) {
+		foreach ( $wp_post_types as $post_type => $post_type_object ) {
 
 			/**
 			 * Decided not to prefix this property, because really?
@@ -201,57 +201,59 @@ class WPLib_Posts extends WPLib_Module_Base {
 	}
 
 	/**
-	 * @param WP_Post|object|int|string|array|null|bool $post
+	 *
+	 * @param WP_Post|object|int|string|array|null|bool $_post
 	 * @param string|bool $post_type
 	 *
 	 * @return null|WP_Post
 	 */
-	static function get_post( $post, $post_type = false ) {
+	static function get_post( $_post, $post_type = false ) {
 
-		switch ( gettype( $post ) ) {
+		switch ( gettype( $_post ) ) {
 			case 'integer';
-				$post = get_post( $post );
+				$_post = get_post( $_post );
 				break;
 
 			case 'string';
-				if ( is_numeric( $post ) ) {
-					$post = get_post( absint( $post ) );
+				if ( is_numeric( $_post ) ) {
+
+					$_post = get_post( absint( $_post ) );
 
 				} else if ( $post_type ) {
 					/*
 					 * Get post by slug
 					 */
-					$post = get_page_by_path( $post, OBJECT, $post_type );
+					$_post = get_page_by_path( $_post, OBJECT, $post_type );
 
 				} else {
-					$post = null;
+					$_post = null;
 
 				}
 				break;
 
 			case 'array';
-				if ( isset( $post['ID'] ) ) {
-					$post = get_post( absint( $post['ID'] ) );
+				if ( isset( $_post['ID'] ) ) {
+					$_post = get_post( absint( $_post['ID'] ) );
 
-				} else if ( isset( $post['post'] ) ) {
-					$post = self::get_post( $post['post'] );
+				} else if ( isset( $_post['post'] ) ) {
+					$_post = self::get_post( $_post['post'] );
 
 				}
 				break;
 
 			case 'object';
-				if ( ! is_a( $post, 'WP_Post' ) && property_exists( $post, 'ID' ) ) {
-					$post = get_post( absint( $post->ID ) );
+				if ( ! is_a( $_post, 'WP_Post' ) && property_exists( $_post, 'ID' ) ) {
+					$_post = get_post( absint( $_post->ID ) );
 
 				}
 				break;
 
 			default:
-				$post = null;
+				$_post = null;
 
 		}
 
-		return $post;
+		return $_post;
 	}
 
 	/**
@@ -262,7 +264,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 * @return WP_Post
 	 */
 	static function get_post_by( $by, $value, $args = array() ) {
-		$post     = null;
+		$_post     = null;
 		$criteria = array( 'post_status' => 'publish' );
 		switch ( $by ) {
 			case 'slug':
@@ -279,10 +281,10 @@ class WPLib_Posts extends WPLib_Module_Base {
 		}
 		$query = new WP_Query( wp_parse_args( $args, $criteria ) );
 		if ( count( $query->posts ) ) {
-			$post = $query->post;
+			$_post = $query->post;
 		}
 
-		return $post;
+		return $_post;
 	}
 
 	/**
@@ -342,7 +344,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 			}
 
-			if ( isset( $args['post_type'] ) && WPLib_Post::POST_TYPE == $args['post_type'] ) {
+			if ( isset( $args['post_type'] ) && WPLib_Post::POST_TYPE === $args['post_type'] ) {
 
 				if ( ! isset( $args['order'] ) ) {
 					$args['order'] = 'DESC';
@@ -374,7 +376,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 			if ( $args['index_by'] && preg_match( '#^(post_(id|name)|id|name)$#', $args['index_by'], $match ) ) {
 
-				$index_field = 'id' == $match[1] ? 'ID' : 'post_name';
+				$index_field = 'id' === $match[1] ? 'ID' : 'post_name';
 				$posts       = array();
 				foreach ( $query->posts as $post ) {
 
@@ -393,7 +395,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	/**
 	 * Create new Instance of a Post MVI
 	 *
-	 * @param WP_Post|int $post
+	 * @param WP_Post|int $_post
 	 * @param array $args {
 	 *
 	 *      @type string $instance_class
@@ -404,16 +406,16 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 *
 	 * @todo Alias this with make_new_post() so it can be called as WPLib::make_new_post( $post_id )
 	 */
-	static function make_new_item( $post, $args = array() ) {
+	static function make_new_item( $_post, $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			'instance_class' => false,
 			'list_owner' => 'WPLib_Posts',
 		));
 
-		if ( is_numeric( $post ) ) {
+		if ( is_numeric( $_post ) ) {
 
-			$post = WP_Post::get_instance( $post );
+			$_post = WP_Post::get_instance( $_post );
 
 		}
 
@@ -425,13 +427,13 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		if ( ! $args[ 'instance_class' ] ) {
 
-			$args['instance_class'] = self::get_post_type_class( $post->post_type );
+			$args['instance_class'] = self::get_post_type_class( $_post->post_type );
 
 		}
 
 		$instance_class = $args['instance_class'];
 
-		return $instance_class ? new $instance_class( $post ) : null;
+		return $instance_class ? new $instance_class( $_post ) : null;
 
 	}
 
@@ -495,5 +497,32 @@ class WPLib_Posts extends WPLib_Module_Base {
 		return $query->posts;
 
 	}
+
+	/**
+	 * @var array
+	 */
+	private static $_post_stack = array();
+
+	/**
+	 * @param WP_Post|bool $value
+	 */
+	static function push_post( $value = false ) {
+		global $post;
+		array_push( self::$_post_stack, $post );
+		if ( $value instanceof WP_Post ) {
+			${'post'} = $value;
+		}
+	}
+
+	/**
+	 *
+	 */
+	static function pop_post() {
+		global $post;
+		if ( count( self::$_post_stack ) ) {
+			${'post'} = array_pop( self::$_post_stack );
+		}
+	}
+
 }
 WPLib_Posts::on_load();

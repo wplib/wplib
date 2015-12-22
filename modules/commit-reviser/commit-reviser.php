@@ -32,7 +32,7 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 		$commit_revised = false ;
 
-		foreach( array( 'WPLib', WPLib::app_class() ) as $class_name ) {
+		foreach ( array( 'WPLib', WPLib::app_class() ) as $class_name ) {
 
 			$recent_commit = self::get_recent_commit( $class_name );
 
@@ -132,8 +132,8 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 		$filepath = self::_get_recent_commit_file( $class_name );
 
-		$recent_commit = is_file( $filepath )
-			? trim( file_get_contents( $filepath ) )
+		$recent_commit = WPLib::is_found( $filepath )
+			? trim( WPLib::get_contents( $filepath ) )
 			: null;
 
 		if ( is_null( $recent_commit ) && WPLib::is_development() ) {
@@ -181,7 +181,7 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 			$source_file = $reflector->getFileName();
 
-			$source_code = file_get_contents( $source_file );
+			$source_code = WPLib::get_contents( $source_file );
 
 			$source_size = strlen( $source_code );
 
@@ -203,7 +203,7 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 			if ( $new_code && strlen( $new_code ) >= $source_size ) {
 
-				file_put_contents( $source_file, $new_code );
+				WPLib::put_contents( $source_file, $new_code );
 
 			}
 

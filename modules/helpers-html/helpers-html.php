@@ -378,7 +378,7 @@ HTML;
 
 		$elements_html = '';
 
-	    foreach( $li_elements as $index => $element_text ) {
+	    foreach ( $li_elements as $index => $element_text ) {
 
 	        $li_args['index'] = $index;
 

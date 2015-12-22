@@ -65,25 +65,25 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		if ( isset( $args['post']->ID ) && is_numeric( $args['post']->ID ) ) {
 
-			$post = $args['post'];
+			$_post = $args['post'];
 
-			$post = $post instanceof WP_Post ? $post : get_post( $post->ID );
+			$_post = $post instanceof WP_Post ? $post : get_post( $post->ID );
 
 			unset( $args['post'] );
 
 		} else if ( isset( $args['post'] ) && is_numeric( $args['post'] ) ) {
 
-			$post = get_post( $args['post'] );
+			$_post = get_post( $args['post'] );
 
 			unset( $args['post'] );
 
 		} else {
 
-			$post = null;
+			$_post = null;
 
 		}
 
-		return new static( $post, $args );
+		return new static( $_post, $args );
 
 	}
 
@@ -243,7 +243,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		}
 
-		if ( $this->has_post() &&  $this->_post->post_type != $post_type ) {
+		if ( $this->has_post() &&  $this->_post->post_type !== $post_type ) {
 
 			$message = __( "Post type mismatch: %s::POST_TYPE=='%s' while \$this->_post->post_type=='%s'.", 'wplib' );
 			WPLib::trigger_error( sprintf( $message, get_class( $this->owner ), $post_type, $this->_post->post_type ) );
@@ -261,7 +261,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function is_blog_post() {
 
-		return WPLib_Post::POST_TYPE == $this->post_type();
+		return WPLib_Post::POST_TYPE === $this->post_type();
 
 	}
 
@@ -307,7 +307,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 			$meta_value = get_post_meta( $this->_post->ID, $meta_name, true );
 
-			if ( '' == $meta_value ) {
+			if ( '' === $meta_value ) {
 
 				$meta_value = $default;
 
@@ -406,7 +406,19 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		global $id, $authordata, $currentday, $currentmonth, $page, $pages, $multipage, $more, $numpages;
 
-		extract( $postdata );
+		/*
+		 * This use of extract() is used here to counter the problems with
+		 * WordPress' rampant use of global variables however, ironically,
+		 * some code sniffers constantly flag extract() so it is easier to
+		 * hide it than to have to constantly see it flagged.
+		 *
+		 * OTOH if you are using WPLib and you think we should do a direct call
+		 * to extract() here please add an issue so we can discuss the pros and
+		 * cons at https://github.com/wplib/wplib/issues
+		 */
+
+		$function = 'extract';
+		$function( $postdata );
 
 	}
 
@@ -420,7 +432,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function is_published() {
 
-		return $this->has_post() && 'publish' == $this->status();
+		return $this->has_post() && 'publish' === $this->status();
 
 	}
 
@@ -432,7 +444,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		/**
 		 * @todo Implement WPLib_Attachment and use WPLib_Attachment::POST_TYPE here.
 		 */
-	 	return 'attachment' == $this->post_type();
+	 	return 'attachment' === $this->post_type();
 
 	}
 
@@ -452,13 +464,11 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function get_adjacent_post( $args = array() ) {
 
-		if ( ! $this->has_post() )  {
+		if ( ! $this->has_post() ) {
 
 			$adjacent_post = null;
 
 		} else {
-
-			global $post;
 
 			$args = wp_parse_args( $args, array(
 				'in_same_term'   => false,
@@ -467,9 +477,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 				'previous'       => null,
 			) );
 
-			$save_post = $post;
-
-			$post = $this->_post;
+			WPLib::push_post( $this->_post );
 
 			$adjacent_post = get_adjacent_post(
 				$args['in_same_term'],
@@ -478,7 +486,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 				$args['taxonomy']
 			);
 
-			$post = $save_post;
+			WPLib::pop_post();
 
 		}
 
@@ -1015,7 +1023,5 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		return $this->has_featured_image();
 
 	}
-
-
 
 }

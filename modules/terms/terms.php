@@ -80,7 +80,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 */
 	static function _init_11() {
 
-		foreach( self::$_taxonomy_args as $taxonomy => $taxonomy_args ) {
+		foreach ( self::$_taxonomy_args as $taxonomy => $taxonomy_args ) {
 
 			$object_types = ! empty( self::$_object_types[ $taxonomy ] ) ? self::$_object_types[ $taxonomy ] : array();
 
@@ -179,15 +179,15 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 * @param array|string $object_slug
 	 */
 	static function add_object_type( $taxonomy, $object_slug ) {
-		if( ! isset( self::$_object_types[ $taxonomy ] ) ) {
+		if ( ! isset( self::$_object_types[ $taxonomy ] ) ) {
 			self::$_object_types[ $taxonomy ] = array();
 		}
 
-		if( is_array( $object_slug ) ) {
+		if ( is_array( $object_slug ) ) {
 			self::$_object_types[ $taxonomy ] = array_merge( self::$_object_types[ $taxonomy ], $object_slug );
 		}
 
-		if( ! is_array( $object_slug ) ) {
+		if ( ! is_array( $object_slug ) ) {
 			self::$_object_types[ $taxonomy ][] = $object_slug;
 		}
 	}
@@ -305,7 +305,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 
 				do {
 
-					if( $slug_term = get_term_by( 'slug', $term, $taxonomy ) ) {
+					if ( $slug_term = get_term_by( 'slug', $term, $taxonomy ) ) {
 
 						$term = $slug_term;
 						break;

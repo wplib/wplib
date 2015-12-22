@@ -130,7 +130,7 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 
 		if ( is_array( $object_types ) ) {
 
-			foreach( $object_types as $object_type ) {
+			foreach ( $object_types as $object_type ) {
 
 				WPLib_Terms::add_object_type( static::TAXONOMY, $object_type );
 
