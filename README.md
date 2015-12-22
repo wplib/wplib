@@ -15,6 +15,9 @@ We are actively working on it with a goal to develop stable beta versions that c
 ##History
 WPLib is based on at least five (5) generations of code developed over five (5) years and the concepts are now mature enough to release publicly.
 
+##Discussion
+Join the discussion on [Slack](https://wplib.slack.com)
+
 ##Core Committers
 
 - Mike Schinkel ([mikeschinkel](https://github.com/mikeschinkel))
