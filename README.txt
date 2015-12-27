@@ -9,7 +9,6 @@ License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 A Foundation Library for Agency and Corporate Developers.
 
-
 == Description ==
 WPLib is a plugin designed to be used as a Must-Use plugin or to be embedded in a theme to enable the development of complex yet robust and performant WordPress applications and websites.
 
@@ -27,3 +26,5 @@ That is because it is for PHP developers, not end-users. If you are a PHP develo
 == Changelog ==
 = 0.11.5 =
 Lastest beta release.
+
+
