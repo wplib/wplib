@@ -28,6 +28,11 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	 */
 	var $multipage;
 
+	/**
+	 * WPLib_Post_View_Base constructor.
+	 *
+	 * @param array|object|string $args
+	 */
 	function __construct( $args ) {
 
 		/**

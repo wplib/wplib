@@ -106,8 +106,7 @@ abstract class WPLib_Module_Base extends WPLib {
 	 *      @type string $list_owner        The class "owning" the list, typically "Owner" if Owner::get_list()
 	 *
 	 *      @type string $instance_class    The class for items in the list, i.e. WP_Post
-	 *
-	 *                    }
+	 * }
 	 *
 	 * @return WPLib_List_Default[]
 	 *
@@ -117,6 +116,10 @@ abstract class WPLib_Module_Base extends WPLib {
 		if ( is_string( $query ) ) {
 
 			$query = wp_parse_args( $query );
+
+		} else if ( is_null( $query ) ) {
+
+			$query = array();
 
 		}
 
