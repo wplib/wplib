@@ -693,20 +693,41 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	}
 
 	/**
-	 *
+	 * @param array $args
 	 */
-	function the_content_html() {
+	function the_content_html( $args = array() ) {
 
-		echo wp_kses_post( $this->get_content_html() );
+		echo wp_kses_post( $this->get_content_html( $args ) );
 
 	}
 
 	/**
+	 * @param array $args
+	 *
 	 * @return string
 	 */
-	function get_content_html() {
+	function get_content_html( $args = array() ) {
 
-		return $this->model()->content();
+		if ( ! $this->model()->has_post() ) {
+
+			$content = null;
+
+		} else {
+
+			$args = wp_parse_args( $args, array(
+				'more_link_text' => null,
+				'strip_teaser'   => false,
+			));
+
+			$saved_postdata = $this->setup_postdata();
+			ob_start();
+			the_content( $args['more_link_text'], $args['strip_teaser'] );
+			$content = ob_get_clean();
+			$this->restore_postdata( $saved_postdata );
+
+		}
+
+		return $content;
 
 	}
 
