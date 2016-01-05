@@ -1331,4 +1331,53 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		return "{$args['prefix']}{$post_title}";
 
 	}
+
+	/**
+	 * Outputs  the URL for a page given it's slug.
+	 *
+	 * @param string $page_slug
+	 */
+	function the_page_url( $page_slug ) {
+
+		echo esc_url( $this->get_page_url( $page_slug ) );
+
+	}
+
+	/**
+	 * Returns the URL for a page given it's slug.
+	 *
+	 * @param string $page_slug
+	 * @return string
+	 */
+	function get_page_url( $page_slug ) {
+
+		/*
+		 * Validate that the slug is for a $post_type==='page'
+		 * by getting it's post type.
+		 */
+		$post_type = get_post_type( get_page_by_path( $page_slug ) );
+
+		if ( false === $post_type ) {
+
+			if ( WPLib::is_development() ) {
+
+				// @TODO Ensure the page is here and throw an error if not.
+
+			} else {
+
+				// @TODO MAYBE output a warning as an HTML comment?
+
+			}
+
+		}
+
+		/*
+		 * If $post_type==='page' then take slug onto home URL, return null otherwise.
+		 */
+		return WPLib_Page::POST_TYPE === $post_type
+			? home_url( $page_slug )
+			: '#';
+
+	}
+
 }
