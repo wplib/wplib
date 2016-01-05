@@ -26,5 +26,3 @@ That is because it is for PHP developers, not end-users. If you are a PHP develo
 == Changelog ==
 = 0.11.6 =
 Lastest beta release.
-
-
