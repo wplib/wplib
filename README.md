@@ -1,4 +1,4 @@
-I# WPLib
+# WPLib
 **A Foundation Library for Teams who Building Complex Custom WordPress Sites**
 
 WPLib was designed for use by teams who build custom sites and need professional workflow. The library is a **thin layer** that provides a simple **Module System** and a lightweight **Model+View architecture**. 
@@ -9,13 +9,13 @@ WPLib is for those professionals who want their custom-developed WordPress sites
 
 The **WPLib Library includes:**
 
-1. A Model+View Architecture _([_see below_](/docs/features-benefits#mv-arch))_
+1. A Model+View Architecture _([_see below_](/docs/features-benefits#model-view-architecture))_
 2. Implementation of a Module system with Auto-Loader, 
 2. The optional concept of an "App" that uses app-specific Modules,
 3. Code optimized for use with a persistent cache, and 
 4. Prescriptive conventions for code consistency across many developers.
 
-###<span id="mv-arch" >Model+View Architecture</span>
+###<span id="model-view-architecture" >Model+View Architecture</span>
 
 Unlike MVC plugins WPLib does not take control of WordPress URL routing. Instead Models+Views are about data elements in WordPress. Currently in WPLib core we have Model+View classes for Posts and Post Types, Taxonomy and Terms; and Roles and Users.
 
@@ -31,7 +31,7 @@ Note WPLib can be used a little or a lot. It can be added incrementally to a sit
 
 
 ##Status
-WPLib is in beta status at version 0.11.5 in master.
+WPLib is in beta status at version 0.11.6 in master.
 
 We are actively working on it with a goal to develop stable beta versions that can be used in production, and then a 1.0.0 version when we are comfortable that the majority of the API will not need to change.
 
