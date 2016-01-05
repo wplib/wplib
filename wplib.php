@@ -1832,6 +1832,24 @@ class WPLib {
 	 * @param array|string $_template_vars
 	 * @param WPLib_Item_Base|object $item
 	 *
+	 * @see  self::the_template()
+	 *
+	 * @return string
+	 */
+	static function get_template( $template_slug, $_template_vars = array(), $item = null ) {
+
+		ob_start();
+		static::the_template( $template_slug, $_template_vars, $item );
+		$output = ob_get_clean();
+		echo $output;
+
+	}
+
+	/**
+	 * @param string $template_slug
+	 * @param array|string $_template_vars
+	 * @param WPLib_Item_Base|object $item
+	 *
 	 * @note This is called via an instance as well as
 	 *       If this becomes deprecated we can prefix with an '_' and then
 	 *       use __call() and __callStatic() to allow it to be invoked.
