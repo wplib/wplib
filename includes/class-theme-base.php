@@ -1444,5 +1444,28 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	}
 
+	/**
+	 * Display a paginated navigation to next/previous set of posts,
+	 * when applicable.
+	 *
+	 * @param array $args Optional. See {@see get_the_posts_pagination()} for available arguments.
+	 *                    Default empty array.
+	 */
+	function the_pagination_html( $args = array() ) {
+
+		the_posts_pagination( $args );
+	}
+
+	/**
+	 * Display a paginated navigation to next/previous set of posts,
+	 * when applicable.
+	 *
+	 * @param array $args Optional. See {@see get_the_posts_pagination()} for available arguments.
+	 *                    Default empty array.
+	 */
+	function get_pagination_html( $args = array() ) {
+
+		echo get_the_posts_pagination( $args );
+	}
 
 }
