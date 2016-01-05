@@ -2582,6 +2582,18 @@ class WPLib {
 
 	}
 
+	/**
+	 * @param WPLib_Item_Base $item
+	 * @param array $args
+	 *
+	 * @return WPLib_Term_Base|WPLib_Post_Base
+	 */
+	static function make_new_item( $item, $args = array() ) {
+
+	   return 'Not Implemented yet.';
+
+	}
+
 
 }
 WPLib::on_load();
