@@ -489,7 +489,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 * Query the posts, return a post list.
 	 *
 	 * @param array $args
-	 * @return WPLib_Post_Base[]
+	 * @return WP_Post[]
 	 */
 	static function get_posts( $args = array() ) {
 
