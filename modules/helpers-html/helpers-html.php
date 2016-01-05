@@ -18,7 +18,7 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 		/**
 		 * Register this class as a helper for WPLib.
 		 */
-		self::register_helper( __CLASS__, 'WPLib' );
+		WPLib::register_helper( __CLASS__ );
 
 	}
 

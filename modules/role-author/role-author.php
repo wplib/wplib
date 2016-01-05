@@ -24,6 +24,12 @@ class WPLib_Authors extends WPLib_Role_Module_Base {
 
 	static function on_load() {
 
+		self::add_class_action( 'init' );
+
+	}
+
+	static function _init() {
+
 		self::register_role( __( 'Author', 'wplib' ) );
 
 	}

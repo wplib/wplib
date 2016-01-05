@@ -1341,6 +1341,7 @@ class WPLib {
 
 	}
 
+
 	/**
 	 * Return the asset path
 	 *
@@ -2561,6 +2562,52 @@ class WPLib {
 			$string = strtolower( $string );
 		}
 		return $string;
+
+	}
+
+	/**
+	 * Parse array of $args and then return a dependency injection container
+	 *
+	 * @param WPLib_Args|array $args
+	 * @param array $default
+	 * @return WPLib_Args
+	 */
+	static function parse_args( $args, $default = array() ) {
+
+		do {
+
+			if ( is_string( $args ) ) {
+				parse_str( $args, $args );
+			}
+
+			if ( $args instanceof WPLib_Args ) {
+				break;
+			}
+
+			if ( ! is_array( $args ) ) {
+				$args = array();
+			}
+
+			$args = new WPLib_Args( $args );
+
+			if ( is_string( $default ) ) {
+				parse_str( $default, $default );
+			}
+
+			if ( ! is_array( $default ) ) {
+				$default = array();
+			}
+
+		} while ( false );
+
+		if ( count( $default ) ) {
+
+
+			$args->merge_default( $default );
+
+		}
+
+		return $args;
 
 	}
 

@@ -34,6 +34,12 @@ class WPLib_Administrators extends WPLib_Administrator_Module_Base {
 
 	static function on_load() {
 
+		self::add_class_action( 'init' );
+
+	}
+
+	static function _init() {
+
 		self::register_role( __( 'Administrator', 'wplib' ) );
 
 	}

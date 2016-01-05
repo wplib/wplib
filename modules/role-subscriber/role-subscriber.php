@@ -18,6 +18,12 @@ class WPLib_Subscribers extends WPLib_Role_Module_Base {
 
 	static function on_load() {
 
+		self::add_class_action( 'init' );
+
+	}
+
+	static function _init() {
+
 		self::register_role( __( 'Subscriber', 'wplib' ) );
 
 	}

@@ -12,7 +12,7 @@ class WPLib_Categories extends WPLib_Term_Module_Base {
 		/**
 		 * Add this class as a helper to WPLib
 		 */
-		self::register_helper( __CLASS__, 'WPLib' );
+		WPLib::register_helper( __CLASS__ );
 
 	}
 
