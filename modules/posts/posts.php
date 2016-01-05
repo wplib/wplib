@@ -524,5 +524,19 @@ class WPLib_Posts extends WPLib_Module_Base {
 		}
 	}
 
+	/**
+	 * Return the post type of the queried object.
+	 *
+	 * @return false|null|string
+	 */
+	static function get_queried_post_type() {
+
+		$queried_object = get_queried_object();
+		return $queried_object instanceof WP_Post
+			? get_post_type( $queried_object )
+			: null;
+
+	}
+
 }
 WPLib_Posts::on_load();
