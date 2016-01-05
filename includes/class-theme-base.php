@@ -1244,4 +1244,91 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	}
 
+	/**
+	 * Returns a WP_Post from the queried object, if the queried object is a post.
+	 *
+	 * Useful for accessing the post prior to $wp_the_query
+	 * Similar to single_post_title() in concept
+	 *
+	 * @return WP_Post
+	 */
+	function single_post() {
+		$_post = get_queried_object();
+		return $_post instanceof WP_Post
+			? $_post
+			: null;
+	}
+
+	/**
+	 * Returns a WPLib_Item_Base from the queried object, if the queried object is a post.
+	 *
+	 * Useful for accessing the post prior to $wp_the_query
+	 * Similar to single_post_title() in concept
+	 *
+	 * @return WPLib_Post_Base
+	 */
+	function single_post_item() {
+
+		/**
+		 * @var WP_Post $_post
+		 */
+		return $_post = $this->single_post()
+			? WPLib_Posts::make_new_item( $_post )
+			: null;
+
+
+	}
+
+	/**
+	 * @return WPLib_Term_Base|WPLib_Post_Base
+	 */
+	function single_item() {
+
+		return 'Not yet implemented';
+
+	}
+
+	/**
+	 * Returns the title for a single post
+	 *
+	 * Useful for accessing the post prior to $wp_the_query
+	 * Similar to single_post_title() in concept
+	 *
+	 * @param array $args
+	 * @return WPLib_Post_Base
+	 */
+	function single_post_title( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+
+			'prefix' => '',
+
+		));
+
+		if ( is_null( $post_item = $this->single_post_item() ) ) {
+
+			$post_title = null;
+
+		} else {
+
+			$post_title = $post_item->title();
+
+		}
+		/**
+		 * Filter the page title for a single post.
+		 *
+		 * @param string $post_title         The single post page title.
+		 * @param WP_Post $post              The current queried object as returned by get_queried_object().
+		 * @param WPLib_Post_Base $post_item The WPLib post item wrapping the $post
+		 */
+		$post_title = apply_filters(
+			'single_post_title',
+			$post_title,
+			$post_item->post(),
+			$post_item
+		);
+
+		return "{$args['prefix']}{$post_title}";
+
+	}
 }
