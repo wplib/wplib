@@ -9,7 +9,7 @@ WPLib is for those professionals who want their custom-developed WordPress sites
 
 The **WPLib Library includes:**
 
-1. A Model+View Architecture _([_see below_](/docs/features-benefits#model-view-architecture))_
+1. A Model+View Architecture _([_see next_](#model-view-architecture))_
 2. Implementation of a Module system with Auto-Loader, 
 2. The optional concept of an "App" that uses app-specific Modules,
 3. Code optimized for use with a persistent cache, and 
