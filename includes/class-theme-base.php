@@ -1413,4 +1413,36 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	}
 
+	/**
+	 * Returns an HTML <a> link
+	 *
+	 * Convenience function so designers don't need to worry about WPLib:: vs. $theme->.
+	 *
+	 * @param string $href
+	 * @param string $link_text
+	 * @param array $args
+	 * @return string
+	 */
+	function get_link( $href, $link_text, $args = array() ) {
+
+		return WPLib::get_link( $href, $link_text, $args );
+
+	}
+
+	/**
+	 * Outputs an HTML <a> link
+	 *
+	 * Convenience function so designers don't need to worry about WPLib:: vs. $theme->.
+	 *
+	 * @param string $href
+	 * @param string $link_text
+	 * @param array $args
+	 */
+	function the_link( $href, $link_text, $args = array() ) {
+
+		WPLib::the_link( $href, $link_text, $args );
+
+	}
+
+
 }
