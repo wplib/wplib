@@ -2594,6 +2594,25 @@ class WPLib {
 
 	}
 
+	/**
+	 * Returns the filepath for a theme template file given its "local filename."
+	 *
+	 * Local filename means based at the root of the theme w/o leading slash.
+	 *
+	 * @example
+	 *
+	 *      FooBarApp::get_theme_file( 'single.php' )
+	 *      FooBarApp::get_theme_file( 'partials/content.php' )
+	 *
+	 * @param string $local_file
+	 *
+	 * @return string
+	 */
+	static function get_theme_file( $local_file ) {
+
+		return static::theme()->get_root_dir( $local_file );
+
+	}
 
 }
 WPLib::on_load();
