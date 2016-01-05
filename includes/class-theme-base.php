@@ -1380,4 +1380,37 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	}
 
+	/**
+	 * @param string $first_year
+	 * @param string $rights_holder
+	 *
+	 */
+	function the_copyright_text( $first_year, $rights_holder ) {
+
+		echo wp_kses_post( $this->get_copyright_text( $first_year, $rights_holder ) );
+
+	}
+
+	/**
+	 * @param string $first_year
+	 * @param string $rights_holder
+	 *
+	 * @return bool|int|string
+	 * @see https://css-tricks.com/snippets/php/automatic-copyright-year/
+	 *
+	 */
+	function get_copyright_text( $first_year, $rights_holder ) {
+
+		$this_year = intval( date( 'Y' ) );
+
+		$first_year = intval( $first_year );
+
+		$copyright_years = $first_year < $this_year
+			? "{$first_year} - {$this_year}"
+			: "{$first_year}";
+
+		return "&copy;{$copyright_years} {$rights_holder}";
+
+	}
+
 }
