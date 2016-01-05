@@ -626,7 +626,18 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		global $wp_the_query;
 
-		return (bool) $wp_the_query->is_home;
+		return (bool) $wp_the_query->is_home();
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function is_front_page() {
+
+		global $wp_the_query;
+
+		return (bool) $wp_the_query->is_front_page();
 
 	}
 
