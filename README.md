@@ -1,4 +1,4 @@
-# WPLib
+I# WPLib
 **A Foundation Library for Teams who Building Complex Custom WordPress Sites**
 
 WPLib was designed for use by teams who build custom sites and need professional workflow. The library is a **thin layer** that provides a simple **Module System** and a lightweight **Model+View architecture**. 
@@ -36,6 +36,10 @@ WPLib is in beta status at version 0.11.5 in master.
 We are actively working on it with a goal to develop stable beta versions that can be used in production, and then a 1.0.0 version when we are comfortable that the majority of the API will not need to change.
 
 ##Demo Themes
+Unfortunately these are **woefully out-of-date**, and may have bugs with the latest version of WPLib _(remember, we are still pre-1.0 and are still changing things.)_ 
+
+We plan to update them in the near future, sooner if we have people who are pushing us to do so. :-)
+
 - [Underscores4WPLib](https://github.com/wplib/underscores4wplib) - A port of an [Underscores](http://underscores.me) starter theme that can be used as a starter theme but is intended more to allow for comparison between standard WordPress theming practices and using WPLib best practices instead.
 - [LawPress](https://github.com/wplib/lawpress) - A demo theme that will eventually be a full-fledged law firm CMS starter theme.
 
