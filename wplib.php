@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.11.6
+ * Version:     0.11.7
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -1916,6 +1916,10 @@ class WPLib {
 						/**
 						 * @note Not implemented yet.
 						 */
+						$_app_class = ! empty( $template->vars['@app'] )
+							? $template->vars['@app']
+							: self::app_class();
+
 						$template->dir    = call_user_func( array( $_app_class, 'root_dir' ) );
 						$template->subdir = 'templates';
 						break;
@@ -2060,6 +2064,8 @@ class WPLib {
 	static function do_the_methods( $view, $model, $method_name, $args ) {
 
 		$value = null;
+
+		$suffix = $has_html_suffix = false;
 
 		if ( preg_match( '#^the_(.+)_template$#', $method_name, $match ) ) {
 
@@ -2491,7 +2497,6 @@ class WPLib {
 				static::trigger_error( sprintf(
 						$message,
 						count( $matches[2] ),
-						$class_name,
 						implode( ', ', $matches[2] )
 				) );
 

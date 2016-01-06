@@ -236,7 +236,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 				 */
 				remove_role( $role_slug );
 
-				${'add_role'}( $role_slug, $display_name, $capabilities );
+				call_user_func( $role_slug, $display_name, $capabilities );
 
 				$option[ $role_slug ]= array(
 					'prior_capabilities' => $capabilities,
