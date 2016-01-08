@@ -2595,6 +2595,8 @@ class WPLib {
 	 */
 	static function make_new_item( $item, $args = array() ) {
 
+		$class = get_called_class();
+
 		if ( WPLib::get_constant( 'POST_TYPE', $class ) ) {
 
 			$item = WPLib_Posts::make_new_item( $item, $args );
