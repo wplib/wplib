@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.11.7
+ * Version:     0.11.8
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = '29bb238';
+	const RECENT_COMMIT = 'd0f6f3f';
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -2588,14 +2588,29 @@ class WPLib {
 	}
 
 	/**
-	 * @param WPLib_Item_Base $item
+	 * @param WPLib_Item_Base|WP_Post|WP_Term $item
 	 * @param array $args
 	 *
 	 * @return WPLib_Term_Base|WPLib_Post_Base
 	 */
 	static function make_new_item( $item, $args = array() ) {
 
-	   return 'Not Implemented yet.';
+		if ( WPLib::get_constant( 'POST_TYPE', $class ) ) {
+
+			$item = WPLib_Posts::make_new_item( $item, $args );
+
+		} else if ( WPLib::get_constant( 'TAXONOMY', $class ) ) {
+
+			$item = WPLib_Terms::make_new_item( $item, $args );
+
+		} else {
+
+		   $err_msg = __( 'Cannot make new item. Class %s does not have POST_TYPE or TAXONOMY constant.', 'wplib' );
+		   WPLib::trigger_error( sprintf( $err_msg, $class ) );
+
+		}
+
+		return $item;
 
 	}
 
