@@ -67,7 +67,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 			$_post = $args['post'];
 
-			$_post = $post instanceof WP_Post ? $post : get_post( $post->ID );
+			$_post = $_post instanceof WP_Post ? $_post : get_post( $_post->ID );
 
 			unset( $args['post'] );
 
