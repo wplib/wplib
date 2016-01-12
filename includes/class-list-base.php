@@ -3,7 +3,7 @@
 /**
  * Class WPLib_List_Base
  *
- * @todo https://github.com/wplib/wplib/issues/4
+ * @future https://github.com/wplib/wplib/issues/4
  * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026937
  */
 abstract class WPLib_List_Base
@@ -256,7 +256,7 @@ abstract class WPLib_List_Base
 				/**
 				 * @var WPLib_Item_Base $element
 				 *
-				 * @todo Create a interface that would indicate a class has a 'the_template' method.
+				 * @future Create a interface that would indicate a class has a 'the_template' method.
 				 *
 				 */
 				$args[ 'index' ] = $index++;

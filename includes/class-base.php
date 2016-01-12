@@ -127,7 +127,10 @@ abstract class WPLib_Base {
 		$save_trigger_error = $this->_trigger_error;
 		$this->_trigger_error = false;
 
-		do { // Use do{}while(false) to allow 'break'ing out of a code sequence.
+		/**
+		 * Use do{}while(false) to allow 'break'ing out of a code sequence.
+		 */
+		do {
 
 
 			if ( ! is_callable( array( $this, $property_name ) ) ) {

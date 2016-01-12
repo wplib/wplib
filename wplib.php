@@ -35,9 +35,9 @@
  * @mixin _WPLib_Html_Helpers
  * @mixin _WPLib_WP_Helpers
  *
- * @todo Utility Modules: https://github.com/wplib/wplib/issues/6
+ * @future Utility Modules: https://github.com/wplib/wplib/issues/6
  *
- * @todo PHPDoc - https://github.com/wplib/wplib/issues/8
+ * @future PHPDoc - https://github.com/wplib/wplib/issues/8
  * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11027141
  *
  */
@@ -331,7 +331,7 @@ class WPLib {
 	 *
 	 * Recognize a path with a leading slash as an absolute, a no leading slash or starting with '~/' as relative.
 	 *
-	 * @todo Make work for Windows - https://github.com/wplib/wplib/issues/9
+	 * @future Make work for Windows - https://github.com/wplib/wplib/issues/9
 	 *
 	 * @param string $filepath
 	 * @param bool|string $dir
@@ -1007,7 +1007,7 @@ class WPLib {
 	 *
 	 * @return string
 	 *
-	 * @todo https://github.com/wplib/wplib/issues/7
+	 * @future https://github.com/wplib/wplib/issues/7
 	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026829
 	 */
 	static function is_script_debug() {
@@ -1705,7 +1705,7 @@ class WPLib {
 	/**
 	 * Return the subdir name for templates.
 	 *
-	 * @todo Allow different contexts (the app and different modules) to be set differently than the theme directory.
+	 * @future Allow different contexts (the app and different modules) to be set differently than the theme directory.
 	 *
 	 * @return string
 	 */

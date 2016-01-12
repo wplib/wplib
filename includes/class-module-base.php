@@ -150,7 +150,7 @@ abstract class WPLib_Module_Base extends WPLib {
 			do {
 
 				/**
-				 * @todo Provide a more robust mechanism for discovering 'list_class'
+				 * @future Provide a more robust mechanism for discovering 'list_class'
 				 */
 
 				/*

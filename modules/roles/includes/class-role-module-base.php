@@ -256,7 +256,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 			update_option( $option_name, $option, 'no' );
 
 			/**
-			 * @todo Change this to redirect to the same URL they were on
+			 * @future Change this to redirect to the same URL they were on
 			 *       Which means adding something like WPLib::current_url().
 			 *       Maybe even a WPLib::redirect_to_self().
 			 *       But I want to sleep on that a few days first.

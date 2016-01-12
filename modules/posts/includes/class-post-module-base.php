@@ -166,7 +166,7 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 		if ( $query instanceof WP_Query ) {
 
 			/**
-			 * @todo Trigger Error here if $query not
+			 * @future Trigger Error here if $query not
 			 *       all matching static::POST_TYPE.
 			 */
 

@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Theme_Base
  *
- * @todo Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
+ * @future Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
  *
  * @method void the_site_name()
  *
@@ -376,7 +376,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 * @param array $deps
 	 * @param bool $in_footer
 	 *
-	 * @todo https://github.com/wplib/wplib/issues/2
+	 * @future https://github.com/wplib/wplib/issues/2
 	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026274
 	 */
 	function enqueue_external( $handle, $src, $deps = array(), $in_footer = false ) {
@@ -518,7 +518,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function query() {
 		/**
-		 * @todo Capture immediately after assigned into object property
+		 * @future Capture immediately after assigned into object property
 		 */
 		global $wp_the_query;
 
@@ -546,7 +546,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	/**
 	 * @return WPLib_Post_Base
 	 *
-	 * @todo Make work for non-posts?
+	 * @future Make work for non-posts?
 	 */
 	function item() {
 
@@ -948,7 +948,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 *
 	 * @return bool
 	 *
-	 * @todo Add a $this->is_active_sidebar() with a deprecated warning.
+	 * @future Add a $this->is_active_sidebar() with a deprecated warning.
 	 */
 	function is_sidebar_active( $index ) {
 
@@ -959,7 +959,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	/**
 	 * @param $index
 	 *
-	 * @todo Add a $this->dynamic_sidebar() with a deprecated warning.
+	 * @future Add a $this->dynamic_sidebar() with a deprecated warning.
 	 */
 	function the_widget_area_html( $index ) {
 
@@ -1380,11 +1380,15 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 			if ( WPLib::is_development() ) {
 
-				// @TODO Ensure the page is here and throw an error if not.
+				/**
+				 * @future Ensure the page is here and throw an error if not.
+				 */
 
 			} else {
 
-				// @TODO MAYBE output a warning as an HTML comment?
+				/**
+				 * @future MAYBE output a warning as an HTML comment?
+				 */
 
 			}
 

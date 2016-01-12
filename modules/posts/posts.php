@@ -320,7 +320,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 * @param array $args
 	 * @return WPLib_Query
 	 *
-	 * @todo https://github.com/wplib/wplib/issues/3
+	 * @future https://github.com/wplib/wplib/issues/3
 	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026403
 	 */
 	static function get_query( $args = array() ) {
@@ -328,7 +328,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 		if ( $args instanceof WP_Query ) {
 
 			/**
-			 * @TODO Fix to return a WPLib_Query, not a WP_Query.
+			 * @future Fix to return a WPLib_Query, not a WP_Query.
 			 */
 			$query = $args;
 
@@ -404,7 +404,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 *}
 	 * @return mixed
 	 *
-	 * @todo Alias this with make_new_post() so it can be called as WPLib::make_new_post( $post_id )
+	 * @future Alias this with make_new_post() so it can be called as WPLib::make_new_post( $post_id )
 	 */
 	static function make_new_item( $_post, $args = array() ) {
 
@@ -462,7 +462,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 *
 	 * @return string|null
 	 *
-	 * @todo Rename to get_post_class() and deprecate this name
+	 * @future Rename to get_post_class() and deprecate this name
 	 *
 	 */
 	static function get_post_type_class( $post_type ) {
@@ -476,8 +476,8 @@ class WPLib_Posts extends WPLib_Module_Base {
 	/**
 	 * @return string[]
 	 *
-	 * @todo Enhance this to support multiple classes per post type
-	 * @todo Rename to post_classes() and deprecate this name
+	 * @future Enhance this to support multiple classes per post type
+	 * @future Rename to post_classes() and deprecate this name
 	 */
 	static function post_type_classes() {
 

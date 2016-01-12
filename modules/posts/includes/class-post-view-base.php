@@ -15,7 +15,7 @@
  * @method void the_url_attr()
  * @method void the_permalink()
  *
- * @todo Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
+ * @future Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
  */
 abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
@@ -36,7 +36,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	function __construct( $args ) {
 
 		/**
-		 * @todo Handle multipage specific to the object instance vs. via global vars.
+		 * @future Handle multipage specific to the object instance vs. via global vars.
 		 */
 		$this->_set_multipage_property();
 
@@ -173,8 +173,8 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 				/**
 				 * Add support to pre 3.7 WordPress
 				 *
-				 * @todo Add error messages when taxonomy != category
-				 * @todo and when 'link_format' is not false
+				 * @future Add error messages when taxonomy != category
+				 * @future and when 'link_format' is not false
 				 */
 				$adjacent_post = get_adjacent_post_rel_link(
 					$args['format'],
