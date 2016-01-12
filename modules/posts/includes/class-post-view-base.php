@@ -549,7 +549,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 			'before'        => '<span class="cat-links{{class}}">',
 		));
 
-		return $this->get_terms_list_links_html( $args );
+		return $this->get_term_list_links_html( $args );
 
 	}
 
@@ -574,7 +574,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 			'before'        => '<span class="tags-links{{class}}">',
 		));
 
-		return $this->get_terms_list_links_html( $args );
+		return $this->get_term_list_links_html( $args );
 
 	}
 
@@ -583,7 +583,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	 *
 	 * @return bool|string
 	 */
-	function get_terms_list_links_html( $args = array() ) {
+	function get_term_list_links_html( $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			/*
