@@ -59,31 +59,5 @@ class WPLib_Roles extends WPLib_Module_Base {
 
 	}
 
-//	/**
-//	 * @var string $by
-//	 * @var string $value
-//	 * @return array|mixed
-//	 */
-//	static function get_role_slug_by( $by, $value ) {
-//
-//		switch ( $by ) {
-//			case 'class':
-//			case 'class_name':
-//
-//				$role_slug = static::get_constant( 'ROLE', $value );
-//				break;
-//
-//			case 'name':
-//			case 'role_name':
-//
-//				$roles = array_flip( WPLib_Role_Module_Base::display_names() );
-//				$role_slug = isset( $roles[ $role ] ) ? $roles[ $role ] : null;
-//				break;
-//
-//		}
-//		return $role_slug;
-//
-//	}
-
 }
 WPLib_Roles::on_load();

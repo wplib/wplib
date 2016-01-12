@@ -341,25 +341,6 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 	}
 
-//	/**
-//	 * @param array|string $deletions A string or array of get_capabilities to remove from this role.
-//	 */
-//	static function remove_role_capabilities( $deletions ) {
-//
-//		if ( is_string( $deletions ) ) {
-//
-//			$deletions = explode( ',', $deletions );
-//
-//		}
-//
-//		$capabilities = self::$_roles[ static::ROLE ]['capabilities'];
-//
-//		self::$_roles[ static::ROLE ]['capabilities'] =
-//			array_diff( $capabilities, $deletions );
-//
-//	}
-
-
 }
 
 WPLib_Role_Module_Base::on_load();

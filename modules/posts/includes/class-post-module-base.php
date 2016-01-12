@@ -196,6 +196,7 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 	static function instance_class() {
 
 		do {
+
 			/**
 			 * See if module has an INSTANCE_CLASS constant defined.
 			 */
@@ -203,13 +204,6 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 				break;
 			}
 
-//			/**
-//			 * See if module has a POST_TYPE constant defined.
-//			 */
-//			if ( $instance_class = static::post_type_list_class() ) {
-//			 	break;
-//			}
-//
 			$instance_class = 'WPLib_Post_Default';
 
 		} while ( false );
