@@ -107,6 +107,11 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 	/**
 	 * @param WP_Post
+	 *
+	 * @future Allow this to accept a post_ID and call a refresh_post()
+	 *         method that can be implemented in a subclass to ensure
+	 *         that swapping out a post can fully change the state of
+	 *         the object to be as if it were instantiated anew.
 	 */
 	function set_post( $post ) {
 
