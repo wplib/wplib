@@ -70,13 +70,16 @@ class WPLib_Terms extends WPLib_Module_Base {
 			'not_found'                  => _x( 'No %s found.',             'terms', 'wplib' ),
 		);
 
-		self::add_class_action( 'init', 11 );  // Run this after priority 10 of post type
+		self::add_class_action( 'init', 11 );
+
 		self::add_class_action( 'init', 99 );
 
 	}
 
 	/**
 	 * Run on WordPress's 'init' hook to register all the term types defined in classes that extend this class.
+	 *
+	 * Run this *just* after priority 10 of post type
 	 */
 	static function _init_11() {
 
