@@ -1063,10 +1063,10 @@ class WPLib {
 	/**
 	 * Register a helper class to the specified class.
 	 *
-	 * @param string $helper The name of the helper class.
-	 * @param string|bool $class_name   Name of the class adding the helper. Defaults to called class.
+	 * @param string $helper_class The name of the helper class.
+	 * @param string|bool $helped_class  Name of the class adding the helper. Defaults to called class.
 	 */
-	static function register_helper( $helper, $class_name  = false ) {
+	static function register_helper( $helper_class, $helped_class = false ) {
 
 		if ( ! $class_name ) {
 
