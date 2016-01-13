@@ -1313,6 +1313,8 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 * Useful for accessing the post prior to $wp_the_query
 	 * Similar to single_post_title() in concept
 	 *
+	 * @future Rename to get_single_post_title()
+	 *
 	 * @param array $args
 	 * @return WPLib_Post_Base
 	 */
