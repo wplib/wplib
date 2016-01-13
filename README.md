@@ -31,7 +31,7 @@ Note WPLib can be used a little or a lot. It can be added incrementally to a sit
 
 
 ##Status
-WPLib is in beta status at version 0.11.12 in master.
+WPLib is in beta status at version 0.11.13 in master.
 
 We are actively working on it with a goal to develop stable beta versions that can be used in production, and then a 1.0.0 version when we are comfortable that the majority of the API will not need to change.
 

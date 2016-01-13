@@ -348,10 +348,9 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
-	 * @param array $args
 	 * @return mixed|void
 	 */
-	function content( $args ) {
+	function content() {
 
 		if ( $this->has_post() ) {
 
