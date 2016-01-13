@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.11.6
+ * Version:     0.11.13
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -35,15 +35,15 @@
  * @mixin _WPLib_Html_Helpers
  * @mixin _WPLib_WP_Helpers
  *
- * @todo Utility Modules: https://github.com/wplib/wplib/issues/6
+ * @future Utility Modules: https://github.com/wplib/wplib/issues/6
  *
- * @todo PHPDoc - https://github.com/wplib/wplib/issues/8
+ * @future PHPDoc - https://github.com/wplib/wplib/issues/8
  * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11027141
  *
  */
 class WPLib {
 
-	const RECENT_COMMIT = '29bb238';
+	const RECENT_COMMIT = '1968d48';
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -331,7 +331,7 @@ class WPLib {
 	 *
 	 * Recognize a path with a leading slash as an absolute, a no leading slash or starting with '~/' as relative.
 	 *
-	 * @todo Make work for Windows - https://github.com/wplib/wplib/issues/9
+	 * @future Make work for Windows - https://github.com/wplib/wplib/issues/9
 	 *
 	 * @param string $filepath
 	 * @param bool|string $dir
@@ -1007,7 +1007,7 @@ class WPLib {
 	 *
 	 * @return string
 	 *
-	 * @todo https://github.com/wplib/wplib/issues/7
+	 * @future https://github.com/wplib/wplib/issues/7
 	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026829
 	 */
 	static function is_script_debug() {
@@ -1063,10 +1063,10 @@ class WPLib {
 	/**
 	 * Register a helper class to the specified class.
 	 *
-	 * @param string $helper The name of the helper class.
-	 * @param string|bool $class_name   Name of the class adding the helper. Defaults to called class.
+	 * @param string $helper_class The name of the helper class.
+	 * @param string|bool $helped_class  Name of the class adding the helper. Defaults to called class.
 	 */
-	static function register_helper( $helper, $class_name  = false ) {
+	static function register_helper( $helper_class, $helped_class = false ) {
 
 		if ( ! $helped_class ) {
 
@@ -1705,7 +1705,7 @@ class WPLib {
 	/**
 	 * Return the subdir name for templates.
 	 *
-	 * @todo Allow different contexts (the app and different modules) to be set differently than the theme directory.
+	 * @future Allow different contexts (the app and different modules) to be set differently than the theme directory.
 	 *
 	 * @return string
 	 */
@@ -1916,6 +1916,10 @@ class WPLib {
 						/**
 						 * @note Not implemented yet.
 						 */
+						$_app_class = ! empty( $template->vars['@app'] )
+							? $template->vars['@app']
+							: self::app_class();
+
 						$template->dir    = call_user_func( array( $_app_class, 'root_dir' ) );
 						$template->subdir = 'templates';
 						break;
@@ -2060,6 +2064,8 @@ class WPLib {
 	static function do_the_methods( $view, $model, $method_name, $args ) {
 
 		$value = null;
+
+		$suffix = $has_html_suffix = false;
 
 		if ( preg_match( '#^the_(.+)_template$#', $method_name, $match ) ) {
 
@@ -2491,7 +2497,6 @@ class WPLib {
 				static::trigger_error( sprintf(
 						$message,
 						count( $matches[2] ),
-						$class_name,
 						implode( ', ', $matches[2] )
 				) );
 
@@ -2583,14 +2588,31 @@ class WPLib {
 	}
 
 	/**
-	 * @param WPLib_Item_Base $item
+	 * @param WPLib_Item_Base|WP_Post|WP_Term $item
 	 * @param array $args
 	 *
 	 * @return WPLib_Term_Base|WPLib_Post_Base
 	 */
 	static function make_new_item( $item, $args = array() ) {
 
-	   return 'Not Implemented yet.';
+		$class = get_called_class();
+
+		if ( WPLib::get_constant( 'POST_TYPE', $class ) ) {
+
+			$item = WPLib_Posts::make_new_item( $item, $args );
+
+		} else if ( WPLib::get_constant( 'TAXONOMY', $class ) ) {
+
+			$item = WPLib_Terms::make_new_item( $item, $args );
+
+		} else {
+
+		   $err_msg = __( 'Cannot make new item. Class %s does not have POST_TYPE or TAXONOMY constant.', 'wplib' );
+		   WPLib::trigger_error( sprintf( $err_msg, $class ) );
+
+		}
+
+		return $item;
 
 	}
 

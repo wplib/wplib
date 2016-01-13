@@ -70,13 +70,16 @@ class WPLib_Terms extends WPLib_Module_Base {
 			'not_found'                  => _x( 'No %s found.',             'terms', 'wplib' ),
 		);
 
-		self::add_class_action( 'init', 11 );  // Run this after priority 10 of post type
+		self::add_class_action( 'init', 11 );
+
 		self::add_class_action( 'init', 99 );
 
 	}
 
 	/**
 	 * Run on WordPress's 'init' hook to register all the term types defined in classes that extend this class.
+	 *
+	 * Run this *just* after priority 10 of post type
 	 */
 	static function _init_11() {
 
@@ -385,7 +388,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 *}
 	 * @return mixed
 	 *
-	 * @todo Alias this with make_new_term() so it can be called as WPLib::make_new_term( $term_id )
+	 * @future Alias this with make_new_term() so it can be called as WPLib::make_new_term( $term_id )
 	 */
 	static function make_new_item( $term, $args = array() ) {
 
@@ -443,7 +446,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 *
 	 * @return string|null
 	 *
-	 * @todo Rename to get_term_class() and deprecate this name
+	 * @future Rename to get_term_class() and deprecate this name
 	 */
 	static function get_taxonomy_class( $taxonomy ) {
 
@@ -456,8 +459,8 @@ class WPLib_Terms extends WPLib_Module_Base {
 	/**
 	 * @return string[]
 	 *
-	 * @todo Enhance this to support multiple classes per term type
-	 * @todo Rename to term_classes() and deprecate this name
+	 * @future Enhance this to support multiple classes per term type
+	 * @future Rename to term_classes() and deprecate this name
 	 */
 	static function taxonomy_classes() {
 

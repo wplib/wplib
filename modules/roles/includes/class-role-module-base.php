@@ -236,7 +236,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 				 */
 				remove_role( $role_slug );
 
-				${'add_role'}( $role_slug, $display_name, $capabilities );
+				call_user_func( $role_slug, $display_name, $capabilities );
 
 				$option[ $role_slug ]= array(
 					'prior_capabilities' => $capabilities,
@@ -256,7 +256,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 			update_option( $option_name, $option, 'no' );
 
 			/**
-			 * @todo Change this to redirect to the same URL they were on
+			 * @future Change this to redirect to the same URL they were on
 			 *       Which means adding something like WPLib::current_url().
 			 *       Maybe even a WPLib::redirect_to_self().
 			 *       But I want to sleep on that a few days first.
@@ -340,25 +340,6 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 		return array_unique( $capabilities );
 
 	}
-
-//	/**
-//	 * @param array|string $deletions A string or array of get_capabilities to remove from this role.
-//	 */
-//	static function remove_role_capabilities( $deletions ) {
-//
-//		if ( is_string( $deletions ) ) {
-//
-//			$deletions = explode( ',', $deletions );
-//
-//		}
-//
-//		$capabilities = self::$_roles[ static::ROLE ]['capabilities'];
-//
-//		self::$_roles[ static::ROLE ]['capabilities'] =
-//			array_diff( $capabilities, $deletions );
-//
-//	}
-
 
 }
 

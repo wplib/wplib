@@ -42,8 +42,8 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	 *
 	 *     App_Foo -> App_Foo_Model
 	 *
-	 * @todo Add lookup by ITEM_CLASS in Model or MODEL_CLASS in Item if and when we find that naming conventions fail
-	 * @todo But wait to do that because maybe YAGNI.
+	 * @future Add lookup by ITEM_CLASS in Model or MODEL_CLASS in Item if and when we find that naming conventions fail
+	 * @future But wait to do that because maybe YAGNI.
 	 *
 	 * @return mixed
 	 */
@@ -209,7 +209,7 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	/**
 	 * Is the passed Object ID associated with this taxonomy term.
 	 *
-	 * @todo Decide if "assign" is the best term for this.
+	 * @future Decide if "assign" is the best term for this.
 	 *
 	 * @param int $object_id Likely a Post ID but can be other things
 	 *
