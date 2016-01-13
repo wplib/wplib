@@ -1068,13 +1068,13 @@ class WPLib {
 	 */
 	static function register_helper( $helper, $class_name  = false ) {
 
-		if ( ! $class_name ) {
+		if ( ! $helped_class ) {
 
-			$class_name = get_called_class();
+			$helped_class = get_called_class();
 
 		}
 
-		self::$_helpers[ $class_name ][] = $helper;
+		self::$_helpers[ $helped_class ][] = $helper_class;
 
 	}
 
