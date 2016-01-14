@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.11.16
+ * Version:     0.11.17
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -474,7 +474,7 @@ class WPLib {
 		$module_classes = isset( self::$_module_classes[ $called_class ] ) ? self::$_module_classes[ $called_class ] : array();
 		$module_names = isset( self::$_module_names[ $called_class ] ) ? self::$_module_names[ $called_class ] : array();
 
-		$abspath_regex = '#^' . preg_quote( ABSPATH ) . '(.+)' . DIRECTORY_SEPARATOR . '.+\.php$#';
+		$abspath_regex = '#^' . preg_quote( ABSPATH ) . '(.+' . preg_quote( DIRECTORY_SEPARATOR ) . '.+\.php)$#';
 
 		foreach ( self::$_modules as $priority ) {
 
@@ -501,7 +501,8 @@ class WPLib {
 				self::$_file_loading = false;
 
 				$classes = get_declared_classes();
-				$module_classes[ $module_class = end( $classes ) ] = $module_path = preg_replace( $abspath_regex, '~/$1', $filepath );
+				$module_path = preg_replace( $abspath_regex, '~/$1', $filepath );
+				$module_classes[ $module_class = end( $classes ) ] = self::maybe_make_abspath_relative( $module_path );
 				if ( $module_name = self::get_module_name( $module_class ) ) {
 					$module_names[ $module_name ] = $module_class;
 				}
