@@ -25,7 +25,7 @@ That is because it is for PHP developers, not end-users. If you are a PHP develo
 
 == Changelog ==
 = 0.11.17 =
-Fixed big in regex in WPLib::_load_modules()
+Fixed bug in regex in WPLib::_load_modules()
 
 = 0.11.16 and before =
 All earlier versions
