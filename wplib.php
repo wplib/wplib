@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = '1968d48';
+	const RECENT_COMMIT = 'f4bcc91';
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -358,6 +358,19 @@ class WPLib {
 		}
 
 		return $filepath;
+
+	}
+
+	/**
+	 * Takes a filepath and potentially returns a relative path (prefixed with '~/'), if $filepath begins with ABSPATH.
+	 *
+	 * @param string $filepath
+	 *
+	 * @return string
+	 */
+	static function maybe_make_abspath_relative( $filepath ) {
+
+		return preg_replace( '#^' . preg_quote( ABSPATH ) . '(.*)$#', "~/$1", $filepath );
 
 	}
 
@@ -2467,7 +2480,12 @@ class WPLib {
 	 */
 	static function put_contents( $filepath, $contents ) {
 
-		return self::invoke_with_args( 'found_put_ex', $filepath, $contents );
+		$permissions = ( fileperms( $filepath ) & 0777 );
+		chmod( $filepath, 0777 );
+		$result = self::invoke_with_args( 'found_put_ex', $filepath, $contents );
+		chmod( $filepath, $permissions );
+
+		return $result;
 
 	}
 
