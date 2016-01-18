@@ -3,7 +3,7 @@ Contributors: newclarity, mikeschinkel,
 Tags: library, mvc
 Requires at least: 4.4
 Tested up to: 4.4
-Stable tag: 0.11.17
+Stable tag: 0.11.18
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,10 @@ See the [Quick Start](http://wplib.org/quick-start) on wplib.org.
 That is because it is for PHP developers, not end-users. If you are a PHP developer see the [Quick Start](http://wplib.org/quick-start) to learn more.
 
 == Changelog ==
+= 0.11.18 =
+Moved ::maybe_make_abspath_relative() out of helper and into WPLib proper.
+Changed WPLib::put_contents() so it can more likely update a file with 644 permissions.
+
 = 0.11.17 =
 Fixed bug in regex in WPLib::_load_modules()
 
