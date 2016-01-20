@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = 'f4bcc91';
+	const RECENT_COMMIT = 'd7a9347';
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -130,6 +130,11 @@ class WPLib {
 	 * @var array registered templates.
 	 */
 	private static $_templates = array();
+
+	/**
+	 * @var array Array of classes helped by a helper class.
+	 */
+	private static $_helped_classes = array();
 
 	/**
 	 *
@@ -1079,6 +1084,9 @@ class WPLib {
 	 *
 	 * @param string $helper_class The name of the helper class.
 	 * @param string|bool $helped_class  Name of the class adding the helper. Defaults to called class.
+	 *
+	 * @todo Add 3rd parameter to specify which methods to help with.
+	 *       Or change 2nd parameter to optional $args.
 	 */
 	static function register_helper( $helper_class, $helped_class = false ) {
 
@@ -1093,22 +1101,55 @@ class WPLib {
 	}
 
 	/**
+	 * @return array
+	 */
+	private static function _current_helped_classes() {
+
+		return end( self::$_helped_classes );
+
+	}
+
+	/**
+	 * Returns the class that is currently being "helped."
+	 *
+	 * The Helped class is the one to the left of '::' when the method
+	 * is actually in a "helper" class:
+	 *
+	 *      {$current_helped_class}::register_helper( $helper_class );
+	 *
+	 * Which is equivalent to:
+	 *
+	 *      WPLib::register_helper( $helper_class, $current_helped_class );
+	 *
+	 * @return array
+	 */
+	static function current_helped_class() {
+
+		$helped_classes = self::_current_helped_classes();
+		return count( $helped_classes )
+			? $helped_classes[0]
+			: get_called_class();
+
+	}
+
+	/**
 	 * Delegate calls to other classes.
 	 * This allows us to document a single "API" for WPLib yet
 	 * structure the code more conveniently in multiple class files.
 	 *
-	 * @example  WPLib::call_helper( __CLASS__, 'register_item', array( $item ), $found );
+	 * @example  WPLib::_call_helper( __CLASS__, 'register_item', array( $item ), $found );
 	 *
-	 * @param string $class_name    Name of class that is calling the helper
+	 * @param string $helped_class  Name of class that is calling the helper
 	 * @param string $helper_method Name of the helper method
 	 * @param array  $args          Arguments to pass to the helper method
-	 * @param object $container     An object containing a property: 'callable'
+	 * @param object $container     An object containing a 'callable' property.
 	 *
 	 * @return mixed|null
 	 */
-	static function call_helper( $class_name, $helper_method, $args, $container = null ) {
+	static function _call_helper( $helped_class, $helper_method, $args, $container = null ) {
 
 		$value = null;
+
 
 		if ( is_null( $container ) ) {
 			/**
@@ -1116,7 +1157,10 @@ class WPLib {
 			 * This is relevant when we need to call the helper of the parent class.
 			 */
 			$container = new stdClass();
+
 		}
+
+		self::$_helped_classes[ $hash = spl_object_hash( $container ) ][] = get_called_class();
 
 		$found = false;
 
@@ -1124,7 +1168,7 @@ class WPLib {
 		 * Check to see if the helper callable for this class and method is cached.
 		 */
 		$container->callable = wp_cache_get(
-			$cache_key = "{$class_name}::{$helper_method}()",
+			$cache_key = "{$helped_class}::{$helper_method}()",
 			$group = "wplib_helpers",
 			false,
 			$found  // This gets set by wp_cache_get()
@@ -1135,18 +1179,18 @@ class WPLib {
 			/*
 			 * If not cached, find the callable
 			 */
-			if ( isset( self::$_helpers[ $class_name ] ) ) {
+			if ( isset( self::$_helpers[ $helped_class ] ) ) {
 
 				/*
 				 * If not class has helper classes
 				 */
-				foreach ( self::$_helpers[ $class_name ] as $helper ) {
+				foreach ( self::$_helpers[ $helped_class ] as $helper_class ) {
 					/*
 
 					 * Loop through each of the helper classes to see
 					 * if the method exists in that helper class
 					 */
-					if ( method_exists( $helper, $helper_method ) && is_callable( $callable = array( $helper, $helper_method ) ) ) {
+					if ( method_exists( $helper_class, $helper_method ) && is_callable( $callable = array( $helper_class, $helper_method ) ) ) {
 
 						/*
 						 * If helper method found in helper class, set $callable and cache it.
@@ -1168,13 +1212,13 @@ class WPLib {
 
 		if ( ! $found ) {
 
-			if ( $parent_class = get_parent_class( $class_name ) ) {
+			if ( $parent_class = get_parent_class( $helped_class ) ) {
 
 				/**
 				 * Call the method in the parent class assuming the parent has the method.
 				 */
 
-				$value = call_user_func( array( $parent_class, 'call_helper' ),
+				$value = call_user_func( array( $parent_class, '_call_helper' ),
 					$parent_class,
 					$helper_method,
 					$args,
@@ -1205,7 +1249,7 @@ class WPLib {
 			$message = sprintf(
 				__( 'ERROR: There is no helper method %s() for class %s. ', 'wplib' ),
 				$helper_method,
-				$class_name
+				$helped_class
 			);
 
 			static::trigger_error( $message, E_USER_ERROR );
@@ -1218,6 +1262,14 @@ class WPLib {
 			 * A helper was found so call it.
 			 */
 			$value = call_user_func_array( $container->callable, $args );
+
+		}
+
+		array_pop( self::$_helped_classes[ $hash ] );
+
+		if ( 0 === count( self::$_helped_classes[ $hash ] ) ) {
+
+		    unset( self::$_helped_classes[ $hash ] );
 
 		}
 
@@ -1628,7 +1680,7 @@ class WPLib {
 	 */
 	static function __callStatic( $method, $args ) {
 
-		return self::call_helper( get_called_class(), $method, $args );
+		return self::_call_helper( get_called_class(), $method, $args );
 
 	}
 
