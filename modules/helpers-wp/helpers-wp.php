@@ -78,5 +78,24 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 
 	}
 
+	/**
+	 * Return true if a URL query var is not empty and optionally matches an expected value.
+	 *
+	 * @param string $var_name
+	 * @param string|bool $expected_value
+	 *
+	 * @return bool
+	 */
+	static function has_query_var( $var_name, $expected_value = null ) {
+		global $wp_the_query;
+
+		$query_var_value = $wp_the_query->get( $var_name, null );
+
+		return is_null( $expected_value )
+			? ! empty( $query_var_value )
+			: $query_var_value === $expected_value;
+
+	}
+
 }
 _WPLib_WP_Helpers::on_load();

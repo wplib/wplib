@@ -15,7 +15,7 @@
  * @method void the_url_attr()
  * @method void the_permalink()
  *
- * @todo Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
+ * @future Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
  */
 abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
@@ -28,10 +28,15 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	 */
 	var $multipage;
 
+	/**
+	 * WPLib_Post_View_Base constructor.
+	 *
+	 * @param array|object|string $args
+	 */
 	function __construct( $args ) {
 
 		/**
-		 * @todo Handle multipage specific to the object instance vs. via global vars.
+		 * @future Handle multipage specific to the object instance vs. via global vars.
 		 */
 		$this->_set_multipage_property();
 
@@ -168,8 +173,8 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 				/**
 				 * Add support to pre 3.7 WordPress
 				 *
-				 * @todo Add error messages when taxonomy != category
-				 * @todo and when 'link_format' is not false
+				 * @future Add error messages when taxonomy != category
+				 * @future and when 'link_format' is not false
 				 */
 				$adjacent_post = get_adjacent_post_rel_link(
 					$args['format'],
@@ -544,7 +549,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 			'before'        => '<span class="cat-links{{class}}">',
 		));
 
-		return $this->get_terms_list_links_html( $args );
+		return $this->get_term_list_links_html( $args );
 
 	}
 
@@ -569,7 +574,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 			'before'        => '<span class="tags-links{{class}}">',
 		));
 
-		return $this->get_terms_list_links_html( $args );
+		return $this->get_term_list_links_html( $args );
 
 	}
 
@@ -578,7 +583,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	 *
 	 * @return bool|string
 	 */
-	function get_terms_list_links_html( $args = array() ) {
+	function get_term_list_links_html( $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			/*
@@ -693,20 +698,41 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	}
 
 	/**
-	 *
+	 * @param array $args
 	 */
-	function the_content_html() {
+	function the_content_html( $args = array() ) {
 
-		echo wp_kses_post( $this->get_content_html() );
+		echo wp_kses_post( $this->get_content_html( $args ) );
 
 	}
 
 	/**
+	 * @param array $args
+	 *
 	 * @return string
 	 */
-	function get_content_html() {
+	function get_content_html( $args = array() ) {
 
-		return $this->model()->content();
+		if ( ! $this->model()->has_post() ) {
+
+			$content = null;
+
+		} else {
+
+			$args = wp_parse_args( $args, array(
+				'more_link_text' => null,
+				'strip_teaser'   => false,
+			));
+
+			$saved_postdata = $this->setup_postdata();
+			ob_start();
+			the_content( $args['more_link_text'], $args['strip_teaser'] );
+			$content = ob_get_clean();
+			$this->restore_postdata( $saved_postdata );
+
+		}
+
+		return $content;
 
 	}
 

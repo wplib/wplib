@@ -3,12 +3,11 @@ Contributors: newclarity, mikeschinkel,
 Tags: library, mvc
 Requires at least: 4.4
 Tested up to: 4.4
-Stable tag: 0.11.5
+Stable tag: 0.12.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 A Foundation Library for Agency and Corporate Developers.
-
 
 == Description ==
 WPLib is a plugin designed to be used as a Must-Use plugin or to be embedded in a theme to enable the development of complex yet robust and performant WordPress applications and websites.
@@ -25,5 +24,18 @@ See the [Quick Start](http://wplib.org/quick-start) on wplib.org.
 That is because it is for PHP developers, not end-users. If you are a PHP developer see the [Quick Start](http://wplib.org/quick-start) to learn more.
 
 == Changelog ==
-= 0.11.5 =
-Lastest beta release.
+= 0.12.0 =
+Added concept of a "helped" class with WPLib::current_helped_class() to WPLib and also renamed WPLib::call_helper() to WPLib::_call_helper().
+Added a test in /wplib/defines.php for ! class_exists( 'WPLib_Enum' ) before requiring it and related classes, and before including wplib_define().
+
+= 0.11.18 =
+Moved ::maybe_make_abspath_relative() out of helper and into WPLib proper.
+Changed WPLib::put_contents() so it can more likely update a file with 644 permissions.
+
+= 0.11.17 =
+Fixed bug in regex in WPLib::_load_modules()
+
+= 0.11.16 and before =
+All earlier versions
+
+

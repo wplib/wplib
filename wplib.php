@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.11.5
+ * Version:     0.12.0
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -35,15 +35,15 @@
  * @mixin _WPLib_Html_Helpers
  * @mixin _WPLib_WP_Helpers
  *
- * @todo Utility Modules: https://github.com/wplib/wplib/issues/6
+ * @future Utility Modules: https://github.com/wplib/wplib/issues/6
  *
- * @todo PHPDoc - https://github.com/wplib/wplib/issues/8
+ * @future PHPDoc - https://github.com/wplib/wplib/issues/8
  * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11027141
  *
  */
 class WPLib {
 
-	const RECENT_COMMIT = '29bb238';
+	const RECENT_COMMIT = '5e37b2f';
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -130,6 +130,11 @@ class WPLib {
 	 * @var array registered templates.
 	 */
 	private static $_templates = array();
+
+	/**
+	 * @var array Array of classes helped by a helper class.
+	 */
+	private static $_helped_classes = array();
 
 	/**
 	 *
@@ -331,7 +336,7 @@ class WPLib {
 	 *
 	 * Recognize a path with a leading slash as an absolute, a no leading slash or starting with '~/' as relative.
 	 *
-	 * @todo Make work for Windows - https://github.com/wplib/wplib/issues/9
+	 * @future Make work for Windows - https://github.com/wplib/wplib/issues/9
 	 *
 	 * @param string $filepath
 	 * @param bool|string $dir
@@ -358,6 +363,19 @@ class WPLib {
 		}
 
 		return $filepath;
+
+	}
+
+	/**
+	 * Takes a filepath and potentially returns a relative path (prefixed with '~/'), if $filepath begins with ABSPATH.
+	 *
+	 * @param string $filepath
+	 *
+	 * @return string
+	 */
+	static function maybe_make_abspath_relative( $filepath ) {
+
+		return preg_replace( '#^' . preg_quote( ABSPATH ) . '(.*)$#', "~/$1", $filepath );
 
 	}
 
@@ -474,7 +492,7 @@ class WPLib {
 		$module_classes = isset( self::$_module_classes[ $called_class ] ) ? self::$_module_classes[ $called_class ] : array();
 		$module_names = isset( self::$_module_names[ $called_class ] ) ? self::$_module_names[ $called_class ] : array();
 
-		$abspath_regex = '#^' . preg_quote( ABSPATH ) . '(.+)' . DIRECTORY_SEPARATOR . '.+\.php$#';
+		$abspath_regex = '#^' . preg_quote( ABSPATH ) . '(.+' . preg_quote( DIRECTORY_SEPARATOR ) . '.+\.php)$#';
 
 		foreach ( self::$_modules as $priority ) {
 
@@ -501,7 +519,8 @@ class WPLib {
 				self::$_file_loading = false;
 
 				$classes = get_declared_classes();
-				$module_classes[ $module_class = end( $classes ) ] = $module_path = preg_replace( $abspath_regex, '~/$1', $filepath );
+				$module_path = preg_replace( $abspath_regex, '~/$1', $filepath );
+				$module_classes[ $module_class = end( $classes ) ] = self::maybe_make_abspath_relative( $module_path );
 				if ( $module_name = self::get_module_name( $module_class ) ) {
 					$module_names[ $module_name ] = $module_class;
 				}
@@ -1007,7 +1026,7 @@ class WPLib {
 	 *
 	 * @return string
 	 *
-	 * @todo https://github.com/wplib/wplib/issues/7
+	 * @future https://github.com/wplib/wplib/issues/7
 	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026829
 	 */
 	static function is_script_debug() {
@@ -1063,18 +1082,53 @@ class WPLib {
 	/**
 	 * Register a helper class to the specified class.
 	 *
-	 * @param string $helper The name of the helper class.
-	 * @param string|bool $class_name   Name of the class adding the helper. Defaults to called class.
+	 * @param string $helper_class The name of the helper class.
+	 * @param string|bool $helped_class  Name of the class adding the helper. Defaults to called class.
+	 *
+	 * @todo Add 3rd parameter to specify which methods to help with.
+	 *       Or change 2nd parameter to optional $args.
 	 */
-	static function register_helper( $helper, $class_name  = false ) {
+	static function register_helper( $helper_class, $helped_class = false ) {
 
-		if ( ! $class_name ) {
+		if ( ! $helped_class ) {
 
-			$class_name = get_called_class();
+			$helped_class = get_called_class();
 
 		}
 
-		self::$_helpers[ $class_name ][] = $helper;
+		self::$_helpers[ $helped_class ][] = $helper_class;
+
+	}
+
+	/**
+	 * @return array
+	 */
+	private static function _current_helped_classes() {
+
+		return end( self::$_helped_classes );
+
+	}
+
+	/**
+	 * Returns the class that is currently being "helped."
+	 *
+	 * The Helped class is the one to the left of '::' when the method
+	 * is actually in a "helper" class:
+	 *
+	 *      {$current_helped_class}::register_helper( $helper_class );
+	 *
+	 * Which is equivalent to:
+	 *
+	 *      WPLib::register_helper( $helper_class, $current_helped_class );
+	 *
+	 * @return array
+	 */
+	static function current_helped_class() {
+
+		$helped_classes = self::_current_helped_classes();
+		return count( $helped_classes )
+			? $helped_classes[0]
+			: get_called_class();
 
 	}
 
@@ -1083,16 +1137,16 @@ class WPLib {
 	 * This allows us to document a single "API" for WPLib yet
 	 * structure the code more conveniently in multiple class files.
 	 *
-	 * @example  WPLib::call_helper( __CLASS__, 'register_item', array( $item ), $found );
+	 * @example  WPLib::_call_helper( __CLASS__, 'register_item', array( $item ), $found );
 	 *
-	 * @param string $class_name    Name of class that is calling the helper
+	 * @param string $helped_class  Name of class that is calling the helper
 	 * @param string $helper_method Name of the helper method
 	 * @param array  $args          Arguments to pass to the helper method
-	 * @param object $container     An object containing a property: 'callable'
+	 * @param object $container     An object containing a 'callable' property.
 	 *
 	 * @return mixed|null
 	 */
-	static function call_helper( $class_name, $helper_method, $args, $container = null ) {
+	static function _call_helper( $helped_class, $helper_method, $args, $container = null ) {
 
 		$value = null;
 
@@ -1102,7 +1156,10 @@ class WPLib {
 			 * This is relevant when we need to call the helper of the parent class.
 			 */
 			$container = new stdClass();
+
 		}
+
+		self::$_helped_classes[ $hash = spl_object_hash( $container ) ][] = get_called_class();
 
 		$found = false;
 
@@ -1110,7 +1167,7 @@ class WPLib {
 		 * Check to see if the helper callable for this class and method is cached.
 		 */
 		$container->callable = wp_cache_get(
-			$cache_key = "{$class_name}::{$helper_method}()",
+			$cache_key = "{$helped_class}::{$helper_method}()",
 			$group = "wplib_helpers",
 			false,
 			$found  // This gets set by wp_cache_get()
@@ -1121,18 +1178,18 @@ class WPLib {
 			/*
 			 * If not cached, find the callable
 			 */
-			if ( isset( self::$_helpers[ $class_name ] ) ) {
+			if ( isset( self::$_helpers[ $helped_class ] ) ) {
 
 				/*
 				 * If not class has helper classes
 				 */
-				foreach ( self::$_helpers[ $class_name ] as $helper ) {
+				foreach ( self::$_helpers[ $helped_class ] as $helper_class ) {
 					/*
 
 					 * Loop through each of the helper classes to see
 					 * if the method exists in that helper class
 					 */
-					if ( method_exists( $helper, $helper_method ) && is_callable( $callable = array( $helper, $helper_method ) ) ) {
+					if ( method_exists( $helper_class, $helper_method ) && is_callable( $callable = array( $helper_class, $helper_method ) ) ) {
 
 						/*
 						 * If helper method found in helper class, set $callable and cache it.
@@ -1154,13 +1211,13 @@ class WPLib {
 
 		if ( ! $found ) {
 
-			if ( $parent_class = get_parent_class( $class_name ) ) {
+			if ( $parent_class = get_parent_class( $helped_class ) ) {
 
 				/**
 				 * Call the method in the parent class assuming the parent has the method.
 				 */
 
-				$value = call_user_func( array( $parent_class, 'call_helper' ),
+				$value = call_user_func( array( $parent_class, '_call_helper' ),
 					$parent_class,
 					$helper_method,
 					$args,
@@ -1191,7 +1248,7 @@ class WPLib {
 			$message = sprintf(
 				__( 'ERROR: There is no helper method %s() for class %s. ', 'wplib' ),
 				$helper_method,
-				$class_name
+				$helped_class
 			);
 
 			static::trigger_error( $message, E_USER_ERROR );
@@ -1204,6 +1261,14 @@ class WPLib {
 			 * A helper was found so call it.
 			 */
 			$value = call_user_func_array( $container->callable, $args );
+
+		}
+
+		array_pop( self::$_helped_classes[ $hash ] );
+
+		if ( 0 === count( self::$_helped_classes[ $hash ] ) ) {
+
+		    unset( self::$_helped_classes[ $hash ] );
 
 		}
 
@@ -1340,7 +1405,6 @@ class WPLib {
 		return rtrim( static::get_asset_url( '' ), '/' );
 
 	}
-
 
 	/**
 	 * Return the asset path
@@ -1615,7 +1679,7 @@ class WPLib {
 	 */
 	static function __callStatic( $method, $args ) {
 
-		return self::call_helper( get_called_class(), $method, $args );
+		return self::_call_helper( get_called_class(), $method, $args );
 
 	}
 
@@ -1706,7 +1770,7 @@ class WPLib {
 	/**
 	 * Return the subdir name for templates.
 	 *
-	 * @todo Allow different contexts (the app and different modules) to be set differently than the theme directory.
+	 * @future Allow different contexts (the app and different modules) to be set differently than the theme directory.
 	 *
 	 * @return string
 	 */
@@ -1833,6 +1897,24 @@ class WPLib {
 	 * @param array|string $_template_vars
 	 * @param WPLib_Item_Base|object $item
 	 *
+	 * @see  self::the_template()
+	 *
+	 * @return string
+	 */
+	static function get_template( $template_slug, $_template_vars = array(), $item = null ) {
+
+		ob_start();
+		static::the_template( $template_slug, $_template_vars, $item );
+		$output = ob_get_clean();
+		return $output;
+
+	}
+
+	/**
+	 * @param string $template_slug
+	 * @param array|string $_template_vars
+	 * @param WPLib_Item_Base|object $item
+	 *
 	 * @note This is called via an instance as well as
 	 *       If this becomes deprecated we can prefix with an '_' and then
 	 *       use __call() and __callStatic() to allow it to be invoked.
@@ -1899,6 +1981,10 @@ class WPLib {
 						/**
 						 * @note Not implemented yet.
 						 */
+						$_app_class = ! empty( $template->vars['@app'] )
+							? $template->vars['@app']
+							: self::app_class();
+
 						$template->dir    = call_user_func( array( $_app_class, 'root_dir' ) );
 						$template->subdir = 'templates';
 						break;
@@ -2043,6 +2129,8 @@ class WPLib {
 	static function do_the_methods( $view, $model, $method_name, $args ) {
 
 		$value = null;
+
+		$suffix = $has_html_suffix = false;
 
 		if ( preg_match( '#^the_(.+)_template$#', $method_name, $match ) ) {
 
@@ -2443,7 +2531,12 @@ class WPLib {
 	 */
 	static function put_contents( $filepath, $contents ) {
 
-		return self::invoke_with_args( 'found_put_ex', $filepath, $contents );
+		$permissions = ( fileperms( $filepath ) & 0777 );
+		chmod( $filepath, 0777 );
+		$result = self::invoke_with_args( 'found_put_ex', $filepath, $contents );
+		chmod( $filepath, $permissions );
+
+		return $result;
 
 	}
 
@@ -2474,7 +2567,6 @@ class WPLib {
 				static::trigger_error( sprintf(
 						$message,
 						count( $matches[2] ),
-						$class_name,
 						implode( ', ', $matches[2] )
 				) );
 
@@ -2562,6 +2654,55 @@ class WPLib {
 			$string = strtolower( $string );
 		}
 		return $string;
+
+	}
+
+	/**
+	 * @param WPLib_Item_Base|WP_Post|WP_Term $item
+	 * @param array $args
+	 *
+	 * @return WPLib_Term_Base|WPLib_Post_Base
+	 */
+	static function make_new_item( $item, $args = array() ) {
+
+		$class = get_called_class();
+
+		if ( WPLib::get_constant( 'POST_TYPE', $class ) ) {
+
+			$item = WPLib_Posts::make_new_item( $item, $args );
+
+		} else if ( WPLib::get_constant( 'TAXONOMY', $class ) ) {
+
+			$item = WPLib_Terms::make_new_item( $item, $args );
+
+		} else {
+
+		   $err_msg = __( 'Cannot make new item. Class %s does not have POST_TYPE or TAXONOMY constant.', 'wplib' );
+		   WPLib::trigger_error( sprintf( $err_msg, $class ) );
+
+		}
+
+		return $item;
+
+	}
+
+	/**
+	 * Returns the filepath for a theme template file given its "local filename."
+	 *
+	 * Local filename means based at the root of the theme w/o leading slash.
+	 *
+	 * @example
+	 *
+	 *      FooBarApp::get_theme_file( 'single.php' )
+	 *      FooBarApp::get_theme_file( 'partials/content.php' )
+	 *
+	 * @param string $local_file
+	 *
+	 * @return string
+	 */
+	static function get_theme_file( $local_file ) {
+
+		return static::theme()->get_root_dir( $local_file );
 
 	}
 

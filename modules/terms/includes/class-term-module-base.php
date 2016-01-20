@@ -13,7 +13,7 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 	 * REgister the labels used for this taxonomy.
 	 *
 	 * @param array $args
-	 * @todo Allow taxonomy name to be passed optionally.
+	 * @future Allow taxonomy name to be passed optionally.
 	 *
 	 * @return object
 	 */
@@ -97,7 +97,7 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 	 *
 	 * @param null|string|array $object_types
 	 * @param array $args
-	 * @todo Allow taxonomy name to be passed optionally.
+	 * @future Allow taxonomy name to be passed optionally.
 	 *
 	 * @link  http://codex.wordpress.org/Function_Reference/register_taxonomy#Parameters
 	 */

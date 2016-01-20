@@ -67,7 +67,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 			$_post = $args['post'];
 
-			$_post = $post instanceof WP_Post ? $post : get_post( $post->ID );
+			$_post = $_post instanceof WP_Post ? $_post : get_post( $_post->ID );
 
 			unset( $args['post'] );
 
@@ -107,6 +107,11 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 	/**
 	 * @param WP_Post
+	 *
+	 * @future Allow this to accept a post_ID and call a refresh_post()
+	 *         method that can be implemented in a subclass to ensure
+	 *         that swapping out a post can fully change the state of
+	 *         the object to be as if it were instantiated anew.
 	 */
 	function set_post( $post ) {
 
@@ -351,11 +356,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 			$saved_postdata = $this->setup_postdata();
 
-			$content = apply_filters( 'the_content',
-
-				apply_filters( 'get_the_content', $this->get_field_value( 'post_content' ) )
-
-			);
+			$content = $this->get_field_value( 'post_content' );
 
 			$this->restore_postdata( $saved_postdata );
 
@@ -427,7 +428,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 *
 	 * @return bool
 	 *
-	 * @todo https://github.com/wplib/wplib/issues/5
+	 * @future https://github.com/wplib/wplib/issues/5
 	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026544
 	 */
 	function is_published() {
@@ -442,7 +443,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	function is_attachment() {
 
 		/**
-		 * @todo Implement WPLib_Attachment and use WPLib_Attachment::POST_TYPE here.
+		 * @future Implement WPLib_Attachment and use WPLib_Attachment::POST_TYPE here.
 		 */
 	 	return 'attachment' === $this->post_type();
 
@@ -626,7 +627,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 					case 'date':
 						/**
-						 * @todo Verify that this is what we want to standardize on.
+						 * @future Verify that this is what we want to standardize on.
 						 */
 						$value = mysql2date( DATE_W3C, $value );
 
@@ -803,7 +804,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 * Return post's author ID
 	 *
 	 * @note Does not use get_the_author_meta( 'ID' ) and thus does not fire 'get_the_author_ID' hook
-	 * @todo Discuss if it should?  Or is this way more not robust?
+	 * @future Discuss if it should?  Or is this way more not robust?
 	 *
 	 * @return int|bool
 	 */
@@ -942,7 +943,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 *
 	 * Yes if no password or password provided and comments are open.
 	 *
-	 * @todo We probably need to change this method. If confused info about $post with state of password entry
+	 * @future We probably need to change this method. If confused info about $post with state of password entry
 	 *
 	 * @return bool
 	 */
@@ -959,7 +960,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 *
 	 * Yes if no password or password provided and comments are either open or at least one comment exists.
 	 *
-	 * @todo We probably need to change this method. If confuses info about $post with state of password entry
+	 * @future We probably need to change this method. If confuses info about $post with state of password entry
 	 *
 	 * @return bool
 	 */
