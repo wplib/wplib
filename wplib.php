@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.12.0
+ * Version:     0.12.1
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -1085,7 +1085,7 @@ class WPLib {
 	 * @param string $helper_class The name of the helper class.
 	 * @param string|bool $helped_class  Name of the class adding the helper. Defaults to called class.
 	 *
-	 * @todo Add 3rd parameter to specify which methods to help with.
+	 * @future Add 3rd parameter to specify which methods to help with.
 	 *       Or change 2nd parameter to optional $args.
 	 */
 	static function register_helper( $helper_class, $helped_class = false ) {
@@ -1907,7 +1907,7 @@ class WPLib {
 		ob_start();
 		static::the_template( $template_slug, $_template_vars, $item );
 		$output = ob_get_clean();
-		echo $output;
+		return $output;
 
 	}
 
