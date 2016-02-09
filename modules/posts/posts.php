@@ -367,7 +367,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 			$args = wp_parse_args( $args, array(
 				'post_type'      => 'any',
 				'post_status'    => 'publish',
-				'posts_per_page' => WPLib::max_posts_per_page(),
+				'posts_per_page' => self::max_posts_per_page(),
 				'index_by'       => false,
 				'orderby'        => 'menu_order',
 				'order'          => 'ASC',
