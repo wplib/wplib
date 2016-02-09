@@ -11,6 +11,7 @@
  * @property WPLib_Post_Base $owner
  * @method void the_ID()
  * @method void the_title()
+ * @method void the_content()
  * @method void the_url()
  * @method void the_url_attr()
  * @method void the_permalink()
