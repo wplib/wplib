@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = '5e37b2f';
+	const RECENT_COMMIT = '5e2cfca'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -2303,15 +2303,6 @@ class WPLib {
 	static function has_html_suffix( $suffix ) {
 
 		return (bool) ( $suffix && preg_match( '#^_(html|link)$#', $suffix ) );
-
-	}
-
-	/**
-	 * @return int
-	 */
-	static function max_posts_per_page() {
-
-		return 999;
 
 	}
 

@@ -30,6 +30,14 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 
 	/**
+	 * Value to limit the maximum posts per page requested for any given WP_Query
+	 *
+	 * @var array|null
+	 */
+	private static $_max_posts_per_page = 999;
+
+
+	/**
 	 * Run on WordPress's 'init' hook to register all the post types defined in classes that extend this class.
 	 */
 	static function on_load() {
@@ -537,6 +545,25 @@ class WPLib_Posts extends WPLib_Module_Base {
 			: null;
 
 	}
+
+	/**
+	 * @return int
+	 */
+	static function max_posts_per_page() {
+
+		return self::$_max_posts_per_page;
+
+	}
+
+	/**
+	 * @param int $value
+	 */
+	static function set_max_posts_per_page( $value ) {
+
+		self::$_max_posts_per_page = absint( $value );
+
+	}
+
 
 }
 WPLib_Posts::on_load();
