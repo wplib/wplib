@@ -1,5 +1,5 @@
 # WPLib
-**A PHP Library for Building Complex Custom WordPress Apps**
+**A PHP Library  plus Conventions for Building Complex Custom WordPress Apps**
 
 WPLib was designed for use by teams who build custom sites and need professional workflow. The library is a **thin layer** that provides a simple **Module System** and a lightweight **Model+View architecture**.
 
