@@ -2661,7 +2661,17 @@ class WPLib {
 
 		if ( WPLib::get_constant( 'INSTANCE_CLASS', $class ) ) {
 
-			$item = $class::make_new_item( $item, $args );
+			if ( is_callable( array( $class, 'make_new_item' ) ) ) {
+				
+				$item = $class::make_new_item( $item, $args );
+
+			} else {
+
+				$err_msg = __ ( 'Cannot make new item. Class %s does not have make_new_item method', 'wplib' );
+				WPLib::trigger_error( sprintf( $err_msg, $class ) );
+
+			}
+
 
 		} else {
 
