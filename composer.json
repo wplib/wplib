@@ -31,8 +31,21 @@
 			"role" :  "DevOp and Developer"
 		}
 	],
+	"repositories": [
+		{
+			"type": "git",
+			"url": "https://github.com/wplib/tests-wplib"
+		},
+		{
+			"type": "vcs",
+			"url": "https://unit-tests.svn.wordpress.org"
+		}
+	],
 	"require": {
 		"php": ">=5.4.0"
+	},
+	"require-dev": {
+		"wplib/tests-wplib": "dev-master"
 	},
 	"autoload": {
 		"psr-0": { "WPLib_": "includes/" }
