@@ -319,7 +319,7 @@ abstract class WPLib_Enum {
 		/*
 		 * Look for a matching constant value first
 		 */
-		if ( ! array_key_exists( $value, $values ) ) {
+		if ( ! array_search( $value, $values ) ) {
 
 			/**
 			 *  The result of this function without match is false.
