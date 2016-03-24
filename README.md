@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/wplib/wplib.png?label=ready&title=Ready)](https://waffle.io/wplib/wplib)
 # WPLib
 **A PHP Library  plus Conventions for Building Complex Custom WordPress Apps**
 
