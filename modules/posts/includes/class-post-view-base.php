@@ -142,7 +142,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	 */
 	function the_link( $link_text, $args = array() ) {
 
-		echo $this->get_link( $link_text, $args );
+		echo wp_kses_post( $this->get_link( $link_text, $args ) );
 
 	}
 
