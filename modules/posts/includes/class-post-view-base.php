@@ -135,6 +135,18 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	}
 
 	/**
+	 * Echo's HTML for any value hyperlinked with the post's URL.
+	 *
+	 * @param string $link_text
+	 * @param array  $args
+	 */
+	function the_link( $link_text, $args = array() ) {
+
+		echo wp_kses_post( $this->get_link( $link_text, $args ) );
+
+	}
+
+	/**
 	 * @param array $args
 	 *
 	 * @return mixed|null
