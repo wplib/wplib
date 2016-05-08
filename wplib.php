@@ -1484,11 +1484,9 @@ class WPLib {
 
 		foreach ( self::get_module_classes( $app_class ) as $module_class => $module_filepath ) {
 
-			$try_dir = dirname( $module_filepath );
+			if ( 0 === strpos( $filepath, $module_filepath ) ) {
 
-			if ( 0 === strpos( $filepath, $try_dir ) ) {
-
-				$module_dir = self::maybe_make_absolute_path( $try_dir, ABSPATH );
+				$module_dir = self::maybe_make_absolute_path( $module_filepath, ABSPATH );
 
 				break;
 
