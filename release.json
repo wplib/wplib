@@ -1,0 +1,54 @@
+{
+  "project_name": "WPLib",
+  "source": "https://github.com/wplib/wplib",
+  "tags": [
+    {
+      "tag": "0.13.0",
+      "changes": [
+        {
+          "change": "_CAPABILITIES() => CONST_CAPABILITIES()",
+          "details": "Changed WPLib_Role_Module_Base::_CAPABILITIES() to WPLib_Role_Module_Base::CONST_CAPABILITIES().",
+          "issue": "45",
+          "breaking": true
+        },
+        {
+          "change": "Eliminated Enums",
+          "details": "Removed defines.php, WPLib_Enums, wplib_define(), WPLib_Enum::get_enum(), WPLib_Enum::set_enum().",
+          "issue": "30",
+          "breaking": true
+        },
+        {
+          "change": "Eliminated Runmodes",
+          "details": "Removed WPLIB_RUNMODE, WPLib_Runmode, WPLib::runmode(), WPLib_Runmode::STAGING, WPLib_Runmode::PRODUCTION, WPLib_Runmode::TESTING, WPLib_Runmode::DEVELOPMENT, WPLib::is_testing(), WPLib::is_staging().",
+          "issue": "30",
+          "breaking": true
+        },
+        {
+          "change": "Eliminated Stabilities",
+          "details": "Removed WPLIB_STABILITY, WPLib_Stability, WPLib::stability().",
+          "issue": "30",
+          "breaking": true
+        },
+        {
+          "change": "Officially established WPLIB_DEVELOPMENT",
+          "details": "Established define('WPLIB_DEVELOPMENT',true) in wp-config-local.php as the official way to switch to development/debug mode.  Added WPLib::set_is_development() and WPLib::set_is_production()",
+          "issue": "30",
+          "breaking": false
+        },
+        {
+          "change": "Removed obfuscation in WPLib class",
+          "details": "Removed the obfuscation in WPLib class intended to hide code from a scanner that would pedantically flag the code as a concern -- even though the code was used properly -- to avoid having to debate pedantic agent of former client.",
+          "issue": "n/a",
+          "breaking": false
+        },
+        {
+          "change": "Refactored WPLib::get_module_class()",
+          "details": "Refactored WPLib::get_module_class() calling signature to use $args as the 2nd parameter.",
+          "issue": "n/a",
+          "breaking": false
+        }
+      ]
+    }
+  ]
+}
+
