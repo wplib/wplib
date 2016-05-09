@@ -2402,27 +2402,30 @@ class WPLib {
 
 	/**
 	 * @param string $module_name
-	 * @param string|bool $app_class
+     * @param array $args {
+     * 		@type string $app_class
+     * }
 	 *
 	 * @return string
 	 */
-	static function get_module_class( $module_name, $app_class = false ) {
+    static function get_module_class( $module_name, $args = array() ) {
 
-		if ( ! $app_class ) {
+        $args = wp_parse_args( $args, array(
 
-			$app_class = get_called_class();
+            'app_class' => get_called_class(),
 
-		}
+        ));
+
 
 		do {
 
 			$module_class = null;
 
-			if ( empty( self::$_module_names[ $app_class ] ) ) {
+            if ( empty( self::$_module_names[ $args['app_class'] ] ) ) {
 				break;
 			}
 
-			$app_modules = self::$_module_names[ $app_class ];
+            $app_modules = self::$_module_names[ $args['app_class'] ];
 
 			if ( empty( $app_modules[ $module_name ] ) ) {
 				break;
