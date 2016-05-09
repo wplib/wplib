@@ -109,7 +109,7 @@ class WPLib {
 	/**
 	 * @var int
 	 */
-	private static $_non_app_class_count = 0;
+	private static $_pre_wplib_class_count = 0;
 
 	/**
 	 * @var WPLib_Theme_Base|bool
@@ -172,6 +172,10 @@ class WPLib {
 
         self::set_is_development( WPLIB_DEVELOPMENT );
 
+        /**
+         * Set a marker to ignore classes declared before this class.
+         */
+        self::$_pre_wplib_class_count = count( get_declared_classes() ) - 1;
 
 
 		spl_autoload_register( array( __CLASS__, '_autoloader' ), true, true );
@@ -206,11 +210,6 @@ class WPLib {
 		self::add_class_action( 'xmlrpc_call' );
 		self::add_class_action( 'shutdown' );
 
-		/**
-		 * Set a marker to ignore classes declared before this class.
-		 */
-		self::$_non_app_class_count = count( get_declared_classes() ) - 1;
-
 	}
 
 	/**
@@ -244,7 +243,7 @@ class WPLib {
 			 */
 			self::autoload_all_classes();
 
-			$site_classes = array_reverse( array_slice( get_declared_classes(), self::$_non_app_class_count ) );
+			$site_classes = array_reverse( array_slice( get_declared_classes(), self::$_pre_wplib_class_count ) );
 			$site_classes = array_filter( $site_classes, function( $element ) {
 				/*
 				 * Strip out WordPress core classes
