@@ -1,10 +1,10 @@
 {
 	"name": "wplib/wplib",
 	"type": "library",
-	"description": "An MV* Foundation Library for Building Custom WordPress Sites",
+	"description": "A PHP Library that Adds Modules and Applications to WordPress",
 	"keywords": [ "wordpress", "php", "cli", "wplib", "scaffolding", "console" ],
 	"homepage": "http://github.com/wplib/wplib",
- 	"license": "GPL-2.0+",
+	"license": "GPL-2.0+",
 	"authors": [
 		{
 			"name": "The WPLib Team",
@@ -17,12 +17,6 @@
 			"email": "mike@newclarity.net",
 			"homepage" : "http://about.me/mikeschinkel",
 			"role" :  "Architect and Developer"
-		},
-		{
-			"name": "Micah Wood",
-			"email": "micah@wpscholar.com",
-			"homepage": "http://wpscholar.com",
-			"role" :  "Developer"
 		},
 		{
 			"name": "Daryl Lozupone",
@@ -43,11 +37,5 @@
 		"forum": "https://wplib.slack.com/",
 		"source":"https://github.com/wplib/wplib",
 		"docs": "http://wplib.prg"
-	},
-	"suggest": {
-		"wplib/wplib-cli" : "A command-line scaffolding tool for WPLib",
-		"wplib/wplib-box" : "A Vagrant box for WPLib-specific WordPress development",
-		"wplib/lawpress" : "A sample WPLib App for developing with Law Firm websites",
-		"wplib/underscores4wplib" : "A port of the Underscores theme to demo WPLib"
 	}
 }

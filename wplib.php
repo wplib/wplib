@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = '0e85bc1'; 
+	const RECENT_COMMIT = '0e85bc1';
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -453,10 +453,10 @@ class WPLib {
 			foreach ( $priority as $filepath ) {
 
 				if ( isset( self::$_loaded_include_files[ $filepath ] ) ) {
-				 	/*
-				 	 * Already loaded
-				 	 */
-				 	 continue;
+					/*
+                     * Already loaded
+                     */
+					continue;
 				}
 
 				if ( self::is_development() && ! WPLib::is_found( $filepath ) ) {
@@ -754,7 +754,7 @@ class WPLib {
 	/**
 	 * Determine and then load the "mustload" classes
 	 * They are the classes with an on_load() method.
- 	 */
+	 */
 	static function _after_setup_theme_11() {
 
 		$mustload_classes = self::_ordered_mustload_classes();
@@ -1147,7 +1147,7 @@ class WPLib {
 
 		if ( 0 === count( self::$_helped_classes[ $hash ] ) ) {
 
-		    unset( self::$_helped_classes[ $hash ] );
+			unset( self::$_helped_classes[ $hash ] );
 
 		}
 
@@ -1253,11 +1253,11 @@ class WPLib {
 	 */
 	static function get_real_url( $url ) {
 
-	    foreach ( array_keys( $url = explode( '/', $url ), '..' ) AS $keypos => $key) {
-	        array_splice( $url, $key - ($keypos * 2 + 1 ), 2 );
-	    }
+		foreach ( array_keys( $url = explode( '/', $url ), '..' ) AS $keypos => $key) {
+			array_splice( $url, $key - ($keypos * 2 + 1 ), 2 );
+		}
 
-	    return str_replace( './', '', implode('/', $url ) );
+		return str_replace( './', '', implode('/', $url ) );
 	}
 
 	/**
@@ -1303,7 +1303,7 @@ class WPLib {
 
 		$asset_path = ltrim( $asset_path, '/' );
 
-	 	return static::get_root_url( "/assets/{$asset_path}", $class_name );
+		return static::get_root_url( "/assets/{$asset_path}", $class_name );
 
 	}
 
@@ -1844,7 +1844,7 @@ class WPLib {
 					case 'module':
 						$_app_class = ! empty( $template->vars['@app'] )
 							? $template->vars['@app']
-						    : self::app_class();
+							: self::app_class();
 
 						$_module_class = ! empty( $template->vars['@module'] )
 							? self::get_module_class( $template->vars['@module'], $_app_class )
@@ -2418,10 +2418,10 @@ class WPLib {
 		if ( self::is_wp_debug() && self::is_development() ) {
 
 			preg_match_all(
-					'#\n\s*(abstract|final)?\s*class\s*(\w+)#i',
-					self::get_contents( $class_container ),
-					$matches,
-					PREG_PATTERN_ORDER
+				'#\n\s*(abstract|final)?\s*class\s*(\w+)#i',
+				self::get_contents( $class_container ),
+				$matches,
+				PREG_PATTERN_ORDER
 			);
 
 			if ( 1 < count( $matches[2] ) ) {
@@ -2429,9 +2429,9 @@ class WPLib {
 				$message = __( 'Include files in WPLib Modules can can only contain one PHP class, %d found in %s: ' );
 
 				static::trigger_error( sprintf(
-						$message,
-						count( $matches[2] ),
-						implode( ', ', $matches[2] )
+					$message,
+					count( $matches[2] ),
+					implode( ', ', $matches[2] )
 				) );
 
 			}
@@ -2534,7 +2534,7 @@ class WPLib {
 		if ( WPLib::get_constant( 'INSTANCE_CLASS', $class ) ) {
 
 			if ( is_callable( array( $class, 'make_new_item' ) ) ) {
-				
+
 				$item = $class::make_new_item( $item, $args );
 
 			} else {
@@ -2547,8 +2547,8 @@ class WPLib {
 
 		} else {
 
-		   $err_msg = __( 'Cannot make new item. Class %s does not have INSTANCE_CLASS constant.', 'wplib' );
-		   WPLib::trigger_error( sprintf( $err_msg, $class ) );
+			$err_msg = __( 'Cannot make new item. Class %s does not have INSTANCE_CLASS constant.', 'wplib' );
+			WPLib::trigger_error( sprintf( $err_msg, $class ) );
 
 		}
 
