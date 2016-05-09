@@ -9,7 +9,7 @@ class WPLib_Administrators extends WPLib_Administrator_Module_Base {
 
 	const ROLE = 'administrator';
 
-	static function _CAPABILITIES() {
+	static function CONST_CAPABILITIES() {
 
 		return array(
 

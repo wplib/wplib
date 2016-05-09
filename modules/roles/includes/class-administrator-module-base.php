@@ -5,7 +5,7 @@
  */
 abstract class WPLib_Administrator_Module_Base extends WPLib_Role_Module_Base {
 
-	static function _CAPABILITIES() {
+	static function CONST_CAPABILITIES() {
 
 		return array(
 

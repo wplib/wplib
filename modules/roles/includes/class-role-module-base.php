@@ -21,7 +21,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 	private static $_roles = array();
 
 
-	static function _CAPABILITIES() {
+	static function CONST_CAPABILITIES() {
 
 		return array();
 
@@ -329,13 +329,13 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 		$parent_of_called = get_parent_class( $class_name );
 
-		$parent_capabilities = method_exists( $parent_of_called, '_CAPABILITIES' )
-			? call_user_func( array( $parent_of_called, 'capabilities' ) )
+		$parent_capabilities = method_exists( $parent_of_called, 'CONST_CAPABILITIES' )
+			? call_user_func( array( $parent_of_called, 'CONST_CAPABILITIES' ) )
 			: array();
 
 		$capabilities = count( $parent_capabilities )
-			? array_merge( $parent_capabilities, static::_CAPABILITIES() )
-			: static::_CAPABILITIES();
+			? array_merge( $parent_capabilities, static::CONST_CAPABILITIES() )
+			: static::CONST_CAPABILITIES();
 
 		return array_unique( $capabilities );
 

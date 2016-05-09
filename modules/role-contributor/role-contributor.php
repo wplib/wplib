@@ -7,7 +7,7 @@ class WPLib_Contributors extends WPLib_Role_Module_Base {
 
 	const ROLE = 'contributor';
 
-	static function _CAPABILITIES() {
+	static function CONST_CAPABILITIES() {
 
 		return array(
 

@@ -7,7 +7,7 @@ class WPLib_Editors extends WPLib_Role_Module_Base {
 
 	const ROLE = 'editor';
 
-	static function _CAPABILITIES() {
+	static function CONST_CAPABILITIES() {
 
 		return array(
 

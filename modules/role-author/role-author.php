@@ -7,7 +7,7 @@ class WPLib_Authors extends WPLib_Role_Module_Base {
 
 	const ROLE = 'author';
 
-	static function _CAPABILITIES() {
+	static function CONST_CAPABILITIES() {
 
 		return array(
 
