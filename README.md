@@ -61,7 +61,6 @@ The architecture concepts and the implementation is now **simple enough** and **
 ##Core Committers
 
 - Mike Schinkel ([mikeschinkel](https://github.com/mikeschinkel))
-- Micah Wood ([wpscholar](https://github.com/wpscholar))
 - Daryl Lozupone ([clubdeuce](https://github.com/clubdeuce))
 
 ##License
