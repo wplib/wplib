@@ -518,7 +518,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 		global $post;
 		array_push( self::$_post_stack, $post );
 		if ( $value instanceof WP_Post ) {
-			${'post'} = $value;
+			$post = $value;
 		}
 	}
 
@@ -528,7 +528,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	static function pop_post() {
 		global $post;
 		if ( count( self::$_post_stack ) ) {
-			${'post'} = array_pop( self::$_post_stack );
+			$post = array_pop( self::$_post_stack );
 		}
 	}
 

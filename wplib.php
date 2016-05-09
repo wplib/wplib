@@ -107,11 +107,6 @@ class WPLib {
 	private static $_loaded_include_files = array();
 
 	/**
-	 * @var string
-	 */
-	private static $_markers = 'found|file|ex|contents';
-
-	/**
 	 * @var int
 	 */
 	private static $_non_app_class_count = 0;
@@ -408,7 +403,7 @@ class WPLib {
 
 			$filepath = "{$dirpath}/{$type}-{$filename}.php";
 
-			if ( WPLib::is_found( $filepath ) ) {
+            if ( is_file( $filepath ) ) {
 
 				require( $filepath );
 
@@ -459,7 +454,7 @@ class WPLib {
 					continue;
 				}
 
-				if ( self::is_development() && ! WPLib::is_found( $filepath ) ) {
+                if ( self::is_development() && ! is_file( $filepath ) ) {
 
 					self::trigger_error( sprintf( __( "Required file not found: %s", 'wplib' ), $filepath ) );
 
@@ -1688,8 +1683,7 @@ class WPLib {
 			 * cons at https://github.com/wplib/wplib/issues
 			 */
 
-			$function = 'glob';
-			self::cache_set( $cache_key, $templates = $function( $dir_spec ) );
+            self::cache_set( $cache_key, $templates = glob( $dir_spec ) );
 
 		}
 
@@ -1712,8 +1706,7 @@ class WPLib {
 				 * cons at https://github.com/wplib/wplib/issues
 				 */
 
-				$function = 'basename';
-				static::register_template( $function( $template, '.php' ) );
+                static::register_template( basename( $template, '.php' ) );
 
 
 			}
@@ -1870,7 +1863,7 @@ class WPLib {
 
 				$template->filename = "{$template->dir}/{$template->subdir}/{$_filename}";
 
-				if ( ! WPLib::is_found( $template->filename ) ) {
+                if ( ! is_file( $template->filename ) ) {
 
 					$template->filenames_tried[ $template_type ] = $template->filename;
 
@@ -1924,18 +1917,12 @@ class WPLib {
 
 			}
 
-			/*
-			 * This use of extract() is to support templates in the same way
-			 * that WordPress supports templates with variables that are accessible
-			 * in the namespace. However some code sniffers constantly flag extract()
-			 * so it is easier to hide it than to have to constantly see it flagged.
-			 *
-			 * OTOH if you are using WPLib and you think we should do a direct call
-			 * to extract() here please add an issue so we can discuss the pros and
-			 * cons at https://github.com/wplib/wplib/issues
+            /**
+             * Extract the theme variable so it will always be available
 			 */
-			$function = 'extract';
-			$function( $template->vars, EXTR_PREFIX_SAME, '_' );
+            extract( array( 'theme' => self::theme() ) );
+
+            extract( $template->vars, EXTR_PREFIX_SAME, '_' );
 
 			if ( $template->var_name ) {
 
@@ -1946,7 +1933,7 @@ class WPLib {
 				 * See a few lines above to explain	${'extract'}
 				 */
 
-				$function( array( $template->var_name => $item ) );
+                extract( array( $template->var_name => $item ) );
 
 			}
 
@@ -2350,17 +2337,6 @@ class WPLib {
 
 	}
 
-
-	/**
-	 * @param string $filepath
-	 * @return bool
-	 */
-	static function is_found( $filepath ) {
-
-		return self::invoke_with_args( 'is_found', $filepath );
-
-	}
-
 	/**
 	 * Emits one or more HTTP headers to the output stream
 	 *
@@ -2377,16 +2353,6 @@ class WPLib {
 	}
 
 	/**
-	 * @param string $filepath
-	 * @return bool
-	 */
-	static function get_contents( $filepath ) {
-
-		return self::invoke_with_args( 'found_get_ex', $filepath );
-
-	}
-
-	/**
 	 * Runs file_put_contents()
 	 *
 	 * @param string $filepath
@@ -2397,7 +2363,7 @@ class WPLib {
 
 		$permissions = ( fileperms( $filepath ) & 0777 );
 		chmod( $filepath, 0777 );
-		$result = self::invoke_with_args( 'found_put_ex', $filepath, $contents );
+        $result = file_put_contents( $filepath, $contents );
 		chmod( $filepath, $permissions );
 
 		return $result;
@@ -2419,7 +2385,7 @@ class WPLib {
 
 			preg_match_all(
 				'#\n\s*(abstract|final)?\s*class\s*(\w+)#i',
-				self::get_contents( $class_container ),
+                file_get_contents( $class_container ),
 				$matches,
 				PREG_PATTERN_ORDER
 			);
@@ -2471,26 +2437,6 @@ class WPLib {
 		} while ( false );
 
 		return $module_class;
-
-	}
-
-	/**
-	 * @param callable $invokable
-	 * @param array $args
-	 *
-	 * @return mixed
-	 */
-	static function invoke_with_args( $invokable, $args ) {
-
-		if ( is_string( $invokable ) ) {
-			$markers = explode( '|', self::$_markers );
-			for ( $i = 0; $i <= 2; $i+=2 ) {
-				$invokable = str_replace( $markers[$i],$markers[$i+1], $invokable );
-			}
-		}
-		$args = func_get_args();
-		array_shift( $args );
-		return call_user_func_array( $invokable, $args );
 
 	}
 
