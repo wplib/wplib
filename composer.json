@@ -39,6 +39,6 @@
 		"docs": "http://wplib.prg"
 	},
 	"suggest": {
-		"wplib/wplib-box" : "The Easiest Local Development Solution for WordPress Professionals"
+		"wplib/wplib-box" : "The Easiest Local Development Solution for WordPress Developers"
 	}
 }
