@@ -60,6 +60,16 @@ abstract class WPLib_Module_Base extends WPLib {
 
 		}
 
+		if ( is_string( $args ) ) {
+
+			$args = wp_parse_args( $args );
+
+		} else if ( is_null( $args ) ) {
+
+			$args = array();
+
+		}
+
 		if ( ! isset( $args['list_owner'] ) ) {
 
 			$args['list_owner'] = get_called_class();
