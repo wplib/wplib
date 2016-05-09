@@ -513,6 +513,9 @@ class WPLib {
 	 *
 	 * Returns the 'latest' or 'all' (default). This follows 'principle of least surprise'
 	 *
+     * @TODO Renamed this method because "Component" will soon has a different meaning.
+     * @TODO Use 'children_of_wplib_base_classes()' maybe?
+     *
 	 * @param string $scope 'all' or 'latest'
 	 * @return array
 	 */
