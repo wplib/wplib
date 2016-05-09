@@ -409,17 +409,13 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		/*
 		 * This use of extract() is used here to counter the problems with
-		 * WordPress' rampant use of global variables however, ironically,
+		 * WordPress' rampant use of global variables. Ironically,however, 
 		 * some code sniffers constantly flag extract() so it is easier to
-		 * hide it than to have to constantly see it flagged.
-		 *
-		 * OTOH if you are using WPLib and you think we should do a direct call
-		 * to extract() here please add an issue so we can discuss the pros and
-		 * cons at https://github.com/wplib/wplib/issues
+		 * hide it than to have to constantly see it flagged. Humans, please 
+		 * appreciate that this use of extract() is for good, not for evil.
 		 */
 
-		$function = 'extract';
-		$function( $postdata );
+		extract( $postdata );
 
 	}
 

@@ -402,15 +402,10 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 		/*
 		 * This use of extract() is to minimize the problems related to WordPress'
 		 * egregious use of global variables. However, ironically, some code
-		 * sniffers constantly flag extract() so it is easier to hide it than to
-		 * have to constantly see it flagged.
-		 *
-		 * OTOH if you are using WPLib and you think we should do a direct call
-		 * to extract() here please add an issue so we can discuss the pros and
-		 * cons at https://github.com/wplib/wplib/issues
+		 * sniffers constantly flag extract(). Humans, please appreciate that 
+		 * this use of extract() is for good, not for evil.
 		 */
-		$function = 'extract';
-		$function( $globals );
+		extract( $globals );
 
 	}
 

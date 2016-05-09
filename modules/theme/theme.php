@@ -110,18 +110,18 @@ class WPLib_Theme extends WPLib_Module_Base {
 
 				/*
 				 * For compatibility with WordPress templates we need to
-				 * extract all the global variables into the current scope just
-				 * like WordPress does when it calls a template. Ironically
-				 * some code sniffers constantly flag extract() so it is easier to
-				 * hide it than to have to constantly see it flagged.
+				 * extract all the global variables into the current scope
+				 * just like WordPress does when it calls a template.
 				 *
-				 * OTOH if you are using WPLib and you think we should do a direct call
-				 * to extract() here please add an issue so we can discuss the pros and
-				 * cons at https://github.com/wplib/wplib/issues
+				 * Ironically some code sniffers constantly flag extract()
+				 * and cause users of WPLib headaches when the have to deal
+				 * with code reviewer that don't try to understand the code.
+				 *
+				 * Humans, please appreciate that this use of extract() is
+				 * for good, not for evil.
 				 */
 
-				$function = 'extract';
-				$function( $GLOBALS, EXTR_SKIP );
+				extract( $GLOBALS, EXTR_SKIP );
 
 			}
 

@@ -596,8 +596,7 @@ class WPLib {
 					 * cons at https://github.com/wplib/wplib/issues
 					 */
 
-					$function = 'glob';
-					$found_files = $function( "{$autoload_dir}/*.php" );
+					$found_files = glob( "{$autoload_dir}/*.php" );
 
 					if ( 0 === count( $found_files ) ) {
 
@@ -1193,8 +1192,7 @@ class WPLib {
 
 		$reflector = new ReflectionClass( $class_name );
 
-		$function = 'realpath';
-		return $function( dirname( $reflector->getFileName() ) . $filepath );
+		return realpath( dirname( $reflector->getFileName() ) . $filepath );
 
 	}
 
@@ -1752,15 +1750,11 @@ class WPLib {
 		 * can be registered and stored in persistent cache. However some
 		 * code sniffers flag this as being part of the filesystem which is
 		 * ironic since our use of this never touches the file system.
-		 * Consequently it is easier to hide it than to have to constantly
-		 * see it flagged.
-		 *
-		 * OTOH if you are using WPLib and you think we should do a direct call
-		 * to basename() here please add an issue so we can discuss the pros and
-		 * cons at https://github.com/wplib/wplib/issues
+		 * 
+		 * Humans, please appreciate that this use of extract() is for good, 
+		 * not for evil.
 		 */
-		$function = 'basename';
-		return static::template_dir() . '/' . $function( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
+		return static::template_dir() . '/' . basename( preg_replace('#[^a-zA-Z0-9-_\\/.]#','', $template ). '.php' ) . '.php';
 
 	}
 
