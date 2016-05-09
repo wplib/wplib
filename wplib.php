@@ -136,7 +136,16 @@ class WPLib {
 	 */
 	private static $_helped_classes = array();
 
-	/**
+    /**
+     * Flag to determine if running in production mode or not.
+     * 
+     * Default to true for safety
+     *
+     * @var bool
+     */
+    private static $_is_production = true;
+
+    /**
 	 *
 	 */
 	static function on_load() {
@@ -154,74 +163,21 @@ class WPLib {
 
 		}
 
-		if ( ! class_exists( 'WPLib_Enum', false ) ) {
-			/**
-			 *  defines.php can be included in local-config.php, but if
-			 *  not then we need to include it here.
-			 */
+        /**
+         * Set development/production flag 
+         */
+        if ( ! defined( 'WPLIB_DEVELOPMENT' ) ) {
 
-			require __DIR__ . '/defines.php';
+            /**
+             * Defaults to safety, i.e.: true===WPLib::is_production()
+             */
+            define( 'WPLIB_DEVELOPMENT', false );
 
-		}
+        }
 
-		if ( ! defined( 'WPLIB_STABILITY' ) ) {
-
-			/* @note THIS IS NOT WIDELY IMPLEMENTED YET.
-			 *
-			 * WPLib follows the convention of Node.js in having a Stability Index.
-			 * Every class, property, method, constant, etc. will have a Stability value,
-			 * except for those that do not (yet.)
-			 *
-			 * The stability will be specified by an @stability PHPDoc comment with one
-			 * of the following values:
-			 *
-			 *    Stability:  0 - Deprecated
-			 *    Stability:  1 - Experimental
-			 *    Stability:  2 - Stable
-			 *    Stability:  3 - Locked
-			 *
-			 * The default stability is 2 - Stable. However you can set the stability
-			 * you want in your wp-local-config.php file using the WPLIB_STABILITY constant.
-			 *
-			 * You can check (for example) for EXPERIMENTAL stability in a method using:
-			 *
-			 *      self::stability()->check_method( __METHOD__, WPLib::EXPERIMENTAL );
-			 *
-			 * Internal methods -- ones with a leading underscore -- will not be marked with
-			 * a stability level.
-			 *
-			 * To read more about the concept of stability:
-			 *
-			 * @see https://nodejs.org/api/documentation.html#documentation_stability_index
-			 */
-			define( 'WPLIB_STABILITY', is_null( self::stability() )
-				? WPLib_Stability::__default
-				: self::stability()->get_value()
-			);
-
-		}
-
-		if ( is_null( self::stability() ) ) {
-
-			self::set_stability( new WPLib_Stability( WPLIB_STABILITY ) );
-
-		}
+        self::set_is_development( WPLIB_DEVELOPMENT );
 
 
-		if ( ! defined( 'WPLIB_RUNMODE' ) ) {
-
-			define( 'WPLIB_RUNMODE', is_null( self::runmode() )
-				? WPLib_Runmode::__default
-				: self::runmode()->get_value()
-			);
-
-		}
-
-		if ( is_null( self::runmode() ) ) {
-
-			self::set_runmode( new WPLib_Runmode( WPLIB_RUNMODE ) );
-
-		}
 
 		spl_autoload_register( array( __CLASS__, '_autoloader' ), true, true );
 
@@ -343,8 +299,6 @@ class WPLib {
 	 * @return string
 	 */
 	static function maybe_make_absolute_path( $filepath, $dir = false ) {
-
-		self::stability()->check_method( __METHOD__, WPLib_Stability::EXPERIMENTAL );
 
 		if ( '/' !== $filepath[0] ) {
 
@@ -906,122 +860,46 @@ class WPLib {
 	}
 
 	/**
-	 * @return WPLib_Stability
-	 */
-	static function stability() {
-
-		return WPLib_Enum::get_enum( __FUNCTION__ );
-
-	}
-
-	/**
-	 * @param int|WPLib_Stability $stability
-	 */
-	static function set_stability( $stability ) {
-
-		if ( ! $stability instanceof WPLib_Stability ) {
-
-			$stability = new WPLib_Stability( $stability );
-
-		}
-
-		WPLib_Enum::set_enum( 'stability', $stability );
-
-	}
-
-	/**
-	 * @return WPLib_Runmode
-	 */
-	static function runmode() {
-
-		return WPLib_Enum::get_enum( __FUNCTION__ );
-
-	}
-
-	/**
-	 * @param int|WPLib_Runmode $runmode
-	 */
-	static function set_runmode( $runmode ) {
-
-		if ( ! $runmode instanceof WPLib_Runmode ) {
-
-			$runmode = new WPLib_Runmode( $runmode );
-
-		}
-
-		WPLib_Enum::set_enum( 'runmode', $runmode );
-
-	}
-
-	/**
-	 * @return bool
-	 */
-	static function is_development() {
-
-		static $is_development = null;
-
-		if ( is_null( $is_development ) ) {
-
-			$is_development =
-				WPLib_Runmode::DEVELOPMENT === self::runmode()->get_value();
-
-		}
-		return $is_development;
-
-	}
-
-	/**
-	 * @return bool
-	 */
-	static function is_testing() {
-
-		static $is_testing = null;
-
-		if ( is_null( $is_testing ) ) {
-
-			$is_testing =
-				WPLib_Runmode::TESTING === self::runmode()->get_value();
-
-		}
-		return $is_testing;
-
-	}
-
-	/**
-	 * @return bool
-	 */
-	static function is_staging() {
-
-		static $is_staging = null;
-
-		if ( is_null( $is_staging ) ) {
-
-			$is_staging =
-				WPLib_Runmode::STAGING === self::runmode()->get_value();
-
-		}
-		return $is_staging;
-
-	}
-
-	/**
 	 * @return bool
 	 */
 	static function is_production() {
 
-		static $is_production = null;
-
-		if ( is_null( $is_production ) ) {
-
-			$is_production =
-				WPLib_Runmode::PRODUCTION === self::runmode()->get_value();
-
-		}
-		return $is_production;
+		return self::$_is_production;
 
 	}
 
-	/**
+    /**
+     * @param bool $is_production
+     */
+    static function set_is_production( $is_production ) {
+
+        self::$_is_production = $is_production
+            ? true
+            : false;
+
+    }
+
+    /**
+     * @return bool
+     */
+    static function is_development() {
+
+        return ! self::$_is_production;
+
+    }
+
+    /**
+     * @param bool $is_development
+     */
+    static function set_is_development( $is_development ) {
+
+        self::$_is_production = $is_development
+            ? false
+            : true;
+
+    }
+
+    /**
 	 * If runmode is development or SCRIPT_DEBUG
 	 *
 	 * @return string
@@ -1031,7 +909,7 @@ class WPLib {
 	 */
 	static function is_script_debug() {
 
-		return static::is_development() || ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG );
+		return self::is_development() || ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG );
 
 	}
 
@@ -2309,8 +2187,6 @@ class WPLib {
 	 */
 	static function new_post_url() {
 
-		self::stability()->check_method( __METHOD__, WPLib_Stability::EXPERIMENTAL );
-
 		return admin_url( 'post-new.php' );
 
 	}
@@ -2437,8 +2313,6 @@ class WPLib {
 	 * @return string
 	 */
 	static function template_dir() {
-
-		self::stability()->check_method( __METHOD__, WPLib_Stability::EXPERIMENTAL );
 
 		return static::get_root_dir( 'templates' );
 
