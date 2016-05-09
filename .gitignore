@@ -1,1 +1,99 @@
-RECENT_COMMIT
+# Mac
+.DS_Store
+
+# PHPStorm
+.idea
+
+# Node
+node_modules/*
+
+#Bower
+bower_components/*
+
+# Composer
+/www/vendor/*
+
+# WordPress
+/www/wp/
+/www/salt.php
+/www/.htaccess
+/www/favicon.ico
+/www/wp-config-local.php
+/www/content/uploads
+/www/content/upgrade
+/www/content/blogs.dir/
+/www/content/backup-db/
+/www/content/object-cache.php
+/www/content/advanced-cache.php
+/www/content/wp-cache-config.php
+/www/sitemap.xml
+/www/sitemap.xml.gz
+/www/*.log
+/www/content/cache/
+/www/content/backups/
+
+
+# WordPress: Must-Use Plugins
+/www/content/mu-plugins/*
+!/www/content/mu-plugins/index.php
+!/www/content/mu-plugins/primeglobal
+!/www/content/mu-plugins/plugin-loader.php
+!/www/content/mu-plugins/register-theme-directory.php
+
+# WordPress: Plugins
+/www/content/plugins/*
+!/www/content/plugins/members
+!/www/content/plugins/index.php
+!/www/content/plugins/piklist
+
+# WordPress: Themes
+/www/content/themes/*
+!/www/content/themes/index.php
+!/www/content/themes/primeglobal
+
+# WordPress: Uploads
+!/www/content/uploads/index.php
+
+# Packages
+*.7z
+*.dmg
+*.gz
+*.bz2
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.tgz
+
+# Logs and databases
+*.log
+/logs/*
+!/logs/.gitkeep
+
+
+# OS generated files
+.DS_Store*
+ehthumbs.db
+Icon?
+Thumbs.db
+._*
+
+# Vim generated files
+*.un~
+
+# SASS
+.sass-cache
+
+# Vagrant / WPLib Box
+.vagrant
+IP
+
+# Puppet
+/puppet/*
+!/puppet/manifests
+!/puppet/modules
+/puppet/modules/*
+!/puppet/modules/primeglobal
+!/puppet/Puppetfile
+!/puppet/Puppetfile.lock
