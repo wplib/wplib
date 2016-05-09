@@ -11,10 +11,12 @@
  * @property WPLib_Post_Base $owner
  * @method void the_ID()
  * @method void the_title()
+ * @method void the_content()
  * @method void the_url()
+ * @method void the_url_attr()
  * @method void the_permalink()
  *
- * @todo Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
+ * @future Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
  */
 abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
@@ -27,10 +29,15 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	 */
 	var $multipage;
 
+	/**
+	 * WPLib_Post_View_Base constructor.
+	 *
+	 * @param array|object|string $args
+	 */
 	function __construct( $args ) {
 
 		/**
-		 * @todo Handle multipage specific to the object instance vs. via global vars.
+		 * @future Handle multipage specific to the object instance vs. via global vars.
 		 */
 		$this->_set_multipage_property();
 
@@ -128,19 +135,29 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	}
 
 	/**
+	 * Echo's HTML for any value hyperlinked with the post's URL.
+	 *
+	 * @param string $link_text
+	 * @param array  $args
+	 */
+	function the_link( $link_text, $args = array() ) {
+
+		echo wp_kses_post( $this->get_link( $link_text, $args ) );
+
+	}
+
+	/**
 	 * @param array $args
 	 *
 	 * @return mixed|null
 	 */
 	function get_adjacent_post_link( $args = array() ) {
 
-		if ( ! $this->has_post() )  {
+		if ( ! $this->has_post() ) {
 
 			$adjacent_post = null;
 
 		} else {
-
-			global $post;
 
 			$args = wp_parse_args( $args, array(
 				'format'         => '<div class="nav-previous">%link</div>',
@@ -151,9 +168,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 				'previous'       => null,
 			) );
 
-			$save_post = $post;
-
-			$post = $this->_post;
+			WPLib::push_post( $this->_post );
 
 			if ( function_exists( 'get_adjacent_post_link' ) ) {
 
@@ -171,8 +186,8 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 				/**
 				 * Add support to pre 3.7 WordPress
 				 *
-				 * @todo Add error messages when taxonomy != category
-				 * @todo and when 'link_format' is not false
+				 * @future Add error messages when taxonomy != category
+				 * @future and when 'link_format' is not false
 				 */
 				$adjacent_post = get_adjacent_post_rel_link(
 					$args['format'],
@@ -182,7 +197,8 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 				);
 
 			}
-			$post = $save_post;
+
+			WPLib::pop_post();
 
 		}
 
@@ -344,10 +360,25 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 		global $multipage, $page, $numpages, $more;
 
-		$multipage = true;
-		$page      = $this->multipage->page;
-		$numpages  = $this->multipage->numpages;
-		$more      = $this->multipage->more;
+		/*
+		 * Assigns WordPress global variables
+		 *
+		 * This use of assignment comes after the state is saved
+		 * and before it it restored. However some code sniffers
+		 * flag this as being part of the filesystem which is ironic
+		 * since our use is to minimize the problems related to WordPress'
+		 * egregious use of global variables. Consequently it is easier to
+		 * hide it than to have to constantly see it flagged.
+		 *
+		 * OTOH if you are using WPLib and you think we should do a direct
+		 * assignments here please add an issue so we can discuss the pros and
+		 * cons at https://github.com/wplib/wplib/issues
+		 */
+
+		${'multipage'} = true;
+		${'page'}      = $this->multipage->page;
+		${'numpages'}  = $this->multipage->numpages;
+		${'more'}      = $this->multipage->more;
 
 	}
 
@@ -367,7 +398,19 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	private function _restore_multipage_globals( $globals ) {
 
 		global $page, $numpages, $multipage, $more;
-		call_user_func( 'extract', $globals );
+
+		/*
+		 * This use of extract() is to minimize the problems related to WordPress'
+		 * egregious use of global variables. However, ironically, some code
+		 * sniffers constantly flag extract() so it is easier to hide it than to
+		 * have to constantly see it flagged.
+		 *
+		 * OTOH if you are using WPLib and you think we should do a direct call
+		 * to extract() here please add an issue so we can discuss the pros and
+		 * cons at https://github.com/wplib/wplib/issues
+		 */
+		$function = 'extract';
+		$function( $globals );
 
 	}
 
@@ -519,7 +562,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 			'before'        => '<span class="cat-links{{class}}">',
 		));
 
-		return $this->get_terms_list_links_html( $args );
+		return $this->get_term_list_links_html( $args );
 
 	}
 
@@ -544,7 +587,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 			'before'        => '<span class="tags-links{{class}}">',
 		));
 
-		return $this->get_terms_list_links_html( $args );
+		return $this->get_term_list_links_html( $args );
 
 	}
 
@@ -553,7 +596,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	 *
 	 * @return bool|string
 	 */
-	function get_terms_list_links_html( $args = array() ) {
+	function get_term_list_links_html( $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			/*
@@ -573,7 +616,7 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 		$args['before'] = str_replace( '{{class}}', $args['class'], $args['before'] );
 
-		switch( $args[ 'taxonomy' ] ) {
+		switch ( $args[ 'taxonomy' ] ) {
 			case WPLib_Category::TAXONOMY:
 
 				$list = get_the_category_list(
@@ -644,26 +687,22 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	 */
 	function the_comments_html( $args = array() ) {
 
-		if ( ! $this->has_post() )  {
+		if ( ! $this->has_post() ) {
 
 			$comments_html = null;
 
 		} else {
-
-			global $post;
 
 			$args = wp_parse_args( $args, array(
 				'template_file'  => '/comments.php',
 				'group_by_type'  => false,
 			) );
 
-			$save_post = $post;
-
-			$post = $this->model()->post();
+			WPLib::push_post( $this->model()->post() );
 
 			comments_template( $args[ 'template_file' ], $args[ 'group_by_type' ] );
 
-			$post = $save_post;
+			WPLib::pop_post();
 
 		}
 
@@ -672,20 +711,41 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 	}
 
 	/**
-	 *
+	 * @param array $args
 	 */
-	function the_content_html() {
+	function the_content_html( $args = array() ) {
 
-		echo wp_kses_post( $this->get_content_html() );
+		echo wp_kses_post( $this->get_content_html( $args ) );
 
 	}
 
 	/**
+	 * @param array $args
+	 *
 	 * @return string
 	 */
-	function get_content_html() {
+	function get_content_html( $args = array() ) {
 
-		return $this->model()->content();
+		if ( ! $this->model()->has_post() ) {
+
+			$content = null;
+
+		} else {
+
+			$args = wp_parse_args( $args, array(
+				'more_link_text' => null,
+				'strip_teaser'   => false,
+			));
+
+			$saved_postdata = $this->setup_postdata();
+			ob_start();
+			the_content( $args['more_link_text'], $args['strip_teaser'] );
+			$content = ob_get_clean();
+			$this->restore_postdata( $saved_postdata );
+
+		}
+
+		return $content;
 
 	}
 
@@ -809,12 +869,19 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
 	/**
 	 * @param string $size
+	 * @param array $args {
+	 *      @type string $src
+	 *      @type string $class
+	 *      @type string $alt
+	 *      @type string $height
+	 *      @type string $width
+	 *      @type string $title
+	 * }
 	 */
-	function the_featured_image_html( $size = 'post-thumbnail' ) {
-		$model = $this->model();
-		if ( $model->has_post() ) {
-			echo get_the_post_thumbnail( $model->ID(), $size );
-		}
+	function the_featured_image_html( $size = 'post-thumbnail', $args = array() ) {
+
+		echo $this->model()->get_featured_image_html( $size, $args );
+
 	}
 
 	/**

@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Theme_Base
  *
- * @todo Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
+ * @future Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
  *
  * @method void the_site_name()
  *
@@ -82,7 +82,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function the_site_name_link( $args = array() ) {
 
-		echo wp_kses_post( $this->site_name_link() );
+		echo wp_kses_post( $this->get_site_name_link( $args ) );
 
 	}
 
@@ -92,7 +92,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 * @param array $args
 	 * @return string
 	 */
-	function site_name_link( $args = array() ) {
+	function get_site_name_link( $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			'rel' => 'home'
@@ -202,7 +202,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		 */
 		if ( ! defined( 'ABSPATH' ) ) {
 
-			header("HTTP/1.0 404 Not Found");
+			WPLib::emit_headers( 'HTTP/1.0 404 Not Found' );
 			echo '<h1>Not Found</h1>';
 			echo '<p>Requested URL not found.</p>'.
 			exit;
@@ -284,7 +284,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		$link_text = $args['link_text'];
 		unset( $args['href'], $args['link_text'] );
 
-		return $this->get_link( $href, $link_text, $args );
+		return WPLib::get_link( $href, $link_text, $args );
 
 	}
 
@@ -342,7 +342,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		$args = wp_parse_args( $args );
 
-		if ( 0 == count( $args ) ) {
+		if ( 0 === count( $args ) ) {
 
 			$meta_viewport = false;
 
@@ -376,7 +376,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 * @param array $deps
 	 * @param bool $in_footer
 	 *
-	 * @todo https://github.com/wplib/wplib/issues/2
+	 * @future https://github.com/wplib/wplib/issues/2
 	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026274
 	 */
 	function enqueue_external( $handle, $src, $deps = array(), $in_footer = false ) {
@@ -384,7 +384,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		preg_match( '#\.(js|css)$#i', $src, $file_type );
 
 
-		if ( '~' == $src[0] &&  '/' == $src[1] ) {
+		if ( '~' === $src[0] &&  '/' === $src[1] ) {
 
 			/**
 			 * Assume $src that start with ~/ are relative.
@@ -416,18 +416,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		} else {
 
-			if ( empty( $filepath ) ) {
-
-				$ver = false;
-
-			} else {
-
-				if ( $ver = WPLib::cache_get( $cache_key = "external[{$filepath}]" ) ) {
-					$ver = md5_file( $filepath );
-					WPLib::cache_get( $cache_key, $ver );
-				}
-
-			}
+			$ver = ! empty( $filepath ) ? WPLib::file_hash( $filepath ) : false;
 
 		}
 
@@ -517,7 +506,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 			$categories = get_categories( $args );
 
-			set_transient( $cache_key, $category_count = count( $categories ) );
+			WPLib::cache_set( $cache_key, $category_count = count( $categories ), null, 15*60 );
 		}
 
 		return intval( $category_count ) - 1;
@@ -529,7 +518,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function query() {
 		/**
-		 * @todo Capture immediately after assigned into object property
+		 * @future Capture immediately after assigned into object property
 		 */
 		global $wp_the_query;
 
@@ -557,7 +546,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	/**
 	 * @return WPLib_Post_Base
 	 *
-	 * @todo Make work for non-posts?
+	 * @future Make work for non-posts?
 	 */
 	function item() {
 
@@ -637,7 +626,18 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		global $wp_the_query;
 
-		return (bool) $wp_the_query->is_home;
+		return (bool) $wp_the_query->is_home();
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function is_front_page() {
+
+		global $wp_the_query;
+
+		return (bool) $wp_the_query->is_front_page();
 
 	}
 
@@ -657,7 +657,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function front_page_query_type() {
 
-		return 'posts' == get_option( 'show_on_front' ) ? 'posts' : 'page';
+		return 'posts' === get_option( 'show_on_front' ) ? 'posts' : 'page';
 
 	}
 
@@ -767,9 +767,8 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	/**
 	 * @param string $template
 	 * @param array|string $_template_vars
-	 * @param WPLib_Item_Base|object $item
 	 */
-	function the_template( $template, $_template_vars = array(), $item = null ) {
+	function the_template( $template, $_template_vars = array() ) {
 
 	 	WPLib::the_template( $template, $_template_vars, WPLib::theme() );
 
@@ -949,7 +948,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 *
 	 * @return bool
 	 *
-	 * @todo Add a $this->is_active_sidebar() with a deprecated warning.
+	 * @future Add a $this->is_active_sidebar() with a deprecated warning.
 	 */
 	function is_sidebar_active( $index ) {
 
@@ -960,7 +959,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	/**
 	 * @param $index
 	 *
-	 * @todo Add a $this->dynamic_sidebar() with a deprecated warning.
+	 * @future Add a $this->dynamic_sidebar() with a deprecated warning.
 	 */
 	function the_widget_area_html( $index ) {
 
@@ -1077,11 +1076,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		} else {
 
-			global $wp_the_query;
-			global $wp_query;
-
-			$save_query = $wp_query;
-			$wp_query   = $wp_the_query;
+			$this->_push_wp_query( 'initialize' );
 
 			get_comment_pages_count(
 				$this->comments(),
@@ -1089,7 +1084,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 				$this->uses_threaded_comments()
 			);
 
-			$wp_query = $save_query;
+			$this->_pop_wp_query();
 
 		}
 		return $number;
@@ -1196,6 +1191,306 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		return WPLib::get_root_dir( $filepath, get_class( $this ) );
 
+	}
+
+	/**
+	 * @return string
+	 */
+	function the_assets_url() {
+
+		echo esc_url( $this->assets_url() );
+
+	}
+
+	/**
+	 * @return string
+	 */
+	function assets_url() {
+
+		return WPLib::get_asset_url( '', get_called_class() );
+
+	}
+
+	/**
+	 * @param string $filepath
+	 * @return string
+	 */
+	function the_asset_url( $filepath ) {
+
+		echo esc_url( $this->get_asset_url( $filepath ) );
+
+	}
+
+	/**
+	 * @param string $filepath
+	 * @return string
+	 */
+	function get_asset_url( $filepath ) {
+
+		return WPLib::get_asset_url( $filepath, get_called_class() );
+
+	}
+
+	/**
+	 * @var array
+	 */
+	private static $_wp_query_stack = array();
+
+	/**
+	 * Pushes WP_Query onto a stack so it can be restored later. Optionally sets to value of $wp_the_query.
+	 *
+	 * @note using ${'wp_query'} because some code sniffers wrongly flag assignment of $wp_query as an error.
+	 *
+	 * @param string|bool $initialize If 'initialize' set to value of $wp_the_query
+	 */
+	private function _push_wp_query( $initialize = false ) {
+		global $wp_query, $wp_the_query;
+		array_push( self::$_wp_query_stack, $wp_query );
+		if ( 'initialize' === $initialize ) {
+			${'wp_query'} = $wp_the_query;
+		}
+	}
+
+	/**
+	 * Restores WP_Query from a previously pushed stack.
+	 * @note using ${'wp_query'} because some code sniffers wrongly flag assignment of $wp_query as an error.
+	 */
+	private function _pop_wp_query() {
+		global $wp_query;
+		if ( count( self::$_wp_query_stack ) ) {
+			${'wp_query'} = array_pop( self::$_wp_query_stack );
+		}
+
+	}
+
+	/**
+	 * Returns a WP_Post from the queried object, if the queried object is a post.
+	 *
+	 * Useful for accessing the post prior to $wp_the_query
+	 * Similar to single_post_title() in concept
+	 *
+	 * @return WP_Post
+	 */
+	function single_post() {
+		$_post = get_queried_object();
+		return $_post instanceof WP_Post
+			? $_post
+			: null;
+	}
+
+	/**
+	 * Returns a WPLib_Item_Base from the queried object, if the queried object is a post.
+	 *
+	 * Useful for accessing the post prior to $wp_the_query
+	 * Similar to single_post_title() in concept
+	 *
+	 * @return WPLib_Post_Base
+	 */
+	function single_post_item() {
+
+		/**
+		 * @var WP_Post $_post
+		 */
+		return $_post = $this->single_post()
+			? WPLib_Posts::make_new_item( $_post )
+			: null;
+
+
+	}
+
+	/**
+	 * @return WPLib_Term_Base|WPLib_Post_Base
+	 */
+	function single_item() {
+
+		return 'Not yet implemented';
+
+	}
+
+	/**
+	 * Returns the title for a single post
+	 *
+	 * Useful for accessing the post prior to $wp_the_query
+	 * Similar to single_post_title() in concept
+	 *
+	 * @future Rename to get_single_post_title()
+	 *
+	 * @param array $args
+	 * @return WPLib_Post_Base
+	 */
+	function single_post_title( $args = array() ) {
+
+		$args = wp_parse_args( $args, array(
+
+			'prefix' => '',
+
+		));
+
+		if ( is_null( $post_item = $this->single_post_item() ) ) {
+
+			$post_title = null;
+
+		} else {
+
+			$post_title = $post_item->title();
+
+		}
+		/**
+		 * Filter the page title for a single post.
+		 *
+		 * @param string $post_title         The single post page title.
+		 * @param WP_Post $post              The current queried object as returned by get_queried_object().
+		 * @param WPLib_Post_Base $post_item The WPLib post item wrapping the $post
+		 */
+		$post_title = apply_filters(
+			'single_post_title',
+			$post_title,
+			$post_item->post(),
+			$post_item
+		);
+
+		return "{$args['prefix']}{$post_title}";
+
+	}
+
+	/**
+	 * Outputs  the URL for a page given it's slug.
+	 *
+	 * @param string $page_slug
+	 */
+	function the_page_url( $page_slug ) {
+
+		echo esc_url( $this->get_page_url( $page_slug ) );
+
+	}
+
+	/**
+	 * Returns the URL for a page given it's slug.
+	 *
+	 * @param string $page_slug
+	 * @return string
+	 */
+	function get_page_url( $page_slug ) {
+
+		/*
+		 * Validate that the slug is for a $post_type==='page'
+		 * by getting it's post type.
+		 */
+		$post_type = get_post_type( get_page_by_path( $page_slug ) );
+
+		if ( false === $post_type ) {
+
+			if ( WPLib::is_development() ) {
+
+				/**
+				 * @future Ensure the page is here and throw an error if not.
+				 */
+
+			} else {
+
+				/**
+				 * @future MAYBE output a warning as an HTML comment?
+				 */
+
+			}
+
+		}
+
+		/*
+		 * If $post_type==='page' then take slug onto home URL, return null otherwise.
+		 */
+		return WPLib_Page::POST_TYPE === $post_type
+			? home_url( $page_slug )
+			: '#';
+
+	}
+
+	/**
+	 * @param string $first_year
+	 * @param string $rights_holder
+	 *
+	 */
+	function the_copyright_text( $first_year, $rights_holder ) {
+
+		echo wp_kses_post( $this->get_copyright_text( $first_year, $rights_holder ) );
+
+	}
+
+	/**
+	 * @param string $first_year
+	 * @param string $rights_holder
+	 *
+	 * @return bool|int|string
+	 * @see https://css-tricks.com/snippets/php/automatic-copyright-year/
+	 *
+	 */
+	function get_copyright_text( $first_year, $rights_holder ) {
+
+		$this_year = intval( date( 'Y' ) );
+
+		$first_year = intval( $first_year );
+
+		$copyright_years = $first_year < $this_year
+			? "{$first_year} - {$this_year}"
+			: "{$first_year}";
+
+		return "&copy;{$copyright_years} {$rights_holder}";
+
+	}
+
+	/**
+	 * Returns an HTML <a> link
+	 *
+	 * Convenience function so designers don't need to worry about WPLib:: vs. $theme->.
+	 *
+	 * @param string $href
+	 * @param string $link_text
+	 * @param array $args
+	 * @return string
+	 */
+	function get_link( $href, $link_text, $args = array() ) {
+
+		return WPLib::get_link( $href, $link_text, $args );
+
+	}
+
+	/**
+	 * Outputs an HTML <a> link
+	 *
+	 * Convenience function so designers don't need to worry about WPLib:: vs. $theme->.
+	 *
+	 * @param string $href
+	 * @param string $link_text
+	 * @param array $args
+	 */
+	function the_link( $href, $link_text, $args = array() ) {
+
+		WPLib::the_link( $href, $link_text, $args );
+
+	}
+
+	/**
+	 * Display a paginated navigation to next/previous set of posts,
+	 * when applicable.
+	 *
+	 * @param array $args Optional. See {@see get_the_posts_pagination()} for available arguments.
+	 *                    Default empty array.
+	 */
+	function the_pagination_html( $args = array() ) {
+
+		the_posts_pagination( $args );
+	}
+
+	/**
+	 * Display a paginated navigation to next/previous set of posts,
+	 * when applicable.
+	 *
+	 * @param array $args Optional. See {@see get_the_posts_pagination()} for available arguments.
+	 *                    Default empty array.
+	 */
+	function get_pagination_html( $args = array() ) {
+
+		echo get_the_posts_pagination( $args );
 	}
 
 }

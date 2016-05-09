@@ -137,17 +137,42 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 
 	/**
 	 * @param array|string|WPLib_Query $query
-	 * @param array $args
+	 * @param array $args {
+	 *
+	 *      @type string $list_class        The specific class for the list, i.e. WPLib_Post_List
+	 *
+	 *      @type string $default_list      The default list if no $list_class, i.e. WPLib_Post_List_Default
+	 *
+	 *      @type string $items The array of items, or a callable that will return a list of items.
+	 *
+	 *      @type string $list_owner        The class "owning" the list, typically "Owner" if Owner::get_list()
+	 *
+	 *      @type string $instance_class    The class for items in the list, i.e. WP_Post
+	 *
+	 *      @type string $queried             'local' or 'queried'
+	 * }
+	 *
 	 * @return WPLib_Post_List_Default[]
 	 */
 	static function get_list( $query = array(), $args = array() ) {
 
+
+		$args = wp_parse_args( $args, array(
+
+			'queried' => false,
+
+		));
+
 		if ( $query instanceof WP_Query ) {
 
 			/**
-			 * @todo Trigger Error here if $query not
+			 * @future Trigger Error here if $query not
 			 *       all matching static::POST_TYPE.
 			 */
+
+		} if ( $args['queried'] ) {
+
+			$args['post_type'] = WPLib::get_queried_post_type();
 
 		} else {
 
@@ -171,6 +196,7 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 	static function instance_class() {
 
 		do {
+
 			/**
 			 * See if module has an INSTANCE_CLASS constant defined.
 			 */
@@ -178,13 +204,6 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 				break;
 			}
 
-//			/**
-//			 * See if module has a POST_TYPE constant defined.
-//			 */
-//			if ( $instance_class = static::post_type_list_class() ) {
-//			 	break;
-//			}
-//
 			$instance_class = 'WPLib_Post_Default';
 
 		} while ( false );

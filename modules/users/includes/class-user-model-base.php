@@ -161,20 +161,24 @@ abstract class WPLib_User_Model_Base extends WPLib_Model_Base {
 	 * @param mixed  $default
 	 *
 	 * @return mixed
-	 * @todo Consider deprecating and just use get_field_value() instead.
+	 * @future Consider deprecating and just use get_field_value() instead.
 	 */
 	function get_meta_value( $meta_name, $default = false ) {
 
 		$meta_value = $default;
 
 		if ( $this->has_user() ) {
-			// @todo Handle SHORT_PREFIX more generically
+
+			/**
+			 * @future Handle SHORT_PREFIX more generically
+			 */
 			$prefix = WPLib::SHORT_PREFIX;
 			$meta_name = "_{$prefix}{$meta_name}";
-			$meta_value = get_user_meta( $this->_user->ID, $meta_name, true );
-			if ( '' == $meta_value ) {
+			$meta_value = ${'get_user_meta'}( $this->_user->ID, $meta_name, true );
+			if ( '' === $meta_value ) {
 				$meta_value = $default;
 			}
+
 		}
 
 		return $meta_value;
@@ -187,7 +191,7 @@ abstract class WPLib_User_Model_Base extends WPLib_Model_Base {
 	 *
 	 * @param string $property_name
 	 *
-	 * @todo Update this to a more specific switch statement for user properties
+	 * @future Update this to a more specific switch statement for user properties
 	 *
 	 * @return null|WP_User
 	 */

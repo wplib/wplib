@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Post_Tags
  */
-class WPLib_Post_Tags extends WPLib_Module_Base {
+class WPLib_Post_Tags extends WPLib_Term_Module_Base {
 
 	const TAXONOMY = 'post_tag';
 

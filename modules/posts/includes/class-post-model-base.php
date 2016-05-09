@@ -65,25 +65,25 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		if ( isset( $args['post']->ID ) && is_numeric( $args['post']->ID ) ) {
 
-			$post = $args['post'];
+			$_post = $args['post'];
 
-			$post = $post instanceof WP_Post ? $post : get_post( $post->ID );
+			$_post = $_post instanceof WP_Post ? $_post : get_post( $_post->ID );
 
 			unset( $args['post'] );
 
 		} else if ( isset( $args['post'] ) && is_numeric( $args['post'] ) ) {
 
-			$post = get_post( $args['post'] );
+			$_post = get_post( $args['post'] );
 
 			unset( $args['post'] );
 
 		} else {
 
-			$post = null;
+			$_post = null;
 
 		}
 
-		return new static( $post, $args );
+		return new static( $_post, $args );
 
 	}
 
@@ -107,6 +107,11 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 	/**
 	 * @param WP_Post
+	 *
+	 * @future Allow this to accept a post_ID and call a refresh_post()
+	 *         method that can be implemented in a subclass to ensure
+	 *         that swapping out a post can fully change the state of
+	 *         the object to be as if it were instantiated anew.
 	 */
 	function set_post( $post ) {
 
@@ -243,10 +248,10 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		}
 
-		if ( $this->has_post() &&  $this->_post->post_type != $post_type ) {
+		if ( $this->has_post() &&  $this->_post->post_type !== $post_type ) {
 
-			$message = __( 'Post type mismatch: %s=%s, WP_Post=%s.', 'wplib' );
-			WPLib::trigger_error( sprintf( $message, get_class( $this ), $post_type, $this->_post->post_type ) );
+			$message = __( "Post type mismatch: %s::POST_TYPE=='%s' while \$this->_post->post_type=='%s'.", 'wplib' );
+			WPLib::trigger_error( sprintf( $message, get_class( $this->owner ), $post_type, $this->_post->post_type ) );
 
 		}
 
@@ -261,7 +266,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function is_blog_post() {
 
-		return WPLib_Post::POST_TYPE == $this->post_type();
+		return WPLib_Post::POST_TYPE === $this->post_type();
 
 	}
 
@@ -307,7 +312,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 			$meta_value = get_post_meta( $this->_post->ID, $meta_name, true );
 
-			if ( '' == $meta_value ) {
+			if ( '' === $meta_value ) {
 
 				$meta_value = $default;
 
@@ -351,11 +356,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 			$saved_postdata = $this->setup_postdata();
 
-			$content = apply_filters( 'the_content',
-
-				apply_filters( 'get_the_content', $this->get_field_value( 'post_content' ) )
-
-			);
+			$content = $this->get_field_value( 'post_content' );
 
 			$this->restore_postdata( $saved_postdata );
 
@@ -406,7 +407,19 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		global $id, $authordata, $currentday, $currentmonth, $page, $pages, $multipage, $more, $numpages;
 
-		extract( $postdata );
+		/*
+		 * This use of extract() is used here to counter the problems with
+		 * WordPress' rampant use of global variables however, ironically,
+		 * some code sniffers constantly flag extract() so it is easier to
+		 * hide it than to have to constantly see it flagged.
+		 *
+		 * OTOH if you are using WPLib and you think we should do a direct call
+		 * to extract() here please add an issue so we can discuss the pros and
+		 * cons at https://github.com/wplib/wplib/issues
+		 */
+
+		$function = 'extract';
+		$function( $postdata );
 
 	}
 
@@ -415,12 +428,12 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 *
 	 * @return bool
 	 *
-	 * @todo https://github.com/wplib/wplib/issues/5
+	 * @future https://github.com/wplib/wplib/issues/5
 	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026544
 	 */
 	function is_published() {
 
-		return $this->has_post() && 'publish' == $this->status();
+		return $this->has_post() && 'publish' === $this->status();
 
 	}
 
@@ -430,9 +443,9 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	function is_attachment() {
 
 		/**
-		 * @todo Implement WPLib_Attachment and use WPLib_Attachment::POST_TYPE here.
+		 * @future Implement WPLib_Attachment and use WPLib_Attachment::POST_TYPE here.
 		 */
-	 	return 'attachment' == $this->post_type();
+	 	return 'attachment' === $this->post_type();
 
 	}
 
@@ -452,13 +465,11 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function get_adjacent_post( $args = array() ) {
 
-		if ( ! $this->has_post() )  {
+		if ( ! $this->has_post() ) {
 
 			$adjacent_post = null;
 
 		} else {
-
-			global $post;
 
 			$args = wp_parse_args( $args, array(
 				'in_same_term'   => false,
@@ -467,9 +478,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 				'previous'       => null,
 			) );
 
-			$save_post = $post;
-
-			$post = $this->_post;
+			WPLib::push_post( $this->_post );
 
 			$adjacent_post = get_adjacent_post(
 				$args['in_same_term'],
@@ -478,7 +487,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 				$args['taxonomy']
 			);
 
-			$post = $save_post;
+			WPLib::pop_post();
 
 		}
 
@@ -618,7 +627,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 					case 'date':
 						/**
-						 * @todo Verify that this is what we want to standardize on.
+						 * @future Verify that this is what we want to standardize on.
 						 */
 						$value = mysql2date( DATE_W3C, $value );
 
@@ -795,7 +804,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 * Return post's author ID
 	 *
 	 * @note Does not use get_the_author_meta( 'ID' ) and thus does not fire 'get_the_author_ID' hook
-	 * @todo Discuss if it should?  Or is this way more not robust?
+	 * @future Discuss if it should?  Or is this way more not robust?
 	 *
 	 * @return int|bool
 	 */
@@ -934,7 +943,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 *
 	 * Yes if no password or password provided and comments are open.
 	 *
-	 * @todo We probably need to change this method. If confused info about $post with state of password entry
+	 * @future We probably need to change this method. If confused info about $post with state of password entry
 	 *
 	 * @return bool
 	 */
@@ -951,7 +960,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 *
 	 * Yes if no password or password provided and comments are either open or at least one comment exists.
 	 *
-	 * @todo We probably need to change this method. If confuses info about $post with state of password entry
+	 * @future We probably need to change this method. If confuses info about $post with state of password entry
 	 *
 	 * @return bool
 	 */
@@ -975,6 +984,44 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 		$page_id = $this->ID();
 
 		return 0 !== $page_id && intval( get_option( 'show_on_front' ) ) ===  $page_id;
+
+	}
+
+	/**
+	 * @param string $size
+	 * @param array $args {
+	 *      @type string $src
+	 *      @type string $class
+	 *      @type string $alt
+	 *      @type string $height
+	 *      @type string $width
+	 *      @type string $title
+	 * }
+	 * @return string
+	 */
+	function get_featured_image_html( $size = 'post-thumbnail', $args = array() ) {
+
+		return $this->has_post()
+			? get_the_post_thumbnail( $this->ID(), $size, $args )
+			: null;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function has_featured_image() {
+
+		return $this->has_post() && (bool) get_post_thumbnail_id( $this->ID() );
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	function has_thumbnail_image() {
+
+		return $this->has_featured_image();
 
 	}
 

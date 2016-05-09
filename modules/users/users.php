@@ -8,27 +8,14 @@ class WPLib_Users extends WPLib_Module_Base {
 	const INSTANCE_CLASS = 'WPLib_User';
 
 	/**
-	 * Run on WordPress's 'init' hook to register all the user types defined in classes that extend this class.
+	 *
 	 */
 	static function on_load() {
 
 		/**
 		 * Add this class as a helper to WPLib
 		 */
-		self::register_helper( __CLASS__, 'WPLib' );
-
-	}
-
-	/**
-	 * @param bool|string $role_slug
-	 * @param string $display_name
-	 * @param string[] $capabilities
-	 */
-	static function register_role( $role_slug, $display_name, $capabilities ) {
-
-		WPLib_User_Base::set_role_name( $display_name, $role_slug );
-
-		WPLib_User_Base::add_role_capabilities( $capabilities, $role_slug );
+		WPLib::register_helper( __CLASS__ );
 
 	}
 
@@ -62,73 +49,30 @@ class WPLib_Users extends WPLib_Module_Base {
 	}
 
 	/**
-	 * @var string $by
-	 * @var string $role
-	 * @return array|mixed
+	 * Log in a WordPress user programmatically
+	 *
+	 * @param WPLib_User_Base $user
+	 *
+	 * @see http://www.wprecipes.com/log-in-a-wordpress-user-programmatically
 	 */
-	static function get_role_slug_by( $by, $role ) {
+	static function do_login( $user ) {
 
-		switch ( $by ) {
-			case 'class':
-			case 'class_name':
+		wp_set_current_user( $user_id = $user->ID(), $user->login() );
 
-				$role_slug = static::get_constant( 'ROLE', $role );
-				break;
+		wp_set_auth_cookie( $user_id );
 
-			case 'name':
-			case 'role_name':
-
-				$roles = array_flip( WPLib_User_Base::display_names() );
-				$role_slug = isset( $roles[ $role ] ) ? $roles[ $role ] : null;
-				break;
-
-		}
-		return $role_slug;
+		do_action( 'wp_login', $user->login() );
 
 	}
 
 	/**
-	 * @var string $role_slug
-	 * @return array|mixed
+	 * @param WPLib_User_Base $user
+	 *
+	 * @param bool|int $reassign
 	 */
-	static function get_role_class( $role_slug ) {
+	static function delete_user( $user, $reassign = false ) {
 
-		$role_classes = static::role_classes();
-
-		return isset( $role_classes[ $role_slug ] ) ? $role_classes[ $role_slug ] : null;
-
-	}
-
-	/**
-	 * @return array|mixed
-	 */
-	static function role_classes() {
-
-		if ( ! ( $role_classes = WPLib::cache_get( $cache_key = 'role_classes' ) ) ) {
-
-			WPLib::autoload_all_classes();
-
-			$role_classes = array();
-
-			foreach( get_declared_classes() as $user_class ){
-
-			  if ( ! is_subclass_of( $user_class, 'WPLib_User_Base' ) ) {
-
-			    continue;
-
-			  }
-
-			  if ( $role_slug = self::get_role_slug_by( 'class', $user_class ) ) {
-
-				  $role_classes[ $role_slug ] = $user_class;
-			  }
-
-			}
-
-			WPLib::cache_set( $cache_key, $role_classes );
-
-		}
-		return $role_classes;
+		wp_delete_user( $user->ID(), $reassign );
 
 	}
 
@@ -150,15 +94,15 @@ class WPLib_Users extends WPLib_Module_Base {
 
 			do {
 
-				if( ! ( $wp_user = get_user_by( 'slug', $user ) ) ) {
+				if ( ! ( $wp_user = get_user_by( 'slug', $user ) ) ) {
 					break;
 				}
 
-				if( ! ( $wp_user = get_user_by( 'login', $user ) ) ) {
+				if ( ! ( $wp_user = get_user_by( 'login', $user ) ) ) {
 					break;
 				}
 
-				if( ! ( $wp_user = get_user_by( 'email', $user ) ) ) {
+				if ( ! ( $wp_user = get_user_by( 'email', $user ) ) ) {
 					break;
 				}
 
@@ -185,7 +129,7 @@ class WPLib_Users extends WPLib_Module_Base {
 
 		} else {
 
-			$role_class = self::get_role_class( $role_slug );
+			$role_class = WPLib_Roles::get_role_class( $role_slug );
 
 			$user = new $role_class( $wp_user );
 		}
@@ -193,6 +137,7 @@ class WPLib_Users extends WPLib_Module_Base {
 		return $user;
 
 	}
+
 
 	/**
 	 * User's role name as found in the WP_User object.
@@ -215,24 +160,6 @@ class WPLib_Users extends WPLib_Module_Base {
 	 	return $role_slug ? $role_slug : WPLib_Subscriber::ROLE;
 
 	}
-
-	/**
-	 * @param string $user_role
-	 *
-	 * @return bool
-	 */
-	static function current_user_is( $user_role ) {
-		/**
-		 * @var WP_User $current_user
-		 */
-		$current_user = wp_get_current_user();
-
-		return isset( $current_user->roles )
-			&& is_array( $current_user->roles )
-			&& in_array( $user_role, $current_user->roles );
-
-	}
-
 
 }
 WPLib_Users::on_load();

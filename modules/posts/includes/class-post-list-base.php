@@ -44,7 +44,7 @@ class WPLib_Post_List_Base extends WPLib_List_Base {
 	 */
 	function post_types() {
 
-		foreach( $this->elements() as $element ) {
+		foreach ( $this->elements() as $element ) {
 
 			$this->_post_types[ $element->post_type() ] = true;
 

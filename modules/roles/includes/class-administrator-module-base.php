@@ -1,30 +1,15 @@
 <?php
 
 /**
- * Class WPLib_Users
+ * Class WPLib_Administrator_Module_Base
  */
-class WPLib_Editors extends WPLib_Module_Base {
+abstract class WPLib_Administrator_Module_Base extends WPLib_Role_Module_Base {
 
-	const ROLE = 'editor';
+	static function _CAPABILITIES() {
 
-	/**
-	 * Run on WordPress's 'init' hook to register all the user types defined in classes that extend this class.
-	 */
-	static function on_load() {
+		return array(
 
-		/**
-		 * Hook wp_loaded so roles can be initialized
-		 */
-		self::add_class_action( 'wp_loaded' );
-
-	}
-	/**
-	 * Register all the default roles.
-	 */
-	static function _wp_loaded() {
-
-		self::register_role( self::ROLE, __( 'Editor', 'wplib' ),array(
-
+			'activate_plugins',
 			'delete_others_pages',
 			'delete_others_posts',
 			'delete_pages',
@@ -33,6 +18,7 @@ class WPLib_Editors extends WPLib_Module_Base {
 			'delete_private_posts',
 			'delete_published_pages',
 			'delete_published_posts',
+			'edit_dashboard',
 			'edit_others_pages',
 			'edit_others_posts',
 			'edit_pages',
@@ -41,20 +27,26 @@ class WPLib_Editors extends WPLib_Module_Base {
 			'edit_private_posts',
 			'edit_published_pages',
 			'edit_published_posts',
+			'edit_theme_options',
+			'export',
+			'import',
+			'list_users',
 			'manage_categories',
 			'manage_links',
+			'manage_options',
 			'moderate_comments',
+			'promote_users',
 			'publish_pages',
 			'publish_posts',
-			'read',
 			'read_private_pages',
 			'read_private_posts',
-			'unfiltered_html',
+			'read',
+			'remove_users',
+			'switch_themes',
 			'upload_files',
 
-		));
-
+		);
 
 	}
+
 }
-WPLib_Editors::on_load();

@@ -30,6 +30,14 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 
 	/**
+	 * Value to limit the maximum posts per page requested for any given WP_Query
+	 *
+	 * @var array|null
+	 */
+	private static $_max_posts_per_page = 999;
+
+
+	/**
 	 * Run on WordPress's 'init' hook to register all the post types defined in classes that extend this class.
 	 */
 	static function on_load() {
@@ -37,7 +45,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 		/**
 		 * Add this class as a helper to WPLib
 		 */
-		self::register_helper( __CLASS__, 'WPLib' );
+		WPLib::register_helper( __CLASS__ );
 
 		/*
 		 * Process these templates once for language translation.
@@ -66,7 +74,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 */
 	static function _init() {
 
-		foreach( self::$_post_type_args as $post_type => $post_type_args ) {
+		foreach ( self::$_post_type_args as $post_type => $post_type_args ) {
 
 			/**
 			 * This filter hook is fired once per post type and called
@@ -117,7 +125,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		global $wp_post_types;
 
-		foreach( $wp_post_types as $post_type => $post_type_object ) {
+		foreach ( $wp_post_types as $post_type => $post_type_object ) {
 
 			/**
 			 * Decided not to prefix this property, because really?
@@ -201,57 +209,59 @@ class WPLib_Posts extends WPLib_Module_Base {
 	}
 
 	/**
-	 * @param WP_Post|object|int|string|array|null|bool $post
+	 *
+	 * @param WP_Post|object|int|string|array|null|bool $_post
 	 * @param string|bool $post_type
 	 *
 	 * @return null|WP_Post
 	 */
-	static function get_post( $post, $post_type = false ) {
+	static function get_post( $_post, $post_type = false ) {
 
-		switch ( gettype( $post ) ) {
+		switch ( gettype( $_post ) ) {
 			case 'integer';
-				$post = get_post( $post );
+				$_post = get_post( $_post );
 				break;
 
 			case 'string';
-				if ( is_numeric( $post ) ) {
-					$post = get_post( absint( $post ) );
+				if ( is_numeric( $_post ) ) {
+
+					$_post = get_post( absint( $_post ) );
 
 				} else if ( $post_type ) {
 					/*
 					 * Get post by slug
 					 */
-					$post = get_page_by_path( $post, OBJECT, $post_type );
+					$_post = get_page_by_path( $_post, OBJECT, $post_type );
 
 				} else {
-					$post = null;
+					$_post = null;
 
 				}
 				break;
 
 			case 'array';
-				if ( isset( $post['ID'] ) ) {
-					$post = get_post( absint( $post['ID'] ) );
+				if ( isset( $_post['ID'] ) ) {
+					$_post = get_post( absint( $_post['ID'] ) );
 
-				} else if ( isset( $post['post'] ) ) {
-					$post = self::get_post( $post['post'] );
+				} else if ( isset( $_post['post'] ) ) {
+					$_post = self::get_post( $_post['post'] );
 
 				}
 				break;
 
 			case 'object';
-				if ( ! is_a( $post, 'WP_Post' ) && property_exists( $post, 'ID' ) ) {
-					$post = get_post( absint( $post->ID ) );
+				if ( ! is_a( $_post, 'WP_Post' ) && property_exists( $_post, 'ID' ) ) {
+					$_post = get_post( absint( $_post->ID ) );
 
 				}
 				break;
 
 			default:
-				$post = null;
+				$_post = null;
 
 		}
 
-		return $post;
+		return $_post;
 	}
 
 	/**
@@ -262,7 +272,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 * @return WP_Post
 	 */
 	static function get_post_by( $by, $value, $args = array() ) {
-		$post     = null;
+		$_post     = null;
 		$criteria = array( 'post_status' => 'publish' );
 		switch ( $by ) {
 			case 'slug':
@@ -279,16 +289,16 @@ class WPLib_Posts extends WPLib_Module_Base {
 		}
 		$query = new WP_Query( wp_parse_args( $args, $criteria ) );
 		if ( count( $query->posts ) ) {
-			$post = $query->post;
+			$_post = $query->post;
 		}
 
-		return $post;
+		return $_post;
 	}
 
 	/**
 	 * @param array|string|WPLib_Query $query
 	 * @param array $args
-	 * @return WPLib_Post_List_Default[]
+	 * @return WPLib_Post_List_Default
 	 */
 	static function get_list( $query = array(), $args = array() ) {
 
@@ -318,7 +328,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 * @param array $args
 	 * @return WPLib_Query
 	 *
-	 * @todo https://github.com/wplib/wplib/issues/3
+	 * @future https://github.com/wplib/wplib/issues/3
 	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026403
 	 */
 	static function get_query( $args = array() ) {
@@ -326,7 +336,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 		if ( $args instanceof WP_Query ) {
 
 			/**
-			 * @TODO Fix to return a WPLib_Query, not a WP_Query.
+			 * @future Fix to return a WPLib_Query, not a WP_Query.
 			 */
 			$query = $args;
 
@@ -342,7 +352,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 			}
 
-			if ( isset( $args['post_type'] ) && WPLib_Post::POST_TYPE == $args['post_type'] ) {
+			if ( isset( $args['post_type'] ) && WPLib_Post::POST_TYPE === $args['post_type'] ) {
 
 				if ( ! isset( $args['order'] ) ) {
 					$args['order'] = 'DESC';
@@ -357,7 +367,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 			$args = wp_parse_args( $args, array(
 				'post_type'      => 'any',
 				'post_status'    => 'publish',
-				'posts_per_page' => WPLib::max_posts_per_page(),
+				'posts_per_page' => self::max_posts_per_page(),
 				'index_by'       => false,
 				'orderby'        => 'menu_order',
 				'order'          => 'ASC',
@@ -374,7 +384,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 			if ( $args['index_by'] && preg_match( '#^(post_(id|name)|id|name)$#', $args['index_by'], $match ) ) {
 
-				$index_field = 'id' == $match[1] ? 'ID' : 'post_name';
+				$index_field = 'id' === $match[1] ? 'ID' : 'post_name';
 				$posts       = array();
 				foreach ( $query->posts as $post ) {
 
@@ -391,19 +401,31 @@ class WPLib_Posts extends WPLib_Module_Base {
 	}
 
 	/**
-	 * Create new Instance of a Post MVE
+	 * Create new Instance of a Post MVI
 	 *
-	 * @param WP_Post $post
-	 * @param array $args
+	 * @param WP_Post|int $_post
+	 * @param array $args {
 	 *
+	 *      @type string $instance_class
+	 *      @type string $list_owner
+	 *
+	 *}
 	 * @return mixed
+	 *
+	 * @future Alias this with make_new_post() so it can be called as WPLib::make_new_post( $post_id )
 	 */
-	static function make_new_item( $post, $args = array() ) {
+	static function make_new_item( $_post, $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			'instance_class' => false,
 			'list_owner' => 'WPLib_Posts',
 		));
+
+		if ( is_numeric( $_post ) ) {
+
+			$_post = WP_Post::get_instance( $_post );
+
+		}
 
 		if ( ! $args[ 'instance_class' ] ) {
 
@@ -413,13 +435,13 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		if ( ! $args[ 'instance_class' ] ) {
 
-			$args['instance_class'] = self::get_post_type_class( $post->post_type );
+			$args['instance_class'] = self::get_post_type_class( $_post->post_type );
 
 		}
 
 		$instance_class = $args['instance_class'];
 
-		return $instance_class ? new $instance_class( $post ) : null;
+		return $instance_class ? new $instance_class( $_post ) : null;
 
 	}
 
@@ -447,6 +469,9 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 * @param string $post_type
 	 *
 	 * @return string|null
+	 *
+	 * @future Rename to get_post_class() and deprecate this name
+	 *
 	 */
 	static function get_post_type_class( $post_type ) {
 
@@ -459,11 +484,12 @@ class WPLib_Posts extends WPLib_Module_Base {
 	/**
 	 * @return string[]
 	 *
-	 * @todo Enhance this to support multiple classes per post type
+	 * @future Enhance this to support multiple classes per post type
+	 * @future Rename to post_classes() and deprecate this name
 	 */
 	static function post_type_classes() {
 
-		return WPLib::_get_child_classes( 'post_type', 'POST_TYPE', 'WPLib_Post_Base' );
+		return WPLib::get_child_classes( 'WPLib_Post_Base', 'POST_TYPE' );
 
 	}
 
@@ -471,7 +497,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	 * Query the posts, return a post list.
 	 *
 	 * @param array $args
-	 * @return WPLib_Post_Base[]
+	 * @return WP_Post[]
 	 */
 	static function get_posts( $args = array() ) {
 
@@ -479,5 +505,65 @@ class WPLib_Posts extends WPLib_Module_Base {
 		return $query->posts;
 
 	}
+
+	/**
+	 * @var array
+	 */
+	private static $_post_stack = array();
+
+	/**
+	 * @param WP_Post|bool $value
+	 */
+	static function push_post( $value = false ) {
+		global $post;
+		array_push( self::$_post_stack, $post );
+		if ( $value instanceof WP_Post ) {
+			${'post'} = $value;
+		}
+	}
+
+	/**
+	 *
+	 */
+	static function pop_post() {
+		global $post;
+		if ( count( self::$_post_stack ) ) {
+			${'post'} = array_pop( self::$_post_stack );
+		}
+	}
+
+	/**
+	 * Return the post type of the queried object.
+	 *
+	 * @return false|null|string
+	 */
+	static function get_queried_post_type() {
+
+		$queried_object = get_queried_object();
+		return $queried_object instanceof WP_Post
+			? get_post_type( $queried_object )
+			: null;
+
+	}
+
+	/**
+	 * @return int
+	 */
+	static function max_posts_per_page() {
+
+		return self::$_max_posts_per_page;
+
+	}
+
+	/**
+	 * @param int $value
+	 */
+	static function set_max_posts_per_page( $value ) {
+
+		self::$_max_posts_per_page = absint( $value );
+
+	}
+
+
 }
 WPLib_Posts::on_load();

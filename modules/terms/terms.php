@@ -70,17 +70,20 @@ class WPLib_Terms extends WPLib_Module_Base {
 			'not_found'                  => _x( 'No %s found.',             'terms', 'wplib' ),
 		);
 
-		self::add_class_action( 'init', 11 );  // Run this after priority 10 of post type
+		self::add_class_action( 'init', 11 );
+
 		self::add_class_action( 'init', 99 );
 
 	}
 
 	/**
 	 * Run on WordPress's 'init' hook to register all the term types defined in classes that extend this class.
+	 *
+	 * Run this *just* after priority 10 of post type
 	 */
 	static function _init_11() {
 
-		foreach( self::$_taxonomy_args as $taxonomy => $taxonomy_args ) {
+		foreach ( self::$_taxonomy_args as $taxonomy => $taxonomy_args ) {
 
 			$object_types = ! empty( self::$_object_types[ $taxonomy ] ) ? self::$_object_types[ $taxonomy ] : array();
 
@@ -179,15 +182,15 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 * @param array|string $object_slug
 	 */
 	static function add_object_type( $taxonomy, $object_slug ) {
-		if( ! isset( self::$_object_types[ $taxonomy ] ) ) {
+		if ( ! isset( self::$_object_types[ $taxonomy ] ) ) {
 			self::$_object_types[ $taxonomy ] = array();
 		}
 
-		if( is_array( $object_slug ) ) {
+		if ( is_array( $object_slug ) ) {
 			self::$_object_types[ $taxonomy ] = array_merge( self::$_object_types[ $taxonomy ], $object_slug );
 		}
 
-		if( ! is_array( $object_slug ) ) {
+		if ( ! is_array( $object_slug ) ) {
 			self::$_object_types[ $taxonomy ][] = $object_slug;
 		}
 	}
@@ -305,7 +308,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 
 				do {
 
-					if( $slug_term = get_term_by( 'slug', $term, $taxonomy ) ) {
+					if ( $slug_term = get_term_by( 'slug', $term, $taxonomy ) ) {
 
 						$term = $slug_term;
 						break;
@@ -373,19 +376,52 @@ class WPLib_Terms extends WPLib_Module_Base {
 	}
 
 	/**
-	 * Create new Instance of a Term MVE
+	 * Create new Instance of a Term Item
 	 *
-	 * @param WP_Term $term
-	 * @param array $args
+	 * @param WP_Term|int $term
+	 * @param array $args {
 	 *
+	 *      @type string $taxonomy
+	 *      @type string $instance_class
+	 *      @type string $list_owner
+	 *
+	 *}
 	 * @return mixed
+	 *
+	 * @future Alias this with make_new_term() so it can be called as WPLib::make_new_term( $term_id )
 	 */
 	static function make_new_item( $term, $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 			'instance_class' => false,
+			'taxonomy' => false,
 			'list_owner' => 'WPLib_Terms',
 		));
+
+		if ( is_numeric( $term ) ) {
+
+			if ( $args['taxonomy'] ) {
+
+				$term = WP_Term::get_instance( $term, $args['taxonomy'] );
+
+			} else {
+
+				global $wp_version;
+				if ( version_compare( $wp_version, '4.3', '<' ) ) {
+					/**
+					 * This only works in WordPress DBs created since 4.3+.
+					 *
+					 * @see https://make.wordpress.org/core/2015/06/09/eliminating-shared-taxonomy-terms-in-wordpress-4-3/
+					 */
+					$err_msg = __( "Cannot call %s() without \$args['taxonomy'] set in WordPress version 4.2 or earlier.", 'wplib' );
+					WPLib::trigger_error( $err_msg, __METHOD__ );
+				} else {
+
+					$term = WP_Term::get_instance( $term );
+
+				}
+			}
+		}
 
 		if ( ! $args[ 'instance_class' ] ) {
 
@@ -409,6 +445,8 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 * @param string $taxonomy
 	 *
 	 * @return string|null
+	 *
+	 * @future Rename to get_term_class() and deprecate this name
 	 */
 	static function get_taxonomy_class( $taxonomy ) {
 
@@ -421,11 +459,12 @@ class WPLib_Terms extends WPLib_Module_Base {
 	/**
 	 * @return string[]
 	 *
-	 * @todo Enhance this to support multiple classes per term type
+	 * @future Enhance this to support multiple classes per term type
+	 * @future Rename to term_classes() and deprecate this name
 	 */
 	static function taxonomy_classes() {
 
-		return WPLib::_get_child_classes( 'taxonomy', 'TAXONOMY', 'WPLib_Term_Base' );
+		return WPLib::get_child_classes( 'WPLib_Term_Base', 'TAXONOMY' );
 
 	}
 

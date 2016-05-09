@@ -3,7 +3,7 @@
 /**
  * Class WPLib_Categories
  */
-class WPLib_Categories extends WPLib_Module_Base {
+class WPLib_Categories extends WPLib_Term_Module_Base {
 
 	const TAXONOMY = 'category';
 

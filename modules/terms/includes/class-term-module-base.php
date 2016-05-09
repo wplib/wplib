@@ -13,7 +13,7 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 	 * REgister the labels used for this taxonomy.
 	 *
 	 * @param array $args
-	 * @todo Allow taxonomy name to be passed optionally.
+	 * @future Allow taxonomy name to be passed optionally.
 	 *
 	 * @return object
 	 */
@@ -97,7 +97,7 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 	 *
 	 * @param null|string|array $object_types
 	 * @param array $args
-	 * @todo Allow taxonomy name to be passed optionally.
+	 * @future Allow taxonomy name to be passed optionally.
 	 *
 	 * @link  http://codex.wordpress.org/Function_Reference/register_taxonomy#Parameters
 	 */
@@ -130,7 +130,7 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 
 		if ( is_array( $object_types ) ) {
 
-			foreach( $object_types as $object_type ) {
+			foreach ( $object_types as $object_type ) {
 
 				WPLib_Terms::add_object_type( static::TAXONOMY, $object_type );
 
@@ -149,6 +149,8 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 	 * @return WPLib_Term_List_Default[]
 	 */
 	static function get_list( $query = array(), $args = array() ) {
+
+		$query = wp_parse_args( $query );
 
 		$query['taxonomy'] = static::TAXONOMY;
 

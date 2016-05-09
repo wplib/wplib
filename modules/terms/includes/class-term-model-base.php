@@ -5,6 +5,9 @@
  *
  * The Model Base Class for Terms
  *
+ * @method WPLib_Term_View_Base view()
+ * @property WPLib_Term_View_Base $view
+ *
  * @property WPLib_Term_Base $owner
  */
 abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
@@ -39,8 +42,8 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	 *
 	 *     App_Foo -> App_Foo_Model
 	 *
-	 * @todo Add lookup by ITEM_CLASS in Model or MODEL_CLASS in Item if and when we find that naming conventions fail
-	 * @todo But wait to do that because maybe YAGNI.
+	 * @future Add lookup by ITEM_CLASS in Model or MODEL_CLASS in Item if and when we find that naming conventions fail
+	 * @future But wait to do that because maybe YAGNI.
 	 *
 	 * @return mixed
 	 */
@@ -206,7 +209,7 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	/**
 	 * Is the passed Object ID associated with this taxonomy term.
 	 *
-	 * @todo Decide if "assign" is the best term for this.
+	 * @future Decide if "assign" is the best term for this.
 	 *
 	 * @param int $object_id Likely a Post ID but can be other things
 	 *
@@ -271,12 +274,7 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	 * @param bool|WP_Error $wp_error
 	 */
 	function update_field( $field_name, $new_value, $wp_error = false ) {
-		if ( $this->has_wp_term() ) {
-
-			/**
-			 * @var wpdb $wpdb
-			 */
-			global $wpdb;
+		if ( $this->has_term() ) {
 
 			$args         = (array) $this->term();
 			$args[ $field_name ] = sanitize_title_with_dashes( $new_value );
@@ -289,6 +287,17 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 			}
 		}
 	}
+
+	/**
+	 * @return string
+	 */
+	function term_description() {
+
+		return $this->has_term() ? $this->_term->description : null;
+
+	}
+
+
 
 
 }
