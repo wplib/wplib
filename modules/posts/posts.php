@@ -429,13 +429,13 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		if ( ! $args[ 'instance_class' ] ) {
 
-			$args['instance_class'] = WPLib::get_constant( 'INSTANCE_CLASS', $args['list_owner'] );
+			$args['instance_class'] = self::get_post_type_class( $_post->post_type );
 
 		}
 
 		if ( ! $args[ 'instance_class' ] ) {
 
-			$args['instance_class'] = self::get_post_type_class( $_post->post_type );
+			$args['instance_class'] = WPLib::get_constant( 'INSTANCE_CLASS', $args['list_owner'] );
 
 		}
 
