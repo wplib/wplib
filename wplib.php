@@ -248,7 +248,7 @@ class WPLib {
 				/*
 				 * Strip out WordPress core classes
 				 */
-				return ! preg_match( '#^(WP|wp)_?#', $element );
+                return ! preg_match( '#^(WP_|wp_|wp)#', $element );
 			});
 			self::cache_set( $cache_key, $site_classes );
 
