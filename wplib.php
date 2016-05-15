@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.12.2
+ * Version:     0.12.3
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -269,9 +269,9 @@ class WPLib {
 	 */
 	static function _init_9() {
 
-		if ( ! self::cache_get( $cache_key = 'module_classes_cached' ) ) {
+		self::$_init_9_ran = true;
 
-			self::$_init_9_ran = true;
+		if ( ! self::cache_get( $cache_key = 'module_classes_cached' ) ) {
 
 			self::autoload_all_classes();
 

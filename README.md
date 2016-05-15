@@ -32,7 +32,7 @@ Note WPLib can be used a little or a lot. It can be added incrementally to a sit
 
 
 ##Status
-WPLib is in beta status at version 0.12.2 in master.
+WPLib is in beta status at version 0.12.3 in master.
 
 We are actively working on it with a goal to develop stable beta versions that can be used in production, and then a 1.0.0 version when we are comfortable that the majority of the API will not need to change.
 
@@ -57,7 +57,6 @@ The architecture concepts and the implementation is now **simple enough** and **
 ##Core Committers
 
 - Mike Schinkel ([mikeschinkel](https://github.com/mikeschinkel))
-- Micah Wood ([wpscholar](https://github.com/wpscholar))
 - Daryl Lozupone ([clubdeuce](https://github.com/clubdeuce))
 
 ##License
