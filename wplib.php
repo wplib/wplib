@@ -1484,11 +1484,9 @@ class WPLib {
 
 		foreach ( self::get_module_classes( $app_class ) as $module_class => $module_filepath ) {
 
-			$try_dir = dirname( $module_filepath );
+			if ( 0 === strpos( $filepath, $module_filepath ) ) {
 
-			if ( 0 === strpos( $filepath, $try_dir ) ) {
-
-				$module_dir = self::maybe_make_absolute_path( $try_dir, ABSPATH );
+				$module_dir = self::maybe_make_absolute_path( $module_filepath, ABSPATH );
 
 				break;
 
@@ -2659,17 +2657,23 @@ class WPLib {
 
 		$class = get_called_class();
 
-		if ( WPLib::get_constant( 'POST_TYPE', $class ) ) {
+		if ( WPLib::get_constant( 'INSTANCE_CLASS', $class ) ) {
 
-			$item = WPLib_Posts::make_new_item( $item, $args );
+			if ( is_callable( array( $class, 'make_new_item' ) ) ) {
+				
+				$item = $class::make_new_item( $item, $args );
 
-		} else if ( WPLib::get_constant( 'TAXONOMY', $class ) ) {
+			} else {
 
-			$item = WPLib_Terms::make_new_item( $item, $args );
+				$err_msg = __ ( 'Cannot make new item. Class %s does not have make_new_item method', 'wplib' );
+				WPLib::trigger_error( sprintf( $err_msg, $class ) );
+
+			}
+
 
 		} else {
 
-		   $err_msg = __( 'Cannot make new item. Class %s does not have POST_TYPE or TAXONOMY constant.', 'wplib' );
+		   $err_msg = __( 'Cannot make new item. Class %s does not have INSTANCE_CLASS constant.', 'wplib' );
 		   WPLib::trigger_error( sprintf( $err_msg, $class ) );
 
 		}
