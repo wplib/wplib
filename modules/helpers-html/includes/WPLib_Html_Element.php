@@ -39,15 +39,6 @@ class WPLib_Html_Element {
     private $_attributes_parsed;
 
     /**
-     *
-     */
-    static function on_load() {
-
-        WPLib::register_helper( __CLASS__ );
-
-    }
-
-    /**
      * @param string $tag_name
      * @param array $attribute_pairs
      * @param null|callable|string $value
@@ -469,7 +460,5 @@ class WPLib_Html_Element {
     }
 
 }
-
-WPLib_Html_Element::on_load();
 
 
