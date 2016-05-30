@@ -469,4 +469,4 @@ class WPLib_Terms extends WPLib_Module_Base {
 	}
 
 }
-WPLib_Terms::on_load();
+

@@ -48,4 +48,4 @@ class WPLib_Editors extends WPLib_Role_Module_Base {
 	}
 
 }
-WPLib_Editors::on_load();
+

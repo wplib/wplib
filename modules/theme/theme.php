@@ -148,4 +148,4 @@ class WPLib_Theme extends WPLib_Module_Base {
 
 }
 
-WPLib_Theme::on_load();
+

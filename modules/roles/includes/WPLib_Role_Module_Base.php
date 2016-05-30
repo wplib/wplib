@@ -29,6 +29,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 	/**
 	 * Add the code to trigger inspection of roles upon commit revision.
+	 * @todo Move this on_load() to a module main file
 	 */
 	static function on_load() {
 
@@ -343,4 +344,4 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 }
 
-WPLib_Role_Module_Base::on_load();
+

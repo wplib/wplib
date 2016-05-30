@@ -23,4 +23,4 @@ class WPLib_Subscribers extends WPLib_Role_Module_Base {
 	}
 
 }
-WPLib_Subscribers::on_load();
+

@@ -566,4 +566,4 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 
 }
-WPLib_Posts::on_load();
+

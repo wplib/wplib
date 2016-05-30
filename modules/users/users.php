@@ -162,4 +162,4 @@ class WPLib_Users extends WPLib_Module_Base {
 	}
 
 }
-WPLib_Users::on_load();
+

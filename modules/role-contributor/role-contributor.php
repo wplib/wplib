@@ -25,4 +25,4 @@ class WPLib_Contributors extends WPLib_Role_Module_Base {
 	}
 
 }
-WPLib_Contributors::on_load();
+

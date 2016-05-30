@@ -60,4 +60,4 @@ class WPLib_Roles extends WPLib_Module_Base {
 	}
 
 }
-WPLib_Roles::on_load();
+

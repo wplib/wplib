@@ -17,5 +17,5 @@ class WPLib_Post_Tags extends WPLib_Term_Module_Base {
 	}
 
 }
-WPLib_Post_Tags::on_load();
+
 

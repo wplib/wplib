@@ -29,4 +29,4 @@ class WPLib_Authors extends WPLib_Role_Module_Base {
 	}
 
 }
-WPLib_Authors::on_load();
+

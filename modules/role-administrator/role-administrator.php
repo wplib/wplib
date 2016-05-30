@@ -69,4 +69,4 @@ class WPLib_Administrators extends WPLib_Administrator_Module_Base {
 	}
 
 }
-WPLib_Administrators::on_load();
+

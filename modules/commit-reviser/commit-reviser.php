@@ -248,4 +248,4 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	}
 
 }
-WPLib_Commit_Reviser::on_load();
+

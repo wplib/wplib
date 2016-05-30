@@ -17,5 +17,5 @@ class WPLib_Categories extends WPLib_Term_Module_Base {
 	}
 
 }
-WPLib_Categories::on_load();
+
 

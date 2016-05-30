@@ -665,4 +665,3 @@ HTML;
 	}
 
 }
-_WPLib_Html_Helpers::on_load();

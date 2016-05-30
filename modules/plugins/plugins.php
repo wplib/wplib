@@ -10,4 +10,4 @@ class WPLib_Plugins extends WPLib_Module_Base {
 	}
 
 }
-WPLib_Plugins::on_load();
+
