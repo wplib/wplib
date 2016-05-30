@@ -45,7 +45,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 		/**
 		 * Add this class as a helper to WPLib
 		 */
-		self::register_helper( __CLASS__, 'WPLib' );
+		WPLib::register_helper( __CLASS__ );
 
 		/*
 		 * Process these templates once for language translation.
