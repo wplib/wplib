@@ -38,7 +38,7 @@ class WPLib_Roles extends WPLib_Module_Base {
 	 */
 	static function role_classes() {
 
-		return WPLib::get_child_classes( 'WPLib_User_Base', 'ROLE' );
+		return WPLib::get_qualified_child_classes( 'WPLib_User_Base', 'ROLE' );
 
 	}
 

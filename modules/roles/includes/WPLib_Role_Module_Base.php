@@ -135,7 +135,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 			/*
 			 * Get the capabilities
 			 */
-			if ( is_null( $current_capabilities = $wp_roles->role_objects[ $role_slug ]->capabilities ) ) {
+			if ( ! isset( $wp_roles->role_objects[ $role_slug ] ) || is_null( $current_capabilities = $wp_roles->role_objects[ $role_slug ]->capabilities ) ) {
 
 				$current_capabilities = array();
 
@@ -236,7 +236,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 				 */
 				remove_role( $role_slug );
 
-				call_user_func( $role_slug, $display_name, $capabilities );
+				add_role( $role_slug, $display_name, $capabilities );
 
 				$option[ $role_slug ]= array(
 					'prior_capabilities' => $capabilities,

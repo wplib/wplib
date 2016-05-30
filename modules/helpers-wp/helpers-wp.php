@@ -11,6 +11,11 @@
 class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 
 	/**
+	 * @var bool Get's set if doing XMLRPC.
+	 */
+	private static $_doing_xmlrpc = false;
+
+	/**
 	 *
 	 */
 	static function on_load() {
@@ -19,6 +24,8 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 		 * Register this class as a helper for WPLib.
 		 */
 		self::register_helper( __CLASS__, 'WPLib' );
+
+		self::add_class_action( 'xmlrpc_call' );
 
 	}
 
@@ -36,15 +43,93 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 	}
 
 	/**
-	 * Takes a filepath and potentially returns a relative path (prefixed with '~/'), if $filepath begins with ABSPATH.
-	 *
-	 * @param string $filepath
+	 * If runmode is development or SCRIPT_DEBUG
 	 *
 	 * @return string
+	 *
+	 * @future https://github.com/wplib/wplib/issues/7
+	 * @see https://github.com/wplib/wplib/commit/8dc27c368e84f7ba6e1448753e1b1f082a60ac6d#commitcomment-11026829
 	 */
-	static function maybe_make_abspath_relative( $filepath ) {
+	static function is_script_debug() {
 
-		return preg_replace( '#^' . preg_quote( ABSPATH ) . '(.*)$#', "~/$1", $filepath );
+		return WPLib::is_development() || ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG );
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function is_wp_debug() {
+
+		return defined( 'WP_DEBUG' ) && WP_DEBUG;
+
+	}
+
+	/**
+	 * Capture status of DOING_XMLRPC
+	 */
+	static function _xmlrpc_call() {
+
+		self::$_doing_xmlrpc = true;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function doing_xmlrpc() {
+
+		return self::$_doing_xmlrpc;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function doing_ajax() {
+
+		return defined( 'DOING_AJAX' ) && DOING_AJAX;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function doing_cron() {
+
+		return defined( 'DOING_CRON' ) && DOING_CRON;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function doing_autosave() {
+
+		return defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function do_log_errors() {
+
+		return defined( 'WPLIB_LOG_ERRORS' ) && WPLIB_LOG_ERRORS;
+
+	}
+
+	/**
+	 * Return if WPLIB_TEMPLATE_GLOBAL_VARS was set to true
+	 *
+	 * Setting WPLIB_TEMPLATE_GLOBAL_VARS to false will cause WPLib to extract $GLOBALS before loading the WP template which normally happens in
+	 * /wp-include/template-loader.php but WPLib hijacks that.
+	 *
+	 * @return bool
+	 */
+	static function use_template_global_vars() {
+
+		return ! defined( 'WPLIB_TEMPLATE_GLOBAL_VARS' ) || ! WPLIB_TEMPLATE_GLOBAL_VARS;
 
 	}
 
@@ -94,6 +179,59 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 		return is_null( $expected_value )
 			? ! empty( $query_var_value )
 			: $query_var_value === $expected_value;
+
+	}
+
+	/**
+	 * @TODO Move these below to a PHP Helpers Module.
+	 */
+	
+	/**
+	 * @param string $string
+	 * @param bool|true $lowercase
+	 *
+	 * @return string
+	 */
+	static function dashify( $string, $lowercase = true ) {
+
+		$string = str_replace( array( '_', ' ' ), '-', $string );
+		if ( $lowercase ) {
+			$string = strtolower( $string );
+		}
+		return $string;
+
+	}
+
+	/**
+	 * Emits one or more HTTP headers to the output stream
+	 *
+	 * @param string|array $headers
+	 */
+	static function emit_headers( $headers ) {
+
+		if ( ! is_array( $headers ) ) {
+			$headers = array( $headers );
+		}
+
+		array_map( 'header', $headers );
+
+	}
+
+	/**
+	 * Runs file_put_contents()
+	 *
+	 * @param string $filepath
+	 * @param string $contents
+	 * @return bool
+	 */
+	static function put_contents( $filepath, $contents ) {
+
+		$permissions = ( fileperms( $filepath ) & 0777 );
+		chmod( $filepath, 0777 );
+		$result = file_put_contents( $filepath, $contents );
+		chmod( $filepath, $permissions );
+
+		return $result;
 
 	}
 

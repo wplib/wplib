@@ -61,24 +61,29 @@ abstract class WPLib_View_Base extends WPLib_Base {
 	}
 
 	/**
-	 * @param string $template
-	 * @param array $_template_vars
+	 * @param string $partial_slug
+	 * @param array $_partial_vars
 	 * @return string
 	 */
-	function get_template_html( $template, $_template_vars = array() ) {
+	function get_partial_html( $partial_slug, $_partial_vars = array() ) {
+
 		ob_start();
-		$this->the_template( $template, $_template_vars );
+
+		$this->the_partial_html( $partial_slug, $_partial_vars );
+
 		$html = ob_get_clean();
+
 		return $html;
+
 	}
 
 	/**
-	 * @param string $template
-	 * @param array $_template_vars
+	 * @param string $partial_slug
+	 * @param array $_partial_vars
 	 */
-	function the_template( $template, $_template_vars = array() ) {
+	function the_partial_html( $partial_slug, $_partial_vars = array() ) {
 
-		WPLib::the_template( $template, $_template_vars, $this->owner );
+		WPLib::the_partial_html( $partial_slug, $_partial_vars, $this->owner );
 
 	}
 

@@ -11,7 +11,7 @@
 abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	/**
-	 * Used by the_template() to assign an instance of this class to variable with this name.
+	 * Used by the_partial_html() to assign an instance of this class to variable with this name.
 	 */
 	const VAR_NAME = 'theme';
 
@@ -770,7 +770,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function the_template( $template, $_template_vars = array() ) {
 
-	 	WPLib::the_template( $template, $_template_vars, WPLib::theme() );
+	 	WPLib::the_partial_html( $template, $_template_vars, WPLib::theme() );
 
 	}
 

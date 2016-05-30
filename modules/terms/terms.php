@@ -464,7 +464,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 	 */
 	static function taxonomy_classes() {
 
-		return WPLib::get_child_classes( 'WPLib_Term_Base', 'TAXONOMY' );
+		return WPLib::get_qualified_child_classes( 'WPLib_Term_Base', 'TAXONOMY' );
 
 	}
 

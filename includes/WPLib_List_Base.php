@@ -256,11 +256,11 @@ abstract class WPLib_List_Base
 				/**
 				 * @var WPLib_Item_Base $element
 				 *
-				 * @future Create a interface that would indicate a class has a 'the_template' method.
+				 * @future Create a interface that would indicate a class has a 'the_partial_html' method.
 				 *
 				 */
 				$args[ 'index' ] = $index++;
-				$element->the_template( $template, $args );
+				$element->the_partial_html( $template, $args );
 
 			}
 
