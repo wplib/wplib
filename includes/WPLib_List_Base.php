@@ -230,7 +230,7 @@ abstract class WPLib_List_Base
 	 * @param string $template
 	 * @param array $args
 	 */
-	function the_template( $template, $args = array() ) {
+	function the_partial_html( $template, $args = array() ) {
 
 		echo $this->get_template_html( $template, $args );
 
