@@ -11,11 +11,6 @@
 class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 
 	/**
-	 * @var bool Get's set if doing XMLRPC.
-	 */
-	private static $_doing_xmlrpc = false;
-
-	/**
 	 *
 	 */
 	static function on_load() {
@@ -24,8 +19,6 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 		 * Register this class as a helper for WPLib.
 		 */
 		WPLib::register_helper( __CLASS__ );
-
-		self::add_class_action( 'xmlrpc_call' );
 
 	}
 
@@ -66,56 +59,11 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 	}
 
 	/**
-	 * Capture status of DOING_XMLRPC
-	 */
-	static function _xmlrpc_call() {
-
-		self::$_doing_xmlrpc = true;
-
-	}
-
-	/**
-	 * @return bool
-	 */
-	static function doing_xmlrpc() {
-
-		return self::$_doing_xmlrpc;
-
-	}
-
-	/**
-	 * @return bool
-	 */
-	static function doing_ajax() {
-
-		return defined( 'DOING_AJAX' ) && DOING_AJAX;
-
-	}
-
-	/**
-	 * @return bool
-	 */
-	static function doing_cron() {
-
-		return defined( 'DOING_CRON' ) && DOING_CRON;
-
-	}
-
-	/**
 	 * @return bool
 	 */
 	static function doing_autosave() {
 
 		return defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE;
-
-	}
-
-	/**
-	 * @return bool
-	 */
-	static function do_log_errors() {
-
-		return defined( 'WPLIB_LOG_ERRORS' ) && WPLIB_LOG_ERRORS;
 
 	}
 
@@ -185,7 +133,7 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 	/**
 	 * @TODO Move these below to a PHP Helpers Module.
 	 */
-	
+
 	/**
 	 * @param string $string
 	 * @param bool|true $lowercase
@@ -236,4 +184,4 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 	}
 
 }
-_WPLib_WP_Helpers::on_load();
+

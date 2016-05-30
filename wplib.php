@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = '67aaf95'; 
+	const RECENT_COMMIT = 'ffef071'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -54,14 +54,11 @@ class WPLib {
 	 * @var object {
      * 		@type string[] $app_initialized Array of bool keyed by class name indicating App initialization
      * 		@type string[] $class_files Array of Class filenames keyed by class name
-     * 		@type string[] $app_dirs Array of App directories keyed by by App Class
 	 * 		@type string[] $app_classes Array of App Class Names including 'WPLib' keyed by index, index=0 is site App.
      * 		@type string[] $app_files Array of App/Module filenames keyed by module slug keyed by App Class
-     * 		@type string[] $module_slugs Array of Module slugs keyed by class name
      * 		@type string[] $module_classes Array of Module slugs keyed by class name
      * 		@type string[] $helpers Array of Class Names keyed by class name they help
 	 * 		@type string[] $helped_classes Array of Class Names keyed by class name they help
-	 * 		@type string[] $_root_urls Array of Class Names keyed by class name they help
      * 		@type string[] $partials Array of Partial files keyed by ...  @TODO finish this
      * 		@type string $theme_file Theme file name
      * 		@type string $theme_class Theme Class Name
@@ -87,11 +84,29 @@ class WPLib {
 	private static $_theme = false;
 
 	/**
+	 * @var array Property to use during development that collects registered helper classes and helper methods
+	 *            awaiting fixup and assignment of "compiled" data stored in self::$_->helper_methods.
+	 */
+	private static $_helpers = array();
+
+	/**
+	 * @var array TEMPORARY UNTIL v0.13.0
+	 */
+	private static $_helped_classes = array();
+
+	/**
 	 * The directory path for the root of the website (w/o a trailing slash)
 	 *
-	 * @var WPLib_Theme_Base|bool
+	 * @var string
 	 */
 	private static $_www_dir;
+
+	/**
+	 * The URL for the root of the website (w/o a trailing slash)
+	 *
+	 * @var string
+	 */
+	private static $_www_url;
 
 	/**
      * Flag to determine if running in production mode or not.
@@ -100,16 +115,21 @@ class WPLib {
      *
      * @var bool
      */
-    private static $_is_production = true;
+    private static $_is_production = null;
 
     /**
      * Location of file to optimize by bypassing directory scanning, etc.
      *
      * @var string
      */
-    private static $_optimizer_filepath;
+    private static $_symbols_filepath;
 
-    /**
+	/**
+	 * @var bool Get's set if doing XMLRPC.
+	 */
+	private static $_doing_xmlrpc = false;
+
+	/**
 	 *
 	 */
     static function on_load() {
@@ -127,27 +147,12 @@ class WPLib {
 
 		}
 
-        /**
-         * Set flag indicating if we are in `development` or `production` mode.
-         */
-        if ( ! defined( 'WPLIB_DEVELOPMENT' ) ) {
-
-            /**
-             * Defaults to safety, i.e.: true===self::is_production()
-             */
-            define( 'WPLIB_DEVELOPMENT', false );
-
-        }
-
-	    self::set_is_development( WPLIB_DEVELOPMENT );
-
-
 	    /**
 	     * Sets the www dir which is `/var/www` when using WPLib Box.
 	     *
 	     * Used by make_filepath_relative() and make_filepath_absolute() as well as potentially others.
 	     */
-	    self::_set_www_dir();
+	    self::_set_www();
 
 
 	    /**
@@ -157,19 +162,21 @@ class WPLib {
 
 		spl_autoload_register( array( __CLASS__, '_autoloader' ), true, true );
 
+	    self::add_class_action( 'xmlrpc_call' );
         self::add_class_action( 'plugins_loaded', 9 );
 	    self::add_class_action( 'setup_theme', 9 );
         self::add_class_action( 'shutdown' );
 
-		/**
+
+	    /**
 		 * Intialize object instance used to store all the discovered data
          * including module files to always autoload and class files to
          * autoload on demand. The value of these will be var_export()ed
-         * to the value of self::$_optimizer_filepath on shutdown, to be
+         * to the value of self::$_symbols_filepath on shutdown, to be
          * loaded in production mode.
 		 *
 		 * In the `shutdown` hook method _shutdown(), the value of WPLib::$_
-		 * is stored to {WP_CONTENT_DIR}/optimizer.php using var_export()
+		 * is stored to {WP_CONTENT_DIR}/wplib-symbols.php using var_export()
 		 * while in development mode so it can be loaded while in production
 		 * mode and not require the time-consuming inspections required to
 		 * "compile" this information on each page load.
@@ -177,13 +184,10 @@ class WPLib {
 		self::$_ = (object) array_fill_keys( array(
             'app_initialized',
             'class_files',
-			'app_dirs',
 			'app_classes',
             'app_files',
-            'module_slugs',
             'module_classes',
-			'helpers',			//  Array of class names that this class can delegate calls to. Indexed by class name. Each element is a numerically indexed array of static methods.
-			'helped_classes',
+			'helper_methods',
 			'theme_file',
             'partials',
 		), array() );
@@ -220,7 +224,7 @@ class WPLib {
 
 		if ( '~' === $filepath[0] ) {
 
-			$filepath = preg_replace( "#^(~)#", self::$_www_dir, $filepath );
+			$filepath = self::$_www_dir . substr( $filepath, 1 );
 
 		}
 
@@ -254,7 +258,7 @@ class WPLib {
 
 		self::_load_modules();
 
-		self::_set_site_classes();
+		self::_fixup_helpers();
 
 	}
 
@@ -281,12 +285,12 @@ class WPLib {
 	}
 
 	/**
-	 * Set value of www_dir.
+	 * Set value of www_dir and www_url.
 	 *
 	 * WPLib will figure it out, but Set WPLIB_WWW_DIR if you need to override (for some reason.)
 	 *
 	 */
-	static function _set_www_dir() {
+	static function _set_www() {
 
 		if ( defined( 'WPLIB_WWW_DIR' ) ) {
 
@@ -299,7 +303,13 @@ class WPLib {
 
 		}
 
-		self::$_www_dir = $www_dir;
+		$www_url = defined( 'WP_HOME' ) 
+			? WP_HOME
+			: home_url();
+
+		self::$_www_dir = rtrim( $www_dir, '/' );
+		self::$_www_url = rtrim( $www_url, '/' );
+
 
 	}
 
@@ -399,6 +409,8 @@ class WPLib {
 
 				$theme_class = array_pop( $declared_classes );
 
+				self::$_->class_files[ $theme_class ] = self::make_filepath_relative( $class_file );
+
 				if ( ! is_subclass_of( $theme_class, 'WPLib_Theme_Base' ) && self::is_development() ) {
 
 					self::trigger_error( sprintf( 'Theme class %s is not a child of WPLib_Theme_Base.', $theme_class ) );
@@ -425,33 +437,12 @@ class WPLib {
 	}
 
 	/**
-	 * Set the classes used by this site.
-	 */
-	static function _set_site_classes() {
-
-		if ( empty( self::$_->site_classes ) ) {
-
-			$site_classes = array_keys( self::$_->class_files );
-
-			foreach (self::$_->module_classes as $app ) {
-
-				$site_classes = array_merge( $site_classes, array_values( $app ) );
-
-			}
-
-			self::$_->site_classes = $site_classes;
-
-		}
-
-	}
-
-	/**
 	 * Return the list of classes declared after WPLib first loads.
 	 * @return array
 	 */
 	static function site_classes() {
 
-		return self::$_->site_classes;
+		return array_keys( self::$_->class_files );
 
 	}
 
@@ -466,17 +457,17 @@ class WPLib {
 
 		static $optimized = false, $loaded = array();
 
+		self::$_symbols_filepath = WP_CONTENT_DIR . '/wplib-symbols.php';
+
 		if ( ! $optimized && self::is_production() ) {
 
-			self::$_optimizer_filepath = WP_CONTENT_DIR . '/optimizer.php';
+			if ( $symbols_data = self::cache_get( 'symbols_data', 'wplib' ) ) {
 
-			if ( $optimizer_data = self::cache_get( 'optimizer_data', 'wplib' ) ) {
+				self::$_ = $symbols_data;
 
-				self::$_ = $optimizer_data;
+			} else if ( is_file(self::$_symbols_filepath ) ) {
 
-			} else if ( is_file(self::$_optimizer_filepath ) ) {
-
-				self::$_ = require(self::$_optimizer_filepath);
+				self::$_ = require(self::$_symbols_filepath);
 
 			}
 
@@ -498,7 +489,7 @@ class WPLib {
 
 		if ( empty( self::$_->app_initialized[ $app_class = get_called_class() ] ) ) {
 
-			static::_map_autoload_data();
+			static::_map_app_data();
 
 			static::_register_partials();
 
@@ -514,6 +505,7 @@ class WPLib {
 	 * Optionally call an on_load() method.
 	 *
 	 * @TODO Generate an error stack in the case this recursive logic fails to find the right class.
+	 *
 	 */
 	private static function _load_modules() {
 
@@ -539,6 +531,8 @@ class WPLib {
 
 					$module_class = array_pop( $declared_classes );
 
+					self::$_->class_files[ $module_class ] = self::make_filepath_relative( $module_file );
+
 					if ( ! ( is_subclass_of( $module_class, 'WPLib_Module_Base' ) || 'WPLib_Module_Base' === $module_class ) ) {
 
 						self::trigger_error( sprintf( "%s must extend from WPLib_Module_Base.", $module_class ) );
@@ -546,7 +540,6 @@ class WPLib {
 					}
 
 					self::$_->module_classes[ $app_class ][ $module_slug ] = $module_class;
-					self::$_->module_slugs[ $app_class ][ $module_class ] = $module_slug;
 
 					if (self::class_declares_method($module_class, 'on_load')) {
 
@@ -576,21 +569,24 @@ class WPLib {
 	 * Maps all App Main Module Files and all class files in `/includes/` and Module `/includes/` directories.
 	 *
 	 */
-	private static function _map_autoload_data() {
+	private static function _map_app_data() {
 
 		$app_class = get_called_class();
 
 		$root_dir = static::root_dir();
 
-		self::$_->app_dirs[ $app_class ] = self::make_filepath_relative( $root_dir );
+		/**
+		 * Add in this App's class filepath
+		 */
+		self::$_->class_files[ $app_class ] = self::make_filepath_relative( self::get_class_filepath( $app_class ) );
 
 		/**
-		 * Add the include files for this App to the autoload classmap.
+		 * Add the include files for this App to the autoload symbols.
 		 */
 		static::_find_include_files( "{$root_dir}/includes" );
 
 		/**
-		 * Add the module main files for this App to the list of mustload files.
+		 * Add the module main files for this App to the list of module files.
 		 */
 		self::$_->app_files[ $app_class ] = array();
 
@@ -612,11 +608,16 @@ class WPLib {
 			self::$_->app_files[ $app_class ][ $module_slug ] = "{$relative_dir}/{$module_slug}.php";
 
 			/**
-			 * Add the include files for this Module to the autoload classmap.
+			 * Add the include files for this Module to the autoload symbols.
 			 */
 			static::_find_include_files( "{$module_dir}/includes" );
 
 		}
+
+		/**
+		 * Initialize the Helper methods array while we are at it.
+		 */
+		self::$_->helper_methods[ $app_class ] = array();
 
 	}
 
@@ -648,26 +649,26 @@ class WPLib {
 
 			} else {
 
-				$optimizer_data = is_file( self::$_optimizer_filepath )
-					? require( self::$_optimizer_filepath )
+				$symbols_data = is_file( self::$_symbols_filepath )
+					? require( self::$_symbols_filepath )
 					: false;
 
-				if ( ! $optimizer_data || serialize( self::$_ ) !== serialize( $optimizer_data ) ) {
+				if ( ! $symbols_data || serialize( self::$_ ) !== serialize( $symbols_data ) ) {
 
-					$optimizer_php = "<?" . "php\n\n// Generated by WPLib. DO NOT MODIFY.\n\nreturn " . var_export(self::$_, true) . ';';
+					$symbols_php = "<?" . "php\n\n// Auto-generated by WPLib. DO NOT MODIFY.\n\nreturn " . var_export(self::$_, true) . ';';
 
 					/**
 					 * Get rid of stupid call to __set_state() for stdClass.
 					 * What were the PHP internals guys smoking anyway?!?
 					 * @see: http://stackoverflow.com/questions/16612668/php-var-export-object-forgot-to-serialize-before-storing
 					 */
-					$optimizer_php = str_replace( 'stdClass::__set_state', '(object)', $optimizer_php );
+					$symbols_php = str_replace( 'stdClass::__set_state', '(object)', $symbols_php );
 
-					file_put_contents(self::$_optimizer_filepath, $optimizer_php );
+					file_put_contents(self::$_symbols_filepath, $symbols_php );
 
 				}
 
-				self::cache_set( 'optimizer_data', self::$_, 'wplib', 60*10 );
+				self::cache_set( 'symbols_data', self::$_, 'wplib', 60*10 );
 
 			}
 
@@ -699,6 +700,24 @@ class WPLib {
 	 */
 	static function is_production() {
 
+		if ( is_null( self::$_is_production ) ) {
+
+			/**
+			 * Set flag indicating if we are in `development` or `production` mode.
+			 */
+			if ( ! defined( 'WPLIB_DEVELOPMENT' ) ) {
+
+				/**
+				 * Defaults to safety, i.e.: true===self::is_production()
+				 */
+				define( 'WPLIB_DEVELOPMENT', false );
+
+			}
+
+			self::set_is_development( WPLIB_DEVELOPMENT );
+
+		}
+
 		return self::$_is_production;
 
 	}
@@ -719,7 +738,11 @@ class WPLib {
 	 */
 	static function is_development() {
 
-		return ! self::$_is_production;
+		$is_production = is_null( self::$_is_production )
+			? self::is_production()
+			: self::$_is_production;
+
+		return ! $is_production;
 
 	}
 
@@ -782,52 +805,42 @@ class WPLib {
 	 * Register a helper class to the specified class.
 	 *
 	 * @param string $helper_class The name of the helper class.
-	 * @param string|bool $helped_class  Name of the class adding the helper. Defaults to called class.
+	 * @param array { 
+	 *      @type string $helped_class  Name of the class adding the helper. Defaults to called class.
+	 *      @type array $method_names Array of method names to contribute to the $helped_class.
+	 * }
 	 *
-	 * @future Add 3rd parameter to specify which methods to help with.
-	 *       Or change 2nd parameter to optional $args.
 	 */
-	static function register_helper( $helper_class, $helped_class = false ) {
+	static function register_helper( $helper_class, $args = array() ) {
+		
+		if ( is_string( $args ) ) {
 
-		if ( ! $helped_class ) {
+			$err_msg = __( '%s::register_helper() method signature has changed since 0.13.0. The 2nd parameter ' .
+					'now expects to be an array of $args. Change your call to one of these formats instead: ' .
+					"%s::register_helper( '%s', 'helped_class=%s' ); or " .
+					"%s::register_helper( '%s', array( 'helped_class' => '%s' );",
+				'wplib' );
 
-			$helped_class = get_called_class();
+			self::trigger_error( sprintf( $err_msg,
+				get_called_class(),
+				get_called_class(),
+				$helper_class,
+				$args,
+				get_called_class(),
+				$helper_class,
+				$args
+			));
 
-		}
+		} 
+		
+		$args = wp_parse_args( $args, array(
 
-		self::$_->helpers[ $helped_class ][] = $helper_class;
+			'helped_class' => get_called_class(),
+			'method_names' => null,
 
-	}
+		));
 
-	/**
-	 * @return array
-	 */
-	private static function _current_helped_classes() {
-
-		return end( self::$_->helped_classes );
-
-	}
-
-	/**
-	 * Returns the class that is currently being "helped."
-	 *
-	 * The Helped class is the one to the left of '::' when the method
-	 * is actually in a "helper" class:
-	 *
-	 *      {$current_helped_class}::register_helper( $helper_class );
-	 *
-	 * Which is equivalent to:
-	 *
-	 *      self::register_helper( $helper_class, $current_helped_class );
-	 *
-	 * @return array
-	 */
-	static function current_helped_class() {
-
-		$helped_classes = self::_current_helped_classes();
-		return count( $helped_classes )
-			? $helped_classes[0]
-			: get_called_class();
+		self::$_helpers[ $args[ 'helped_class' ] ][ $helper_class ] = $args[ 'method_names' ];
 
 	}
 
@@ -836,143 +849,193 @@ class WPLib {
 	 * This allows us to document a single "API" for WPLib yet
 	 * structure the code more conveniently in multiple class files.
 	 *
-	 * @example  self::_call_helper( __CLASS__, 'register_item', array( $item ), $found );
+	 * @example  self::_call_helper( __CLASS__, 'register_item', array( $item ) );
 	 *
 	 * @param string $helped_class  Name of class that is calling the helper
 	 * @param string $helper_method Name of the helper method
 	 * @param array  $args          Arguments to pass to the helper method
-	 * @param object $container     An object containing a 'callable' property.
 	 *
 	 * @return mixed|null
 	 */
-	static function _call_helper( $helped_class, $helper_method, $args, $container = null ) {
+	static function _call_helper( $helped_class, $helper_method, $args ) {
 
-		$value = null;
-
-
-		if ( is_null( $container ) ) {
-			/**
-			 * This container is needed because call_user_func() doesn't pass things by reference
-			 * This is relevant when we need to call the helper of the parent class.
-			 */
-			$container = new stdClass();
-
-		}
-
-		self::$_->helped_classes[ $hash = spl_object_hash( $container ) ][] = get_called_class();
-
-		$found = false;
-
-		/*
-		 * Check to see if the helper callable for this class and method is cached.
-		 */
-		$container->callable = wp_cache_get(
-			$cache_key = "{$helped_class}::{$helper_method}()",
-			$group = "wplib_helpers",
-			false,
-			$found  // This gets set by wp_cache_get()
-		);
-
-		if ( ! $found ) {
-
-			/*
-			 * If not cached, find the callable
-			 */
-			if ( isset( self::$_->helpers[ $helped_class ] ) ) {
-
-				/*
-				 * If not class has helper classes
-				 */
-				foreach ( self::$_->helpers[ $helped_class ] as $helper_class ) {
-					/*
-
-					 * Loop through each of the helper classes to see
-					 * if the method exists in that helper class
-					 */
-					if ( method_exists( $helper_class, $helper_method ) && is_callable( $callable = array( $helper_class, $helper_method ) ) ) {
-
-						/*
-						 * If helper method found in helper class, set $callable and cache it.
-						 */
-						wp_cache_set( $cache_key, $container->callable = $callable, $group );
-
-						$found = true;
-
-						break;
-
-					}
-
-				}
-			}
-
-		}
-
-		$parent_called = false;
-
-		if ( ! $found ) {
-
-			if ( $parent_class = get_parent_class( $helped_class ) ) {
-
-				/**
-				 * Call the method in the parent class assuming the parent has the method.
-				 */
-
-				$value = call_user_func( array( $parent_class, '_call_helper' ),
-					$parent_class,
-					$helper_method,
-					$args,
-					$container );
-
-				$parent_called = true;
-
-				if ( $container->callable ) {
-
-					/**
-					 * Store it for future calls
-					 */
-
-					wp_cache_set( "{$parent_class}::{$helper_method}()", $container->callable, $group );
-
-					$found = true;
-
-				}
-
-			}
-		}
-
-		if ( ! $found ) {
+		if ( empty( self::$_->helper_methods[ $helped_class ][ $helper_method ] ) ) {
 
 			/*
 			 * Oops. No helper was found after all that.  Output an error message.
 			 */
-			$message = sprintf(
+
+			$err_msg = sprintf(
 				__( 'ERROR: There is no helper method %s() for class %s. ', 'wplib' ),
 				$helper_method,
 				$helped_class
 			);
 
-			static::trigger_error( $message, E_USER_ERROR );
+			self::trigger_error( $err_msg, E_USER_ERROR );
 
-			$container->callable = null;
+			$value = null;
 
-		} else if ( ! $parent_called ) {
+		} else {
 
-			/*
-			 * A helper was found so call it.
-			 */
-			$value = call_user_func_array( $container->callable, $args );
-
-		}
-
-		array_pop( self::$_->helped_classes[ $hash ] );
-
-		if ( 0 === count( self::$_->helped_classes[ $hash ] ) ) {
-
-			unset( self::$_->helped_classes[ $hash ] );
-
+			$value = call_user_func_array( self::$_->helper_methods[ $helped_class ][ $helper_method ], $args );
 		}
 
 		return $value;
+
+	}
+
+	/**
+	 * Fixup the Helper Classes
+	 */
+	static function _fixup_helpers() {
+
+		static $IGNORABLE_METHODS = array(
+			'on_load',
+			'make_new_item',
+			'instance_class',
+			'get_list',
+		);
+
+		$IGNORABLE_METHODS = apply_filters( 'wplib_ignorable_helper_methods', $IGNORABLE_METHODS );
+
+		$app_classes = array_keys( self::$_->helper_methods );
+
+		/**
+		 * First sort to ensure parent classes come first
+		 */
+		usort( $app_classes, function ( $helped_class1, $helped_class2 ) {
+
+			return is_subclass_of( $helped_class2, $helped_class1 ) ? -1 : 1;
+
+		});
+
+		foreach( $app_classes as $helped_class ) {
+
+			$helper_classes = self::$_helpers[ $helped_class ];
+
+			$class_methods = array();
+
+			$bypass_checks = false;
+
+			foreach( $helper_classes as $helper_class => $helper_methods ) {
+
+				if ( is_null( $helper_methods )  ) {
+
+					$helper_methods = self::get_public_static_methods( $helper_class );
+
+				} else if ( ! is_array( $helper_methods ) ) {
+
+					$err_msg = _( 'Helper methods passed to register_helper() is not an array for class %s helped by class %s.', 'wplib' );
+
+					self::trigger_error( sprintf( $err_msg, $helped_class, $helper_class ) );
+
+					continue;
+
+				} else {
+
+					/**
+					 * The developer provided this list, let it go unchecked...
+					 */
+					$bypass_checks = true;
+
+				}
+
+				/**
+				 * For each Helper Method check to see if we want to use it.
+				 * If we want to use it check to see if a duplicate.
+				 * If not a duplicate, add to list of helpers.
+				 */
+				foreach( $helper_methods as $helper_method ) {
+
+					if ( ! $bypass_checks ) {
+
+						if ( '_' === $helper_method[0] || in_array( $helper_method, $IGNORABLE_METHODS ) ) {
+
+							continue;
+
+						} else if ( ! self::class_declares_method( $helper_class, $helper_method ) ) {
+							/**
+							 * Don't add in inherited methods because there will be too many duplicates.
+							 * After this loop then just merge in the parent's helpers.
+							 */
+
+							continue;
+						}
+
+					}
+
+					if ( isset( $class_methods[ $helper_method ] ) ) {
+
+						$err_msg = __(
+							'%s already has a helper method %s when %s attempted to provide another. ' .
+							'To correct this provide an explicit list of array(\'method_names\' => array(...)) '.
+							'as the 2nd parameter to %s::register_helper() for one of both of these classes ' .
+							'while being sure to omit %s from one of the two lists.', 'wplib' );
+
+						self::trigger_error( sprintf( $err_msg,
+							$helped_class,
+							$class_methods[ $helper_method ],
+							$helped_class,
+							$helper_method
+						));
+
+						continue;
+
+					}
+
+					$class_methods[ $helper_method ] = "{$helper_class}::{$helper_method}";
+
+				}
+
+			}
+
+			$current_class = $helped_class;
+
+			while ( $parent_class = get_parent_class( $current_class ) ) {
+
+				$current_class = $parent_class;
+
+				/**
+				 * If there is a parent class check to see if it has helper methods.
+				 */
+				if ( ! empty( self::$_->helper_methods[ $current_class ] ) ) {
+
+					/**
+					 * Merge in parent class helper methods but do not override existing ones in $class_methods.
+					 */
+					$class_methods = array_merge( self::$_->helper_methods[ $current_class ], $class_methods );
+
+					/**
+					 * Don't need to get grandparent class because parent class already got their helpers.
+					 *
+					 */
+					break;
+
+				}
+
+			}
+
+			self::$_->helper_methods[ $helped_class ] = $class_methods;
+		}
+
+	}
+
+	/**
+	 * Retrurn array of public static methods given a class name.
+	 *
+	 * @param string $class_name
+	 *
+	 * @return string[]
+	 */
+	static function get_public_static_methods( $class_name ) {
+
+		$reflector = new ReflectionClass( $class_name );
+
+		$methods = $reflector->getMethods( ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_STATIC );
+
+		$methods = array_map( function( $method ) { return $method->name; }, $methods );
+		
+		return $methods;
 
 	}
 
@@ -1024,11 +1087,22 @@ class WPLib {
 			$class_name = get_called_class();
 		}
 
-		$filepath = '/' . ltrim( $filepath, '/' );
+		return realpath( dirname( self::get_class_filepath( $class_name ) ) . '/' . ltrim( $filepath, '/' ) );
+
+	}
+
+	/**
+	 * Return the filepath given a class name.
+	 *
+	 * @param bool|string $class_name Name of class to return the source dir.
+	 *
+	 * @return string
+	 */
+	static function get_class_filepath( $class_name ) {
 
 		$reflector = new ReflectionClass( $class_name );
 
-		return realpath( dirname( $reflector->getFileName() ) . $filepath );
+		return $reflector->getFileName();
 
 	}
 
@@ -1040,8 +1114,12 @@ class WPLib {
 	 *
 	 * @return string
 	 *
+	 * @TODO Calculate root_urls based on self::$_->class_files
+	 *
 	 */
 	static function get_root_url( $filepath, $class_name = false ) {
+		
+		static $root_urls = array();
 
 		if ( ! $class_name ) {
 
@@ -1049,31 +1127,22 @@ class WPLib {
 
 		}
 
-		if ( ! isset( self::$_->root_urls[ $class_name ] ) ) {
+		if ( ! isset( $root_urls[ $class_name ] ) ) {
 
-			$root_dir = static::get_root_dir( '', $class_name );
+			if ( empty( self::$_->class_files[ $class_name ] ) && self::is_development() ) {
 
-			if ( preg_match( '#^' . preg_quote( get_stylesheet_directory() ) . '(.*)#', $root_dir, $match ) ) {
-				/**
-				 * If in the theme directory
-				 */
-				$root_url = get_stylesheet_directory_uri() . ( isset( $match[1] ) ? $match[1] : '' );
-
-			} else {
-				/**
-				 * Or if in the plugins directories
-				 */
-				$root_url = plugins_url( '', $root_dir . '/_.php' );
+				$err_msg = __( '%s not found in WPLib::$_->class_files.', 'wplib' );
+				self::trigger_error( sprintf( $err_msg, $class_name ) );
 
 			}
 
-			self::$_->root_urls[ $class_name ] = rtrim( $root_url, '/' );
+			$root_urls[ $class_name ] = rtrim( dirname( self::$_www_url . substr( self::$_->class_files[ $class_name ], 1 ) ), '/' );
 
 		}
 
 		$filepath = '/' . ltrim( $filepath, '/' );
 
-		return self::get_real_url( self::$_->root_urls[ $class_name ] . $filepath );
+		return self::get_real_url( $root_urls[ $class_name ] . $filepath );
 
 	}
 
@@ -2019,11 +2088,9 @@ class WPLib {
 	 */
 	static function get_module_slug( $class_name, $app = false ) {
 
-		$app_class = static::get_app_class( $app );
+		$module_slugs = array_flip( self::$_->module_slugs[ static::get_app_class( $app ) ] );
 
-		return ! empty( self::$_->module_slugs[ $app_class ][ $class_name ] )
-			? self::$_->module_slugs[ $app_class ][ $class_name ]
-			: null;
+		return ! empty( $module_slugs[ $class_name ] ) ? $module_slugs[ $class_name ] : null;
 
 	}
 
@@ -2284,6 +2351,52 @@ class WPLib {
 
 			}
 		}
+	}
+
+
+	/**
+	 * Capture status of DOING_XMLRPC
+	 */
+	static function _xmlrpc_call() {
+
+		self::$_doing_xmlrpc = true;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function doing_xmlrpc() {
+
+		return self::$_doing_xmlrpc;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function doing_ajax() {
+
+		return defined( 'DOING_AJAX' ) && DOING_AJAX;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function doing_cron() {
+
+		return defined( 'DOING_CRON' ) && DOING_CRON;
+
+	}
+
+	/**
+	 * @return bool
+	 */
+	static function do_log_errors() {
+
+		return defined( 'WPLIB_LOG_ERRORS' ) && WPLIB_LOG_ERRORS;
+
 	}
 
 	/**
