@@ -11,10 +11,32 @@
 class WPLib_Config extends WPLib_Base {
 
 	/**
+	 * The domain for the site
+	 * 
+	 * Typically set in wp-config-local.php or automatically 
+	 * set from $_SERVER['HTTP_HOST'] in wp-config.php if out
+	 * config file is used.
+	 * 
+	 * @default Set from $_SERVER['HTTP_HOST']
+	 *
+	 * @example:  "my-app.dev" 
+	 *
+	 * @var null|string
+	 */
+	var $SITE_DOMAIN = null;
+
+	/**
+	 * The URL protocol to use: 'http' or 'https'
+	 * 
+	 * @var string
+	 */
+	var $REQUEST_PROTOCOL = 'http';
+
+	/**
 	 * Flag to determine if running in "production" mode.
-	 * 
+	 *
 	 * Production mode is safest so it is the default.
-	 * 
+	 *
 	 * @var bool
 	 */
 	var $IS_PRODUCTION = true;
@@ -93,7 +115,7 @@ class WPLib_Config extends WPLib_Base {
 	 * @param stdClass $config
 	 */
 	function __construct( $config ) {
-
+		
 		if ( isset( $config->IS_DEVELOPMENT ) ) {
 
 			$config->IS_PRODUCTION = ! $config->IS_DEVELOPMENT;
@@ -101,7 +123,11 @@ class WPLib_Config extends WPLib_Base {
 
 		}
 
-		parent::__construct( (array) $config );
+		if ( ! isset( $config->SITE_DOMAIN ) ) {
+			$config->SITE_DOMAIN = $_SERVER['HTTP_HOST'];
+		}
+		
+		parent::__construct( $config );
 
 	}
 
