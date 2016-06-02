@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = '2a01ef6'; 
+	const RECENT_COMMIT = 'db4ee81'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
