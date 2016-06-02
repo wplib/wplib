@@ -64,16 +64,16 @@ class WPLib_Config extends WPLib_Base {
 	 * 
 	 * @var bool
 	 */
-	var $BYPASS_PREFIX_CHECK = false;
+	var $CHECK_PREFIX_LENGTH = true;
 
 	/**
-	 * The Class Name of the Config Class to use.
+	 * The filepath of the Config class to use.
 	 *
-	 * Typically it is WPLib_Config but may be overridden with a child class.
+	 * Overrides this the default config class but must be a child class of this class.
 	 *
-	 * @var bool
+	 * @var string
 	 */
-	var $ALT_CONFIG = __CLASS__;
+	var $ALT_CONFIG = null;
 
 	/**
 	 * URL of the website root (w/o a trailing slash)

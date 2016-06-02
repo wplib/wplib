@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = 'db4ee81'; 
+	const RECENT_COMMIT = 'cb47c6b'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -54,11 +54,11 @@ class WPLib {
 	 * @var object {
      * 		@type string[] $app_initialized Array of bool keyed by class name indicating App initialization
      * 		@type string[] $class_files Array of Class filenames keyed by class name
-	 * 		@type string[] $app_classes Array of App Class Names including 'WPLib' keyed by index, index=0 is site App.
+     * 		@type string[] $app_classes Array of App Class Names including 'WPLib' keyed by index, index=0 is site App.
      * 		@type string[] $app_files Array of App/Module filenames keyed by module slug keyed by App Class
      * 		@type string[] $module_classes Array of Module slugs keyed by class name
      * 		@type string[] $helpers Array of Class Names keyed by class name they help
-	 * 		@type string[] $helped_classes Array of Class Names keyed by class name they help
+     * 		@type string[] $helped_classes Array of Class Names keyed by class name they help
      * 		@type string[] $partials Array of Partial files keyed by ...  @TODO finish this
      * 		@type string $theme_file Theme file name
      * 		@type string $theme_class Theme Class Name
@@ -268,7 +268,7 @@ class WPLib {
 
 			$config_filepath = self::get_root_dir( "/includes/{$default_config_class}.php" );
 
-			if ( ! isset( $wplib->ALT_CONFIG ) ) {
+			if ( is_null( $wplib->ALT_CONFIG ) ) {
 
 				$wplib->ALT_CONFIG = null;
 
