@@ -29,6 +29,8 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	 * option in database.
 	 */
 	static function _wp_loaded() {
+		
+		global $wplib;
 
 		$commit_revised = false ;
 
@@ -36,7 +38,7 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 			$recent_commit = self::get_recent_commit( $class_name );
 
-			if ( WPLib::is_development() ) {
+			if ( $wplib->IS_DEVELOPMENT ) {
 				/**
 				 * During development look at file RECENT_COMMIT
 				 * that a git commit-hook will hopefully have added
@@ -130,13 +132,15 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	 */
 	static function load_recent_commit( $class_name ) {
 
+		global $wplib;
+		
 		$filepath = self::_get_recent_commit_file( $class_name );
 
 		$recent_commit = is_file( $filepath )
 			? trim( file_get_contents( $filepath ) )
 			: null;
 
-		if ( is_null( $recent_commit ) && WPLib::is_development() ) {
+		if ( is_null( $recent_commit ) && $wplib->IS_DEVELOPMENT ) {
 			/**
 			 * Call `git log` via exec()
 			 */

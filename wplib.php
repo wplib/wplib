@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = 'ffef071'; 
+	const RECENT_COMMIT = '2a01ef6'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -89,34 +89,6 @@ class WPLib {
 	 */
 	private static $_helpers = array();
 
-	/**
-	 * @var array TEMPORARY UNTIL v0.13.0
-	 */
-	private static $_helped_classes = array();
-
-	/**
-	 * The directory path for the root of the website (w/o a trailing slash)
-	 *
-	 * @var string
-	 */
-	private static $_www_dir;
-
-	/**
-	 * The URL for the root of the website (w/o a trailing slash)
-	 *
-	 * @var string
-	 */
-	private static $_www_url;
-
-	/**
-     * Flag to determine if running in production mode or not.
-     * 
-     * Default to true for safety
-     *
-     * @var bool
-     */
-    private static $_is_production = null;
-
     /**
      * Location of file to optimize by bypassing directory scanning, etc.
      *
@@ -134,7 +106,7 @@ class WPLib {
 	 */
     static function on_load() {
 
-        /**
+	    /**
 		 * @var bool Flag to ensure this method is only ever called once.
 		 */
 		static $done = false;
@@ -148,20 +120,15 @@ class WPLib {
 		}
 
 	    /**
-	     * Sets the www dir which is `/var/www` when using WPLib Box.
-	     *
-	     * Used by make_filepath_relative() and make_filepath_absolute() as well as potentially others.
+	     * Set a marker to ignore classes declared before this class.
 	     */
-	    self::_set_www();
+	    self::$_pre_wplib_class_count = count( get_declared_classes() ) - 1;
 
+	    spl_autoload_register( array( __CLASS__, '_autoloader' ), true, true );
 
 	    /**
-         * Set a marker to ignore classes declared before this class.
-         */
-        self::$_pre_wplib_class_count = count( get_declared_classes() ) - 1;
-
-		spl_autoload_register( array( __CLASS__, '_autoloader' ), true, true );
-
+	     * Add Action and Filter Hooks
+	     */
 	    self::add_class_action( 'xmlrpc_call' );
         self::add_class_action( 'plugins_loaded', 9 );
 	    self::add_class_action( 'setup_theme', 9 );
@@ -223,8 +190,9 @@ class WPLib {
 	static function make_filepath_absolute( $filepath ) {
 
 		if ( '~' === $filepath[0] ) {
+			global $wplib;
 
-			$filepath = self::$_www_dir . substr( $filepath, 1 );
+			$filepath = $wplib->WWW_DIR . substr( $filepath, 1 );
 
 		}
 
@@ -240,8 +208,9 @@ class WPLib {
 	 * @return string
 	 */
 	static function make_filepath_relative( $filepath ) {
+		global $wplib;
 
-		return preg_replace( '#^' . preg_quote( self::$_www_dir ) . '(.*)$#', "~$1", $filepath );
+		return preg_replace( '#^' . preg_quote( $wplib->WWW_DIR ) . '(.*)$#', "~$1", $filepath );
 
 	}
 
@@ -285,31 +254,125 @@ class WPLib {
 	}
 
 	/**
-	 * Set value of www_dir and www_url.
+	 * Sets the one (1) WPLib global variable, $wplib.
 	 *
-	 * WPLib will figure it out, but Set WPLIB_WWW_DIR if you need to override (for some reason.)
+	 * Used for configuration in wp-config-local.php as stdClass. Converted to WPLib_Config in _set_wplib().
+	 */
+	static function _set_wplib() {
+
+		global $wplib;
+
+		$default_config_class = 'WPLib_Config';
+		
+		do {
+
+			$config_filepath = self::get_root_dir( "/includes/{$default_config_class}.php" );
+
+			if ( ! isset( $wplib->ALT_CONFIG ) ) {
+
+				$wplib->ALT_CONFIG = null;
+
+				break;
+
+			}
+
+			if ( ! is_file( $wplib->ALT_CONFIG ) ) {
+
+				self::trigger_error( '$wplib->ALT_CONFIG specifies a missing file.', 'wplib' );
+				break;
+
+			}
+
+			$config_filepath = $wplib->ALT_CONFIG;
+
+		} while ( false );
+
+		do {
+
+			/**
+			 * Load WPLib_Base which WPLib_Config extends
+			 */
+			require ( dirname( $config_filepath ) . '/WPLib_Base.php' );
+
+			/**
+			 * Now load WPLib_Config which may be our config class or our config class may extend it.
+			 */
+			require ( $config_filepath );
+
+			if ( is_null( $wplib->ALT_CONFIG ) ) {
+				$config_class = $default_config_class;
+				break;
+			}
+
+			$class_count = count( get_declared_classes() );
+
+			require ( $config_filepath );
+
+			$new_class_count = count( $declared_classes = get_declared_classes() );
+
+			if ( $class_count === $new_class_count ) {
+
+				$err_msg = __( 'File %s does not declare any class; should declare a class extending %s.', 'wplib' );
+				self::trigger_error( sprintf( $err_msg, $wplib->ALT_CONFIG, $default_config_class ) );
+				break;
+
+			}
+
+			if ( $class_count + 1 < $new_class_count ) {
+
+				$err_msg = __( 'File %s does declares more than one class; should only declare one child of %s.', 'wplib' );
+				self::trigger_error( sprintf( $err_msg, $wplib->ALT_CONFIG, $default_config_class ) );
+				break;
+
+			}
+
+			$config_class = array_pop( $declared_classes );
+
+			if ( ! class_exists( $config_class ) ) {
+
+				$err_msg = __( 'Class %s declared from %s is not a child class of %s.', 'wplib' );
+				self::trigger_error( sprintf( $err_msg, $config_class, $wplib->ALT_CONFIG, $default_config_class ) );
+				$config_class = $default_config_class;
+				break;
+
+			}
+
+
+		} while ( false );
+
+		$wplib = new $config_class( isset( $wplib ) ? $wplib : array() );
+
+	}
+
+	/**
+	 * Set value of $wplib->WWW_DIR and $wplib->WWW_URL.
+	 *
+	 * WPLib will figure it out, but set these if you need to override (for some reason.)
 	 *
 	 */
 	static function _set_www() {
+		/**
+		 * @var WPLib_Config
+		 */
+		global $wplib;
 
-		if ( defined( 'WPLIB_WWW_DIR' ) ) {
-
-			$www_dir = WPLIB_WWW_DIR;
-
-		} else {
+		if ( ! isset( $wplib->WWW_DIR ) ) {
 
 			$content_path = preg_replace( '#^https?://[^/]+(.*)$#', '$1', WP_CONTENT_URL );
-			$www_dir = substr( WP_CONTENT_DIR, 0, - strlen( $content_path ) );
+			$wplib->WWW_DIR = substr( WP_CONTENT_DIR, 0, - strlen( $content_path ) );
 
 		}
 
-		$www_url = defined( 'WP_HOME' ) 
-			? WP_HOME
-			: home_url();
+		if ( ! isset( $wplib->WWW_URL ) ) {
 
-		self::$_www_dir = rtrim( $www_dir, '/' );
-		self::$_www_url = rtrim( $www_url, '/' );
+			$wplib->WWW_URL = defined( 'WP_HOME' )
+				? WP_HOME
+				: home_url();
 
+		}
+
+		$wplib->WWW_DIR = rtrim( $wplib->WWW_DIR, '/' );
+		$wplib->WWW_URL = rtrim( $wplib->WWW_URL, '/' );
 
 	}
 
@@ -379,6 +442,8 @@ class WPLib {
 	 */
 	static function load_theme_class() {
 
+		global $wplib;
+
 		static $loaded = false;
 
 		if ( ! $loaded ) {
@@ -394,7 +459,7 @@ class WPLib {
 
 				$class_file = get_stylesheet_directory() . '/' . get_stylesheet() . '-theme.php';
 
-				if ( ! is_file( $class_file ) && self::is_development() ) {
+				if ( ! is_file( $class_file ) && $wplib->IS_DEVELOPMENT ) {
 
 					self::trigger_error( sprintf( 'No theme class file found at %s.', $class_file ) );
 					break;
@@ -411,7 +476,7 @@ class WPLib {
 
 				self::$_->class_files[ $theme_class ] = self::make_filepath_relative( $class_file );
 
-				if ( ! is_subclass_of( $theme_class, 'WPLib_Theme_Base' ) && self::is_development() ) {
+				if ( ! is_subclass_of( $theme_class, 'WPLib_Theme_Base' ) && $wplib->IS_DEVELOPMENT ) {
 
 					self::trigger_error( sprintf( 'Theme class %s is not a child of WPLib_Theme_Base.', $theme_class ) );
 
@@ -455,25 +520,46 @@ class WPLib {
 	 */
 	static function initialize() {
 
-		static $optimized = false, $loaded = array();
+		static $done_once = false, $loaded = array();
+
+		global $wplib;
 
 		self::$_symbols_filepath = WP_CONTENT_DIR . '/wplib-symbols.php';
 
-		if ( ! $optimized && self::is_production() ) {
+		if ( ! $done_once ) {
 
-			if ( $symbols_data = self::cache_get( 'symbols_data', 'wplib' ) ) {
+			/**
+			 * Sets the one (1) WPLib global variable, $wplib.
+			 *
+			 * Used for configuration in wp-config-local.php as stdClass. Converted to WPLib_Config in _set_wplib().
+			 */
+			self::_set_wplib();
 
-				self::$_ = $symbols_data;
+			/**
+			 * Sets the www dir which is `/var/www` when using WPLib Box.
+			 *
+			 * Used by make_filepath_relative() and make_filepath_absolute() as well as potentially others.
+			 */
+			self::_set_www();
 
-			} else if ( is_file(self::$_symbols_filepath ) ) {
 
-				self::$_ = require(self::$_symbols_filepath);
+			if ( $wplib->IS_PRODUCTION ) {
+
+				if ( $symbols_data = self::cache_get( 'symbols_data', 'wplib' ) ) {
+
+					self::$_ = $symbols_data;
+
+				} else if ( is_file(self::$_symbols_filepath ) ) {
+
+					self::$_ = require(self::$_symbols_filepath);
+
+				}
 
 			}
 
 		}
 
-		$optimized = true;
+		$done_once = true;
 
 		if ( empty( $loaded[ $app_class = get_called_class() ] ) ) {
 
@@ -598,7 +684,7 @@ class WPLib {
 			$module_slug = basename( $module_dir );
 
 			/**
-			 * Replace self::www_dir() of the currently running machine with '~'
+			 * Replace $wplib->WWW_DIR of the currently running machine with '~'
 			 */
 			$relative_dir = self::make_filepath_relative( $module_dir );
 
@@ -640,7 +726,9 @@ class WPLib {
 	 */
 	static function _shutdown() {
 
-		if ( self::is_development() ) {
+		global $wplib;
+
+		if ( $wplib->IS_DEVELOPMENT ) {
 
 			if (self::$_file_loading) {
 
@@ -692,68 +780,6 @@ class WPLib {
 			}
 
 		}
-
-	}
-
-	/**
-	 * @return bool
-	 */
-	static function is_production() {
-
-		if ( is_null( self::$_is_production ) ) {
-
-			/**
-			 * Set flag indicating if we are in `development` or `production` mode.
-			 */
-			if ( ! defined( 'WPLIB_DEVELOPMENT' ) ) {
-
-				/**
-				 * Defaults to safety, i.e.: true===self::is_production()
-				 */
-				define( 'WPLIB_DEVELOPMENT', false );
-
-			}
-
-			self::set_is_development( WPLIB_DEVELOPMENT );
-
-		}
-
-		return self::$_is_production;
-
-	}
-
-	/**
-	 * @param bool $is_production
-	 */
-	static function set_is_production( $is_production ) {
-
-		self::$_is_production = $is_production
-			? true
-			: false;
-
-	}
-
-	/**
-	 * @return bool
-	 */
-	static function is_development() {
-
-		$is_production = is_null( self::$_is_production )
-			? self::is_production()
-			: self::$_is_production;
-
-		return ! $is_production;
-
-	}
-
-	/**
-	 * @param bool $is_development
-	 */
-	static function set_is_development( $is_development ) {
-
-		self::$_is_production = $is_development
-			? false
-			: true;
 
 	}
 
@@ -1018,6 +1044,7 @@ class WPLib {
 			self::$_->helper_methods[ $helped_class ] = $class_methods;
 		}
 
+		self::$_helpers = null;  // Free up the memory...
 	}
 
 	/**
@@ -1036,17 +1063,6 @@ class WPLib {
 		$methods = array_map( function( $method ) { return $method->name; }, $methods );
 		
 		return $methods;
-
-	}
-
-	/**
-	 * Return the root directory of the website.
-	 *
-	 * @return string
-	 */
-	static function www_dir() {
-
-		return self::$_www_dir;
 
 	}
 
@@ -1119,6 +1135,8 @@ class WPLib {
 	 */
 	static function get_root_url( $filepath, $class_name = false ) {
 		
+		global $wplib;
+		
 		static $root_urls = array();
 
 		if ( ! $class_name ) {
@@ -1129,14 +1147,14 @@ class WPLib {
 
 		if ( ! isset( $root_urls[ $class_name ] ) ) {
 
-			if ( empty( self::$_->class_files[ $class_name ] ) && self::is_development() ) {
+			if ( empty( self::$_->class_files[ $class_name ] ) && $wplib->IS_DEVELOPMENT ) {
 
 				$err_msg = __( '%s not found in WPLib::$_->class_files.', 'wplib' );
 				self::trigger_error( sprintf( $err_msg, $class_name ) );
 
 			}
-
-			$root_urls[ $class_name ] = rtrim( dirname( self::$_www_url . substr( self::$_->class_files[ $class_name ], 1 ) ), '/' );
+			
+			$root_urls[ $class_name ] = rtrim( dirname( $wplib->WWW_URL . substr( self::$_->class_files[ $class_name ], 1 ) ), '/' );
 
 		}
 
@@ -1267,13 +1285,15 @@ class WPLib {
 	 */
 	static function cache_get( $key, $group = '' ) {
 
-		if ( self::is_development() && ! is_string( $key ) && ! is_int( $key ) ) {
+		global $wplib;
+
+		if ( $wplib->IS_DEVELOPMENT && ! is_string( $key ) && ! is_int( $key ) ) {
 
 			static::trigger_error( __( 'Cache key is not string or numeric.', 'wplib' ) );
 
 		}
 
-		$cache = ! defined( 'WPLIB_BYPASS_CACHE' )
+		$cache = $wplib->BYPASS_CACHE
 			? wp_cache_get( $key, static::_filter_group( $group ) )
 			: null;
 
@@ -1393,22 +1413,6 @@ class WPLib {
 
 	}
 
-	/**
-	 * Return the subdir name for partials.
-	 *
-	 * @future Allow different contexts (the app and different modules) to be set differently than the theme directory.
-	 *
-	 * @return string
-	 */
-	static function partials_subdir() {
-		/*
-		 * Allow the partials subdir to be overridden in the config file
-		 */
-		return defined( 'WPLIB_PARTIALS_SUBDIR' )
-			? WPLIB_PARTIALS_SUBDIR
-			: 'partials';
-
-	}
 
 	/**
 	 * Register all partials for WPLib, an App or a module.
@@ -1417,9 +1421,13 @@ class WPLib {
 	 */
 	static function _register_partials() {
 
+		global $wplib;
+
 		$dir_spec = static::partials_dir() . '/*.php';
 
-		$index = self::is_development() ? $dir_spec : md5( $dir_spec );
+		$index = $wplib->IS_DEVELOPMENT
+			? $dir_spec
+			: md5( $dir_spec );
 
 		if ( ! ( $partials = self::cache_get( $cache_key = "partials[{$index}]" ) ) ) {
 
@@ -1539,20 +1547,17 @@ class WPLib {
 	 */
 	static function the_partial_html( $partial_slug, $_partial_vars = array(), $item = null ) {
 
+		global $wplib;
+
+
 		/*
 		 * Calculate the md5 value for caching this partial filename
 		 */
-		if ( ! self::is_development() ) {
+		$_partial_index = $wplib->IS_PRODUCTION 
+			? md5( serialize( array( $partial_slug, $_partial_vars, get_class( $item ) ) ) )
+			: "[{$partial_slug}" . get_class( $item ) . '][' . serialize( $_partial_vars ) . ']';
 
-			$_md5 = md5( serialize( array( $partial_slug, $_partial_vars, get_class( $item ) ) ) );
-
-		} else {
-
-			$_md5 = $partial_slug . '[' . get_class( $item ) . '][' . serialize( $_partial_vars ) . ']';
-
-		}
-
-		if ( ! ( $partial = self::cache_get( $_cache_key = "partial_file[{$_md5}]" ) ) ) {
+		if ( ! ( $partial = self::cache_get( $_cache_key = "partial_file[{$_partial_index}]" ) ) ) {
 
 			$partial = new stdClass();
 
@@ -1578,7 +1583,7 @@ class WPLib {
 				switch ( $partial_type ) {
 					case 'theme':
 						$partial->dir    = get_stylesheet_directory();
-						$partial->subdir = static::partials_subdir();
+						$partial->subdir = $wplib->PARTIALS_SUBDIR;
 						break;
 
 					case 'module':
@@ -1630,23 +1635,21 @@ class WPLib {
 
 			self::cache_set( $_cache_key, $partial );
 
-
-
 		}
 
-		$partial->add_comments = ! self::doing_ajax() && ! self::is_production();
+		$partial->ADD_COMMENTS = ! self::doing_ajax() && $wplib->IS_DEVELOPMENT;
 
 		if ( ! $partial->found ) {
 
-			if ( $partial->add_comments ) {
+			if ( $partial->ADD_COMMENTS ) {
 
 				/**
 				 * This can be used by theme developers with view source to see which partials failed.
 				 *
 				 * @note FOR CODE REVIEWERS:
 				 *
-				 * This is ONLY output of constant 'WPLIB_RUNMODE' is defined in wp-config.php.
-				 * In other words, this will NEVER run on your servers (unless you set WPLIB_RUNMODE.)
+				 *          This will ONLY be output when $wplib->IS_DEVELOPMENT
+				 *
 				 */
 				echo "\n<!--[FAILED PARTIAL FILE: {$partial_slug}. Tried:\n";
 				foreach ( $partial->filenames_tried as $partial_type => $partial_filename ) {
@@ -1658,7 +1661,7 @@ class WPLib {
 
 		} else {
 
-			if ( $partial->add_comments ) {
+			if ( $partial->ADD_COMMENTS ) {
 
 				echo $partial->comments;
 
@@ -1675,9 +1678,12 @@ class WPLib {
 
 				/*
 				 * Assign the $item's preferred variable name in addition to '$item', i.e. '$brand'
-				 * This is a very controlled use of extract() i.e. we know what we are doing here.
 				 *
-				 * See a few lines above to explain	${'extract'}
+				 * This is absolutely critical to WPLib's theming architecture and is based on
+				 * WordPress's only use of extract() in load_template(); we are using it for
+				 * the exact same reasons WordPress was forced to use it.
+				 *
+				 * IOW: This is a very controlled use of extract(), we know what we are doing here.
 				 */
 
 				extract( array( $partial->var_name => $item ) );
@@ -1688,7 +1694,7 @@ class WPLib {
 				$_partial_vars,
 				$_filename,
 				$_cache_key,
-				$_md5,
+				$_partial_index,
 				$_app_class,
 				$_module_class
 			);
@@ -1700,24 +1706,24 @@ class WPLib {
 			self::$_file_loading = false;
 
 
-			if ( ! $partial->add_comments ) {
-
-				echo ob_get_clean();
-
-			} else {
+			if ( $partial->ADD_COMMENTS ) {
 
 				/**
 				 * This can be used by theme developers with view source to see which partials failed.
 				 *
 				 * @note FOR CODE REVIEWERS:
 				 *
-				 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
-				 * In other words, this will NEVER run on your servers (unless you set WPLIB_RUNMODE.)
+				 *          This will ONLY be output when $wplib->IS_DEVELOPMENT
+				 *
 				 */
 				echo $partial->comments;
 				echo ob_get_clean();
 				echo "\n<!--[END PARTIAL FILE: {$partial->filename} -->\n";
 
+
+			} else {
+
+				echo ob_get_clean();
 			}
 
 		}
@@ -1968,10 +1974,11 @@ class WPLib {
 	 * @return string[]
 	 */
 	static function get_qualified_child_classes( $base_class, $constant_name ) {
-
+		global $wplib;
+		
 		$cache_key = "classes[{$base_class}::{$constant_name}]";
 
-		if ( ! self::is_development() ) {
+		if ( $wplib->IS_PRODUCTION ) {
 			$cache_key = md5( $cache_key );
 		}
 
@@ -2052,11 +2059,15 @@ class WPLib {
 	 */
 	static function file_hash( $filepath ) {
 
-		$subscript = self::is_development() ? $filepath : md5( $filepath );
+		global $wplib;
+
+		$subscript = $wplib->IS_DEVELOPMENT
+			? $filepath
+			: md5( $filepath );
 
 		if ( $file_hash = self::cache_get( $cache_key = "file_hash[{$subscript}]" ) ) {
 
-			$file_hash = ${'md5_file'}( $filepath );
+			$file_hash = md5_file( $filepath );
 			self::cache_get( $cache_key, $file_hash );
 
 		}
@@ -2330,7 +2341,9 @@ class WPLib {
 	 */
 	static function _ensure_only_one_class( $class_container ) {
 
-		if ( self::is_wp_debug() && self::is_development() ) {
+		global $wplib;
+		
+		if ( self::is_wp_debug() && $wplib->IS_DEVELOPMENT ) {
 
 			preg_match_all(
 				'#\n\s*(abstract|final)?\s*class\s*(\w+)#i',
@@ -2391,15 +2404,6 @@ class WPLib {
 	}
 
 	/**
-	 * @return bool
-	 */
-	static function do_log_errors() {
-
-		return defined( 'WPLIB_LOG_ERRORS' ) && WPLIB_LOG_ERRORS;
-
-	}
-
-	/**
 	 * Triggers error message unless doing AJAX, XMLRPC or Cron; then it logs the error but only if Development mode.
 	 *
 	 * @param string $error_msg
@@ -2407,12 +2411,12 @@ class WPLib {
 	 * @param bool $echo If true use 'echo', if false use trigger_error().
 	 */
 	static function trigger_error( $error_msg, $error_type = E_USER_NOTICE, $echo = false ) {
-
-		$is_development = WPLib::is_development();
+		
+		global $wplib;
 
 		if ( ! self::doing_ajax() && ! self::doing_xmlrpc() && ! self::doing_cron() ) {
 
-			if ( $is_development ) {
+			if ( $wplib->IS_DEVELOPMENT ) {
 
 				if ( $echo ) {
 
@@ -2426,15 +2430,8 @@ class WPLib {
 
 			}
 
-		} else if ( $is_development || self::do_log_errors() ) {
+		} else if ( $wplib->IS_DEVELOPMENT || $wplib->LOG_ERRORS ) {
 
-			/**
-			 * ONLY triggers errors:
-			 *      IF runmode() == self::DEVELOPMENT
-			 *      OR define( 'WPLIB_LOG_ERRORS', true ) in /wp-config.php.
-			 *
-			 * For runmode() == self::DEVELOPMENT define( 'WPLIB_RUNMODE', 0 ) in /wp-config.php.
-			 */
 			error_log( "{$error_msg} [{$error_type}]" );
 
 		}
@@ -2442,3 +2439,11 @@ class WPLib {
 	}
 
 }
+
+/**
+ * Define global variable $wplib here for PhpStorm to know it globally
+ *
+ * @var WPLib_Config $wplib
+ *
+ */
+global $wplib;

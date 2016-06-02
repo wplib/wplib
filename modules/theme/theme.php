@@ -81,8 +81,9 @@ class WPLib_Theme extends WPLib_Module_Base {
 	 * @return static
 	 */
 	static function _template_include_999( $template ) {
+		global $wplib;
 
-		if ( ! $template && ! WPLib::is_production() ) {
+		if ( ! $template && ! $wplib->IS_PRODUCTION ) {
 
 			$message = __( '<p>No template file found. You may have deleted the current theme or renamed the theme directory?</p>' .
 				'<p>If you are a site admin <a href="%s">click here</a> to verify and possibly correct.</p>', 'wplib' );
@@ -106,7 +107,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 			 */
 			$theme = WPLib::theme();
 
-			if ( WPLib::use_template_global_vars() ) {
+			if ( $wplib->GLOBALS_IN_TEMPLATES ) {
 
 				/*
 				 * For compatibility with WordPress templates we need to

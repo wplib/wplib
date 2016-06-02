@@ -76,10 +76,14 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 	 * Runs through all the registered roles and ensures that all roles and get_capabilities
 	 * are set as defined in the classes.
 	 *
+	 * @todo RETHINK THIS SIGNIFICANTLY
+	 * 
 	 * @param string $recent_commit
 	 * @param string $previous_commit
 	 */
 	private static function _initialize_roles( $recent_commit, $previous_commit ) {
+		
+		global $wplib;
 
 		WPLib::autoload_all_classes();
 
@@ -181,7 +185,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 			$capabilities = array_fill_keys( $capabilities, true );
 
-			if ( defined( 'WPLIB_UPDATE_ROLES' ) && WPLIB_UPDATE_ROLES ) {
+			if ( $wplib->UPDATE_ROLES ) {
 
 			    $change_role = true;
 

@@ -1247,7 +1247,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		global $wp_query, $wp_the_query;
 		array_push( self::$_wp_query_stack, $wp_query );
 		if ( 'initialize' === $initialize ) {
-			${'wp_query'} = $wp_the_query;
+			$wp_query = $wp_the_query;
 		}
 	}
 
@@ -1258,7 +1258,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	private function _pop_wp_query() {
 		global $wp_query;
 		if ( count( self::$_wp_query_stack ) ) {
-			${'wp_query'} = array_pop( self::$_wp_query_stack );
+			$wp_query = array_pop( self::$_wp_query_stack );
 		}
 
 	}
@@ -1371,6 +1371,8 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 * @return string
 	 */
 	function get_page_url( $page_slug ) {
+		
+		global $wplib;
 
 		/*
 		 * Validate that the slug is for a $post_type==='page'
@@ -1380,7 +1382,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		if ( false === $post_type ) {
 
-			if ( WPLib::is_development() ) {
+			if ( $wplib->IS_DEVELOPMENT ) {
 
 				/**
 				 * @future Ensure the page is here and throw an error if not.
