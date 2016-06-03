@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = '18ff8b0'; 
+	const RECENT_COMMIT = 'f55casdasd331';
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -268,7 +268,7 @@ class WPLib {
 
 			$config_filepath = self::get_root_dir( "/includes/{$default_config_class}.php" );
 
-			if ( is_null( $wplib->ALT_CONFIG ) ) {
+			if ( ! isset( $wplib->ALT_CONFIG ) || is_null( $wplib->ALT_CONFIG ) ) {
 
 				$wplib->ALT_CONFIG = null;
 
