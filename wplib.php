@@ -496,7 +496,7 @@ class WPLib {
 
 		foreach ( self::$_modules as $priority ) {
 
-			foreach ( $priority as $filepath ) {
+			foreach ( $priority as $module_name => $filepath ) {
 
 				if ( isset( self::$_loaded_include_files[ $filepath ] ) ) {
 				 	/*
@@ -507,7 +507,7 @@ class WPLib {
 
 				if ( self::is_development() && ! WPLib::is_found( $filepath ) ) {
 
-					self::trigger_error( sprintf( __( "Required file not found: %s", 'wplib' ), $filepath ) );
+					self::trigger_error( sprintf( __( "File for Module %s not found: %s", 'wplib' ), $module_name, $filepath ) );
 
 				}
 
@@ -617,6 +617,7 @@ class WPLib {
 			$class_key = self::is_production() ? md5( $class_key ) : $class_key;
 
 			$autoload_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" );
+			$autoload_files = array();
 
 			if ( ! $autoload_files || 0 === count( $autoload_files ) ) {
 
@@ -1041,8 +1042,8 @@ class WPLib {
 	 */
 	static function add_class_action( $action, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
-		add_action( $action, array( get_called_class(), $hook ), $priority, 99 );
+		$method = str_replace( ['-', ':' ], '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		add_action( $action, array( get_called_class(), $method ), $priority, 99 );
 
 	}
 
@@ -1052,8 +1053,8 @@ class WPLib {
 	 */
 	static function add_class_filter( $filter, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
-		add_filter( $filter, array( get_called_class(), $hook ), $priority, 99 );
+		$method = str_replace( ['-', ':' ], '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		add_filter( $filter, array( get_called_class(), $method ), $priority, 99 );
 
 	}
 
@@ -1063,8 +1064,8 @@ class WPLib {
 	 */
 	static function remove_class_action( $action, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
-		remove_action( $action, array( get_called_class(), $hook ), $priority );
+		$method = str_replace( ['-', ':' ], '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		remove_action( $action, array( get_called_class(), $method ), $priority );
 
 	}
 
@@ -1074,8 +1075,8 @@ class WPLib {
 	 */
 	static function remove_class_filter( $filter, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
-		remove_filter( $filter, array( get_called_class(), $hook ), $priority );
+		$method = str_replace( ['-', ':' ], '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		remove_filter( $filter, array( get_called_class(), $method ), $priority );
 
 	}
 
