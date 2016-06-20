@@ -3,7 +3,7 @@ Contributors: newclarity, mikeschinkel,
 Tags: library, mvc
 Requires at least: 4.4
 Tested up to: 4.4
-Stable tag: 0.13.0
+Stable tag: 0.13.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,9 @@ See the [Quick Start](http://wplib.org/quick-start) on wplib.org.
 That is because it is for PHP developers, not end-users. If you are a PHP developer see the [Quick Start](http://wplib.org/quick-start) to learn more.
 
 == Changelog ==
+= 0.13.1 =
+Had to disable object caching in WPLib::_find_autoload_files() because of difficult to track down bugs.  The next major release (probably 0.14.0) will correct this.
+
 = 0.13.0 =
 Fixed several bugs that could possibly break existing code and added a few enhancements:
 

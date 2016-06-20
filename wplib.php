@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.13.0
+ * Version:     0.13.1
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = 'efaf9bd'; 
+	const RECENT_COMMIT = '8414d8a'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -621,8 +621,12 @@ class WPLib {
 
 			$class_key = self::is_production() ? md5( $class_key ) : $class_key;
 
-			$autoload_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" );
-//			$autoload_files = array();
+//			$autoload_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" );
+
+			/**
+			 * @note Caching disabled in 0.13.1. Do not re-enabled until WPLib is revamped to eliminate this method. 
+			 */			
+			$autoload_files = array();
 
 			if ( ! $autoload_files || 0 === count( $autoload_files ) ) {
 
@@ -645,14 +649,9 @@ class WPLib {
 					 * environment, not degrade it. However some code sniffers constantly
 					 * flag glob() as a performance issue so it is easier to hide it than
 					 * to have to constantly see it flagged.
-					 *
-					 * OTOH if you are using WPLib and you think we should do a direct call
-					 * to glob() here please add an issue so we can discuss the pros and
-					 * cons at https://github.com/wplib/wplib/issues
 					 */
 
-					$function = 'glob';
-					$found_files = $function( "{$autoload_dir}/*.php" );
+					$found_files = glob( "{$autoload_dir}/*.php" );
 
 					if ( 0 === count( $found_files ) ) {
 
@@ -723,8 +722,10 @@ class WPLib {
 
 				/**
 				 * Now stuff into cache
+				 * 
+				 * @note Disabled in 0.13.1.  Will be fixed in next major release.
 				 */
-				static::cache_set( $cache_key, $autoload_files );
+				//static::cache_set( $cache_key, $autoload_files );
 
 			}
 
