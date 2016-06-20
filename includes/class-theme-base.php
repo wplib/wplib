@@ -434,17 +434,19 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	}
 
 	/**
-	 *
+	 * @param array $args
+	 * @return void
 	 */
-	function the_comments_popup_link() {
+	function the_comments_popup_link( $args = array() ) {
 
-		echo $this->get_comments_popup_link();
+		echo $this->get_comments_popup_link( $args );
 	}
 
 	/**
+	 * @param array $args
 	 * @return string
 	 */
-	function get_comments_popup_link() {
+	function get_comments_popup_link( $args = array() ) {
 
 		$args = wp_parse_args( $args, array(
 
@@ -550,7 +552,9 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function item() {
 
-		return $this->has_posts() ? WPLib_Posts::make_new_item( $this->post() ) : new WPLib_Post_Default( null );
+		return $this->has_posts() 
+			? WPLib_Posts::make_new_item( $this->post() ) 
+			: new WPLib_Post_Default( null );
 
 	}
 
@@ -668,7 +672,9 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function is_page_on_front() {
 
-		return $front_page_id = $this->front_page_id() && WPLib::is_page( $front_page_id );
+		$front_page_id = $this->front_page_id();
+
+		return $front_page_id && WPLib::is_page( $front_page_id );
 
 	}
 
@@ -800,7 +806,8 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		) );
 
-		$labeled_search_query = esc_html( sprintf( $args['label'], $this->search_query() ) );
+		$search_query = $this->search_query();
+		$labeled_search_query = esc_html( sprintf( $args['label'], $search_query ) );
 
 		return "{$labeled_search_query}{$args[ 'before_query' ]}{$search_query}{$args[ 'after_query' ]}";
 
@@ -1078,7 +1085,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 			$this->_push_wp_query( 'initialize' );
 
-			get_comment_pages_count(
+			$number = get_comment_pages_count(
 				$this->comments(),
 				$this->comments_per_page(),
 				$this->uses_threaded_comments()
@@ -1258,7 +1265,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	private function _pop_wp_query() {
 		global $wp_query;
 		if ( count( self::$_wp_query_stack ) ) {
-			${'wp_query'} = array_pop( self::$_wp_query_stack );
+			$wp_query = array_pop( self::$_wp_query_stack );
 		}
 
 	}
