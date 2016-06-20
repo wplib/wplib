@@ -305,16 +305,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 		$args = wp_parse_args( $args, array(
 
 			'default_list'  => 'WPLib_Post_List_Default',
-			'items'         =>
-				function( $query ) {
-
-					$posts = $query instanceof WP_Query
-						? $query->posts
-						: WPLib_Posts::get_posts( $query );
-
-					return $posts;
-
-				},
+			'items'         => array( __CLASS__, 'get_posts' ),
 
 		));
 
@@ -496,13 +487,16 @@ class WPLib_Posts extends WPLib_Module_Base {
 	/**
 	 * Query the posts, return a post list.
 	 *
-	 * @param array $args
+	 * @param WP_Query|array $args
 	 * @return WP_Post[]
 	 */
 	static function get_posts( $args = array() ) {
 
-		$query = WPLib_Posts::get_query( $args );
-		return $query->posts;
+		$posts = $args instanceof WP_Query
+			? $args->posts
+			: WPLib_Posts::get_query( $args )->posts;
+
+		return $posts;
 
 	}
 
@@ -528,7 +522,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	static function pop_post() {
 		global $post;
 		if ( count( self::$_post_stack ) ) {
-			${'post'} = array_pop( self::$_post_stack );
+			$post = array_pop( self::$_post_stack );
 		}
 	}
 

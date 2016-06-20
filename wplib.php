@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.12.3
+ * Version:     0.13.0
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = '0e85bc1'; 
+	const RECENT_COMMIT = 'efaf9bd'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -144,13 +144,17 @@ class WPLib {
 		/**
 		 * @var bool Flag to ensure this method is only ever called once.
 		 */
-		static $done = false;
+		static $done_once = false;
 
-		if ( $done ) {
+		if ( ! $done_once ) {
 
-			$err_msg = __( 'The %s::on_load() method should not call its parent class, e.g. remove parent::on_load().', 'wplib' );
+			$done_once = true;
 
-			self::trigger_error( sprintf( $err_msg, get_called_class() ) );
+		} else {
+
+			$err_msg = __( 'The %s::on_load() method should not call its parent class, e.g. remove parent::on_load(). Report generated ', 'wplib' );
+
+			self::trigger_error( sprintf( $err_msg, get_called_class() ), E_USER_ERROR );
 
 		}
 
@@ -225,6 +229,11 @@ class WPLib {
 
 		spl_autoload_register( array( __CLASS__, '_autoloader' ), true, true );
 
+		/**
+		 * Set a marker to ignore classes declared before this class.
+		 */
+		self::$_non_app_class_count = count( get_declared_classes() ) - 1;
+
 		self::register_module( 'posts', 0 );
 		self::register_module( 'terms', 0 );
 		self::register_module( 'roles', 0 );
@@ -255,10 +264,6 @@ class WPLib {
 		self::add_class_action( 'xmlrpc_call' );
 		self::add_class_action( 'shutdown' );
 
-		/**
-		 * Set a marker to ignore classes declared before this class.
-		 */
-		self::$_non_app_class_count = count( get_declared_classes() ) - 1;
 
 	}
 
@@ -496,7 +501,7 @@ class WPLib {
 
 		foreach ( self::$_modules as $priority ) {
 
-			foreach ( $priority as $filepath ) {
+			foreach ( $priority as $module_name => $filepath ) {
 
 				if ( isset( self::$_loaded_include_files[ $filepath ] ) ) {
 				 	/*
@@ -507,7 +512,7 @@ class WPLib {
 
 				if ( self::is_development() && ! WPLib::is_found( $filepath ) ) {
 
-					self::trigger_error( sprintf( __( "Required file not found: %s", 'wplib' ), $filepath ) );
+					self::trigger_error( sprintf( __( "File for Module %s not found: %s", 'wplib' ), $module_name, $filepath ) );
 
 				}
 
@@ -617,6 +622,7 @@ class WPLib {
 			$class_key = self::is_production() ? md5( $class_key ) : $class_key;
 
 			$autoload_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" );
+//			$autoload_files = array();
 
 			if ( ! $autoload_files || 0 === count( $autoload_files ) ) {
 
@@ -1041,8 +1047,8 @@ class WPLib {
 	 */
 	static function add_class_action( $action, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
-		add_action( $action, array( get_called_class(), $hook ), $priority, 99 );
+		$method = str_replace( ['-', ':' ], '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		add_action( $action, array( get_called_class(), $method ), $priority, 99 );
 
 	}
 
@@ -1052,8 +1058,8 @@ class WPLib {
 	 */
 	static function add_class_filter( $filter, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
-		add_filter( $filter, array( get_called_class(), $hook ), $priority, 99 );
+		$method = str_replace( ['-', ':' ], '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		add_filter( $filter, array( get_called_class(), $method ), $priority, 99 );
 
 	}
 
@@ -1063,8 +1069,8 @@ class WPLib {
 	 */
 	static function remove_class_action( $action, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
-		remove_action( $action, array( get_called_class(), $hook ), $priority );
+		$method = str_replace( ['-', ':' ], '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		remove_action( $action, array( get_called_class(), $method ), $priority );
 
 	}
 
@@ -1074,8 +1080,8 @@ class WPLib {
 	 */
 	static function remove_class_filter( $filter, $priority = 10 ) {
 
-		$hook = str_replace( '-', '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
-		remove_filter( $filter, array( get_called_class(), $hook ), $priority );
+		$method = str_replace( ['-', ':' ], '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		remove_filter( $filter, array( get_called_class(), $method ), $priority );
 
 	}
 
@@ -2531,6 +2537,49 @@ class WPLib {
 	}
 
 	/**
+	 * Determines is a class actually declares a method instead of just inheriting it.
+	 *
+	 * @param string $class_name
+	 * @param string $method_name
+	 * @return bool
+	 */
+	static function class_declares_method( $class_name, $method_name ) {
+
+		if ( ! class_exists( $class_name ) || ! method_exists( $class_name, $method_name ) ) {
+
+			$class_declares_method = false;
+
+		} else {
+
+			$reflector = new ReflectionMethod( $class_name, $method_name );
+			$class_declares_method = $class_name === $reflector->getDeclaringClass()->name;
+		}
+
+		return $class_declares_method;
+
+	}
+
+	/**
+	 * Determines if a named method exists and is_callable a given class.
+	 *
+	 * @TODO Document when this happens
+	 *
+	 * @param string $method_name
+	 * @param string|bool $class_name
+	 * @return bool
+	 */
+	static function can_call( $method_name, $class_name = false ) {
+
+		if ( ! $class_name ){
+
+			$class_name = get_called_class();
+		}
+
+		return method_exists( $class_name, $method_name ) && is_callable( array( $class_name, $method_name ) );
+
+	}
+
+	/**
 	 * Scans to ensure that only one PHP class is declared.
 	 *
 	 * This is important because we assume only one class for the autoloader.
@@ -2659,22 +2708,22 @@ class WPLib {
 
 		if ( WPLib::get_constant( 'INSTANCE_CLASS', $class ) ) {
 
-			if ( is_callable( array( $class, 'make_new_item' ) ) ) {
+			if ( self::class_declares_method( $class, 'make_new_item' ) ) {
 				
 				$item = $class::make_new_item( $item, $args );
 
-			} else {
+			} else if ( WPLib::is_development() ) {
 
 				$err_msg = __ ( 'Cannot make new item. Class %s does not have make_new_item method', 'wplib' );
-				WPLib::trigger_error( sprintf( $err_msg, $class ) );
+				WPLib::trigger_error( sprintf( $err_msg, $class ), E_USER_ERROR );
 
 			}
 
 
-		} else {
+		} else if ( WPLib::is_development() ) {
 
 		   $err_msg = __( 'Cannot make new item. Class %s does not have INSTANCE_CLASS constant.', 'wplib' );
-		   WPLib::trigger_error( sprintf( $err_msg, $class ) );
+		   WPLib::trigger_error( sprintf( $err_msg, $class ), E_USER_ERROR );
 
 		}
 

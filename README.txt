@@ -3,7 +3,7 @@ Contributors: newclarity, mikeschinkel,
 Tags: library, mvc
 Requires at least: 4.4
 Tested up to: 4.4
-Stable tag: 0.12.3
+Stable tag: 0.13.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,19 @@ See the [Quick Start](http://wplib.org/quick-start) on wplib.org.
 That is because it is for PHP developers, not end-users. If you are a PHP developer see the [Quick Start](http://wplib.org/quick-start) to learn more.
 
 == Changelog ==
+= 0.13.0 =
+Fixed several bugs that could possibly break existing code and added a few enhancements:
+
+- Fixed error checking logic in WPLib::on_load() designed to detect if a child class calls parent::on_load().
+- Fixed logic that did not include WPLib core classes from WPLib::site_classes()
+- Changed WPLib_Posts::get_list() to set $args['items'] to an array callable instead of a closure so it could be serialized.
+- Changed WPLib_Posts::get_posts() so that WPLib_Posts::get_list() could use it for $args['items'].
+- Updated WPLib class hook methods to accept colons (':') in hook names and to convert them to underscores for their in method names.
+- Added ::class_declares_method() and ::can_call() methods to WPLib.
+- Changed WPLib::make_new_item() to throw an error rather than infinite recursion if a module does not declare said named method.
+- Fixed numerous bugs in WPLib_Theme_Base caught by PhpStorm.
+- Make changes in WPLib_Post_List_Base::__construct() to support when post types are not homogeneous.
+
 = 0.12.3 =
 Fixed bug that falsely through error "Cannot call WPLib::autoload_all_classes() prior to 'init' action, priority 9."
 

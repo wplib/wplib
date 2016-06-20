@@ -1,6 +1,6 @@
 [![Stories in Ready](https://badge.waffle.io/wplib/wplib.png?label=ready&title=Ready)](https://waffle.io/wplib/wplib)
 # WPLib
-**A PHP Library  plus Conventions for Building Complex Custom WordPress Apps**
+**A PHP Library plus Conventions for Building Complex Custom WordPress Apps**
 
 WPLib was designed for use by teams who build custom sites and need professional workflow. The library is a **thin layer** that provides a simple **Module System** and a lightweight **Model+View architecture**.
 
@@ -11,12 +11,13 @@ WPLib is for those professionals who want their custom-developed WordPress sites
 The **WPLib Library includes:**
 
 1. Implementation of a Module system with Auto-Loader,
-2. The optional concept of an "App" that uses app-specific Modules,
+2. The concept of an "App" that uses app-specific Modules,
 3. Code optimized for use with a persistent cache, and
 4. Prescriptive conventions for code consistency across many developers.
 5. A Model+View Architecture _([_see next_](#modelview-architecture))_
 
-###<span id="model-view-architecture" >Model+View Architecture</span>
+<a id="model-view-architecture" ></a>
+### Model+View Architecture
 
 Unlike MVC plugins WPLib does not take control of WordPress URL routing. Instead Models+Views are about data elements in WordPress. Currently in WPLib core we have Model+View classes for Posts and Post Types, Taxonomy and Terms; and Roles and Users.
 
@@ -27,12 +28,12 @@ The Model+View architecture provides:
 2. Familiar yet consistent functionality to address common use-case, and
 4. An architecture that results in naturally reusable modules.
 
-###Can Be Used Incrementally
+### Can Be Used Incrementally
 Note WPLib can be used a little or a lot. It can be added incrementally to a site, or a site can be started with WPLib as its base. The latter obviously provides the most benefits.
 
 
 ##Status
-WPLib is in beta status at version 0.12.3 in master.
+WPLib is in beta status at version 0.13.0 in master.
 
 We are actively working on it with a goal to develop stable beta versions that can be used in production, and then a 1.0.0 version when we are comfortable that the majority of the API will not need to change.
 
