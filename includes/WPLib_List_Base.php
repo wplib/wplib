@@ -270,4 +270,27 @@ abstract class WPLib_List_Base
 		return $output;
 
 	}
+
+	/**
+	 * @param $callable
+	 * @return self
+	 */
+	function each( $callable ) {
+
+		$result = clone( $this );
+		$elements = array();
+
+		foreach( $this->elements() as $index => $item ) {
+
+			$value = $callable( $item, $index );
+			$elements[ $index ] = $value;
+
+		}
+
+		$result->set_elements( $elements );
+
+		return $result;
+
+	}
+	
 }
