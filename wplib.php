@@ -510,10 +510,14 @@ class WPLib {
 				 	 continue;
 				}
 
-				if ( self::is_development() && ! WPLib::is_found( $filepath ) ) {
+				if ( self::is_development() && ! $filepath || ! WPLib::is_found( $filepath ) ) {
 
-					self::trigger_error( sprintf( __( "File for Module %s not found: %s", 'wplib' ), $module_name, $filepath ) );
+					self::trigger_error( sprintf( __( "File for Module %s not found: %s", 'wplib' ), $module_name, $filepath ), E_USER_ERROR );
 
+				}
+
+				if ( ! $filepath ) {
+					continue;
 				}
 
 				/**
