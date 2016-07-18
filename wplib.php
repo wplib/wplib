@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = '8414d8a'; 
+	const RECENT_COMMIT = '10c1d9c'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -2478,8 +2478,7 @@ class WPLib {
 
 		if ( $file_hash = WPLib::cache_get( $cache_key = "file_hash[{$subscript}]" ) ) {
 
-			$file_hash = ${'md5_file'}( $filepath );
-			WPLib::cache_get( $cache_key, $file_hash );
+			WPLib::cache_get( $cache_key, md5_file( $filepath ) );
 
 		}
 
