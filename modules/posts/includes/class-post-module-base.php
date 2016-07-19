@@ -14,7 +14,7 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 	 *
 	 * @param array $args
 	 *
-	 * @return object
+	 * @return array
 	 */
 	static function register_post_type_labels( $args = array() ) {
 
