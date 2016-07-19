@@ -216,7 +216,7 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 	 * Query the posts.  Equivalent to creating a new WP_Query which both instantiates and queries the DB.
 	 *
 	 * @param array $args
-	 * @return WP_Post[]
+	 * @return WPLib_Query
 	 */
 	static function get_query( $args = array() ) {
 

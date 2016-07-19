@@ -10,6 +10,7 @@
  *
  * @property WPLib_Term_Base $owner
  *
+ * @method void the_term_id()
  * @method void the_term_name()
  * @method void the_term_slug()
  * @method void the_term_name_attr()
@@ -21,7 +22,7 @@ abstract class WPLib_Term_View_Base extends WPLib_View_Base {
 	/**
 	 * Provide easy access to the term object
 	 *
-	 * @return WP_Term
+	 * @return WP_Term|object
 	 */
 	function term() {
 

@@ -96,7 +96,7 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
-	 * @return object|null
+	 * @return WP_Term|object|null
 	 */
 	function term() {
 
@@ -106,7 +106,7 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 
 	/**
 	 * @param object $term
-	 * @return mixed|object
+	 * @return mixed|WP_Term|object
 	 */
 	function set_term( $term ) {
 
@@ -250,9 +250,8 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 
 	/**
 	 * @param string $new_slug
-	 * @param bool|WP_Error $wp_error
 	 */
-	function update_slug( $new_slug, $wp_error = false ) {
+	function update_slug( $new_slug ) {
 
 		$this->update_field( 'slug', $new_slug );
 
@@ -260,9 +259,8 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 
 	/**
 	 * @param string $new_description
-	 * @param bool|WP_Error $wp_error
 	 */
-	function update_description( $new_description, $wp_error = false ) {
+	function update_description( $new_description ) {
 
 		$this->update_field( 'description', $new_description );
 
@@ -271,9 +269,8 @@ abstract class WPLib_Term_Model_Base extends WPLib_Model_Base {
 	/**
 	 * @param string $field_name
 	 * @param string $new_value
-	 * @param bool|WP_Error $wp_error
 	 */
-	function update_field( $field_name, $new_value, $wp_error = false ) {
+	function update_field( $field_name, $new_value ) {
 		if ( $this->has_term() ) {
 
 			$args         = (array) $this->term();
