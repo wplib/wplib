@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = '10c1d9c'; 
+	const RECENT_COMMIT = 'c17112d'; 
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -1329,8 +1329,7 @@ class WPLib {
 
 		$reflector = new ReflectionClass( $class_name );
 
-		$function = 'realpath';
-		return $function( dirname( $reflector->getFileName() ) . $filepath );
+		return realpath( dirname( $reflector->getFileName() ) . $filepath );
 
 	}
 

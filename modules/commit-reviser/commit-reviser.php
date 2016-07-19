@@ -30,6 +30,8 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	 */
 	static function _wp_loaded() {
 
+		$option_name = $recent_commit = $previous_commit = null;
+
 		$commit_revised = false ;
 
 		foreach ( array( 'WPLib', WPLib::app_class() ) as $class_name ) {
@@ -37,13 +39,8 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 			$recent_commit = self::get_recent_commit( $class_name );
 
 			if ( WPLib::is_development() ) {
-				/**
-				 * During development look at file RECENT_COMMIT
-				 * that a git commit-hook will hopefully have added
-				 */
-				self::_maybe_update_class( $class_name );
 
-				$loaded_commit = self::load_recent_commit( $class_name );
+				$loaded_commit = self::_maybe_update_class( $class_name );
 
 				if ( $loaded_commit !== $recent_commit ) {
 
@@ -137,21 +134,47 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 			: null;
 
 		if ( is_null( $recent_commit ) && WPLib::is_development() ) {
+
 			/**
 			 * Call `git log` via exec()
 			 */
-			$root_dir = self::_get_class_root_dir( $class_name );
-			$command = "cd {$root_dir} && git log -1 --oneline && cd -";
-			exec( $command, $output, $return_value );
+			$root_dir = call_user_func( $class_name, 'root_dir' );
+			do {
+				$git_dir_found = false;
 
-			if ( 0 === $return_value && isset( $output[0] ) ) {
-				/**
-				 * If no git repo in dir, $return_value==127 and $output==array()
-				 * If no git on system, $return_value==128 and $output==array()
-				 * If good, first 7 chars of $output[0] has abbreviated hash for commit
-				 */
-				$recent_commit = substr( $output[0], 0, 7 );
+				if ( is_dir( "{$root_dir}/.git" ) ) {
+					$git_dir_found = true;
+					break;
+				} else if ( DIRECTORY_SEPARATOR === $root_dir ) {
+					/**
+					 * This is needed to work for WPLib Box if the App's repo is the project repo.
+					 */
+					if ( is_dir( $hail_mary_dir = '/vagrant/.git' ) ) {
+						$root_dir = $hail_mary_dir;
+						$git_dir_found = true;
+					}
+					break;
+				}
 
+				$root_dir = dirname( $root_dir );
+
+			} while ( true );
+
+			if ( $git_dir_found ) {
+				$command = "cd {$root_dir} && git log -1 --oneline && cd -";
+				exec( $command, $output, $return_value );
+
+				if ( 0 === $return_value && isset( $output[0] ) ) {
+					/**
+					 * If no git repo in dir, $return_value==127 and $output==array()
+					 * If no git on system, $return_value==128 and $output==array()
+					 * If good, first 7 chars of $output[0] has abbreviated hash for commit
+					 */
+					$recent_commit = substr( $output[0], 0, 7 );
+
+					file_put_contents( $filepath, $recent_commit );
+
+				}
 			}
 
 		}
@@ -169,13 +192,36 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	 */
 	private static function _maybe_update_class( $class_name ) {
 
-		$recent_commit = self::get_recent_commit( $class_name, $defined );
+		do {
+			$loaded_commit = null;
 
-		$not_exists = ! $defined || is_null( $recent_commit );
+			$do_update = true;
 
-		$loaded_commit = self::load_recent_commit( $class_name );
+			$recent_commit = self::get_recent_commit( $class_name, $defined );
 
-		if ( $not_exists || ( ! is_null( $loaded_commit ) && $recent_commit !== $loaded_commit ) ) {
+			if ( ! $defined ) {
+				break;
+			}
+
+			if ( is_null( $recent_commit ) ) {
+				break;
+			}
+
+			$loaded_commit = self::load_recent_commit( $class_name );
+
+			if ( is_null( $loaded_commit ) ) {
+				break;
+			}
+
+			if ( $recent_commit !== $loaded_commit ) {
+				break;
+			}
+
+			$do_update = false;
+
+		} while ( false );
+
+		if ( $do_update ) {
 
 			$reflector = new ReflectionClass( $class_name );
 
@@ -209,6 +255,8 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 
 		}
 
+		return $loaded_commit;
+
 	}
 
 	/**
@@ -217,9 +265,8 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	 * @return null
 	 */
 	private static function _get_recent_commit_file( $class_name ) {
-
 		return self::_can_have_recent_commit( $class_name )
-			? self::_get_class_root_dir( $class_name, 'RECENT_COMMIT' )
+			? call_user_func( $class_name, 'root_dir' ) . '/RECENT_COMMIT'
 			: null;
 
 	}
@@ -232,18 +279,6 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	private static function _can_have_recent_commit( $class_name ) {
 
 		return 'WPLib' === $class_name || is_subclass_of( $class_name, 'WPLib_App_Base' );
-
-	}
-
-	/**
-	 * @param string $class_name
-	 * @param string $path
-	 *
-	 * @return string
-	 */
-	private static function _get_class_root_dir( $class_name, $path = '' ) {
-
-		return call_user_func( array( $class_name, 'get_root_dir') , $path );
 
 	}
 
