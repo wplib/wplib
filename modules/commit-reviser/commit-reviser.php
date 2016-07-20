@@ -138,7 +138,7 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 			/**
 			 * Call `git log` via exec()
 			 */
-			$root_dir = call_user_func( $class_name, 'root_dir' );
+			$root_dir = call_user_func( array( $class_name, 'root_dir' ) );
 			do {
 				$git_dir_found = false;
 
@@ -156,7 +156,11 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 					break;
 				}
 
-				$root_dir = dirname( $root_dir );
+				$new_root_dir = dirname( $root_dir );
+				if ( $new_root_dir === $root_dir ) {
+					$new_root_dir = DIRECTORY_SEPARATOR;
+				}
+				$root_dir = $new_root_dir;
 
 			} while ( true );
 
@@ -266,7 +270,7 @@ class WPLib_Commit_Reviser extends WPLib_Module_Base {
 	 */
 	private static function _get_recent_commit_file( $class_name ) {
 		return self::_can_have_recent_commit( $class_name )
-			? call_user_func( $class_name, 'root_dir' ) . '/RECENT_COMMIT'
+			? call_user_func( array( $class_name, 'root_dir' ) ) . '/RECENT_COMMIT'
 			: null;
 
 	}
