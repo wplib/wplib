@@ -59,13 +59,11 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 	static function current_screen() {
 
 		if ( ! function_exists( 'get_current_screen' ) ) {
+			require( ABSPATH . 'wp-admin/includes/class-wp-screen.php' );
+			require( ABSPATH . 'wp-admin/includes/screen.php' );
+		}
 
-			$err_msg = __( "%s() cannot be called before WordPress' get_current_screen() is loaded.", 'wplib' );
-			WPLib::trigger_error( $err_msg, __METHOD__, E_USER_ERROR );
-
-			$current_screen = null;
-
-		} else if ( is_null( $current_screen = get_current_screen() ) ) {
+		if ( is_null( $current_screen = get_current_screen() ) ) {
 			/*
 			 * set_current_screen() has to be called before
 			 * get_current_screen() will return a non-null value.
