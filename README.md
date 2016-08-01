@@ -1,4 +1,7 @@
 [![Stories in Ready](https://badge.waffle.io/wplib/wplib.png?label=ready&title=Ready)](https://waffle.io/wplib/wplib)
+[![Latest Stable Version](https://poser.pugx.org/wplib/wplib/v/stable)](https://packagist.org/packages/wplib/wplib)
+[![Total Downloads](https://poser.pugx.org/wplib/wplib/downloads)](https://packagist.org/packages/wplib/wplib)
+[![License](https://poser.pugx.org/wplib/wplib/license)](https://packagist.org/packages/wplib/wplib)
 # WPLib
 **A PHP Library plus Conventions for Building Complex Custom WordPress Apps**
 
