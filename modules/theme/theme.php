@@ -120,8 +120,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 				 * cons at https://github.com/wplib/wplib/issues
 				 */
 
-				$function = 'extract';
-				$function( $GLOBALS, EXTR_SKIP );
+				extract( $GLOBALS, EXTR_SKIP );
 
 			}
 
