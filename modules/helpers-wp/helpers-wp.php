@@ -31,7 +31,11 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 	 */
 	static function is_page( $page_id ) {
 
-		return $page = get_post( $page_id ) ? WPLib_Page::POST_TYPE === $page->post_type : false;
+		$page = get_post( $page_id );
+
+		return  $page
+			? WPLib_Page::POST_TYPE === $page->post_type
+			: false;
 
 	}
 
@@ -68,7 +72,7 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 			 * set_current_screen() has to be called before
 			 * get_current_screen() will return a non-null value.
 			 */
-			set_current_screen();
+			set_current_screen( trim( $_SERVER['REQUEST_URI'], '/' ) );
 			$current_screen = get_current_screen();
 		}
 
