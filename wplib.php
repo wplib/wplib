@@ -1445,7 +1445,25 @@ class WPLib {
 	 */
 	static function register_module( $module, $priority = 10 ) {
 
-		self::$_modules[ $priority ][ $module ] = static::get_root_dir( "modules/{$module}/{$module}.php" );
+		$filepath = static::get_root_dir( "modules/{$module}/{$module}.php" );
+
+		if ( self::is_development() ) {
+
+			if ( ! is_file( $filepath ) ) {
+
+				WPLib::trigger_error( sprintf( __( 'Module file %s does not exist.', 'wplib' ), $filepath ) );
+
+			}
+
+			if ( isset( self::$_modules[ $priority ][ $module ] ) ) {
+
+				WPLib::trigger_error( sprintf( __( 'Module %s already registered.', 'wplib' ), $filepath ) );
+
+			}
+
+		}
+
+		self::$_modules[ $priority ][ $module ] = $filepath;
 
 	}
 
@@ -2428,6 +2446,8 @@ class WPLib {
 	/**
 	 * Returns the raw meta fieldname given a non-prefixed field name.
 	 * Adds both a leading underscore and a short prefix to the meta name.
+	 *
+	 * @todo Remove the leading underscore on this method
 	 *
 	 * @param string $meta_name
 	 *
