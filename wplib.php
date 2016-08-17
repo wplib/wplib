@@ -1451,13 +1451,13 @@ class WPLib {
 
 			if ( ! is_file( $filepath ) ) {
 
-				WPLib::trigger_error( sprintf( __( 'Module file %s does not exist.', 'wplib' ), $filepath ) );
+				WPLib::trigger_error( sprintf( __( 'Module %s file %s does not exist.', 'wplib' ), $module, $filepath ) );
 
 			}
 
 			if ( isset( self::$_modules[ $priority ][ $module ] ) ) {
 
-				WPLib::trigger_error( sprintf( __( 'Module %s already registered.', 'wplib' ), $filepath ) );
+				WPLib::trigger_error( sprintf( __( 'Module %s already registered.', 'wplib' ), $module ) );
 
 			}
 
