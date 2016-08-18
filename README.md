@@ -36,7 +36,7 @@ Note WPLib can be used a little or a lot. It can be added incrementally to a sit
 
 
 ##Status
-WPLib is in beta status at version 0.13.1 in master.
+WPLib is in beta status at version 0.13.2 in master.
 
 We are actively working on it with a goal to develop stable beta versions that can be used in production, and then a 1.0.0 version when we are comfortable that the majority of the API will not need to change.
 
@@ -49,7 +49,7 @@ We plan to update them in the near future, sooner if we have people who are push
 - [LawPress](https://github.com/wplib/lawpress) - A demo theme that will eventually be a full-fledged law firm CMS starter theme.
 
 ##History
-WPLib is based on at least five (5) generations of code developed over five (5) years.
+WPLib is based on at least five (5) generations of code developed over seven (7) years.
 
 The 1st and 2nd generations were named [_Sunrise_](https://bitbucket.org/newclarity/sunrise-1) and the 3rd and 4th were called _NewClarity Lib (we did not release that publicly as it was focused on meeting the short term needs of clients and not focused on being widely usable.)_
 
