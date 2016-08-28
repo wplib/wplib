@@ -12,8 +12,9 @@ abstract class WPLib_List_Base
 
 	/**
 	 * @var array
+	 * @note Protected instead of private so as not to cause XDEBUG to fail when inspection is attempted.
 	 */
-	private $_elements = array();
+	protected $_elements = array();
 
 	/**
 	 * @var string
