@@ -78,7 +78,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 	 *
 	 * @param string $template;
 	 *
-	 * @return static
+	 * @return null
 	 */
 	static function _template_include_999( $template ) {
 
@@ -127,7 +127,7 @@ class WPLib_Theme extends WPLib_Module_Base {
 			include( $template );
 
 		}
-		return false;
+		return null;
 
 	}
 
