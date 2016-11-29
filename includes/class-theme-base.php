@@ -1220,7 +1220,6 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	/**
 	 * @param string $filepath
-	 * @return string
 	 */
 	function the_asset_url( $filepath ) {
 
