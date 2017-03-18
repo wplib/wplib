@@ -487,7 +487,7 @@ HTML;
 
 			function( $name ) use ( $attributes ) {
 
-				return "{$name}=\"{$attributes[ $value ]}\"";
+				return "{$name}=\"{$attributes[ $name ]}\"";
 
 			},
 			array_keys( $attributes )
