@@ -3,7 +3,7 @@ Contributors: newclarity, mikeschinkel,
 Tags: library, mvc
 Requires at least: 4.4
 Tested up to: 4.4
-Stable tag: 0.13.1
+Stable tag: 0.13.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,10 +20,15 @@ The WPLib source code is hosted and development occurs [on GitHub](https://githu
 See the [Quick Start](http://wplib.org/quick-start) on wplib.org.
 
 == Frequently Asked Questions ==
-=I\'ve Installed it and it Doesn\'t Do Anything=
+=I have installed it and it does not do anything=
 That is because it is for PHP developers, not end-users. If you are a PHP developer see the [Quick Start](http://wplib.org/quick-start) to learn more.
 
 == Changelog ==
+= 0.13.3 =
+- Fixed bugs in WPLib::get_html_attributes_html(), WPLib::get_contents() and WPLib::put_contents().
+- Fixed bugs in $post_model->excerpt(), $post_model->content().
+- Slightly improve TEMPLATE comments that are emitted to theme files in WPLIB_DEVELOPMENT mode.
+
 = 0.13.2 =
 - A series of bug fixes and error message improvements.
 - Fixed nasty bug in WPLib Commit Reviser.
