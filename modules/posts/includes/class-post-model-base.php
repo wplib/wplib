@@ -325,11 +325,15 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
-	 * @return mixed|void
+	 * @return string|null
 	 */
 	function excerpt() {
 
-		if ( $this->has_post() ) {
+		if ( ! $this->has_post() ) {
+
+			$excerpt = null;
+
+		} else {
 
 			$saved_postdata = $this->setup_postdata();
 
@@ -348,11 +352,15 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	}
 
 	/**
-	 * @return mixed|void
+	 * @return string|null
 	 */
 	function content() {
 
-		if ( $this->has_post() ) {
+		if ( ! $this->has_post() ) {
+
+			$content = null;
+
+		} else {
 
 			$saved_postdata = $this->setup_postdata();
 
