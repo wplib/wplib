@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.13.2
+ * Version:     0.13.3
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -43,7 +43,7 @@
  */
 class WPLib {
 
-	const RECENT_COMMIT = 'fa3cb4d'; 
+	const RECENT_COMMIT = 'fa3cx5e';
 
 	const PREFIX = 'wplib_';
 	const SHORT_PREFIX = 'wplib_';
@@ -2030,7 +2030,7 @@ class WPLib {
 
 					$template->var_name = self::get_constant( 'VAR_NAME', get_class( $item ) );
 
-					$template->comments = "<!--[TEMPLATE FILE: {$template->filename} -->";
+					$template->comments = "<!--[TEMPLATE: {$template->filename}] -->";
 
 					break;
 
@@ -2058,7 +2058,7 @@ class WPLib {
 				 * This is ONLY output of constant 'WPLIB_RUNMODE' is defined in wp-config.php.
 				 * In other words, this will NEVER run on your servers (unless you set WPLIB_RUNMODE.)
 				 */
-				echo "\n<!--[FAILED TEMPLATE FILE: {$template_slug}. Tried:\n";
+				echo "\n<!--[FAILED TEMPLATE: {$template_slug}. Tried:\n";
 				foreach ( $template->filenames_tried as $template_type => $template_filename ) {
 					echo "\n\t{$template_type}: {$template_filename}";
 				}
@@ -2070,7 +2070,7 @@ class WPLib {
 
 			if ( $template->add_comments ) {
 
-				echo $template->comments;
+				echo "{$template->comments}\n";
 
 			}
 
@@ -2130,9 +2130,8 @@ class WPLib {
 				 * This is ONLY output if constant 'WPLIB_RUNMODE' is defined in wp-config.php.
 				 * In other words, this will NEVER run on your servers (unless you set WPLIB_RUNMODE.)
 				 */
-				echo $template->comments;
 				echo ob_get_clean();
-				echo "\n<!--[END TEMPLATE FILE: {$template->filename} -->\n";
+				echo "\n<!--[/TEMPLATE: {$template->filename}] -->\n";
 
 			}
 
@@ -2537,7 +2536,7 @@ class WPLib {
 	 */
 	static function get_contents( $filepath ) {
 
-		return self::invoke_with_args( 'found_get_ex', $filepath );
+		return self::invoke_with_args( 'file_get_contents', $filepath );
 
 	}
 
@@ -2552,7 +2551,7 @@ class WPLib {
 
 		$permissions = ( fileperms( $filepath ) & 0777 );
 		chmod( $filepath, 0777 );
-		$result = self::invoke_with_args( 'found_put_ex', $filepath, $contents );
+		$result = self::invoke_with_args( 'file_put_contents', $filepath, $contents );
 		chmod( $filepath, $permissions );
 
 		return $result;
@@ -2674,7 +2673,7 @@ class WPLib {
 
 	/**
 	 * @param callable $invokable
-	 * @param array $args
+	 * @param mixed $args
 	 *
 	 * @return mixed
 	 */
