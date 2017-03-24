@@ -34,7 +34,6 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 		self::add_class_action( 'wplib_commit_revised' );
 		self::add_class_action( 'wp_loaded', 11 );
-
 	}
 
 	/**
@@ -55,7 +54,11 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 	 */
 	static function _wp_loaded_11() {
 
+		//self::_initialize_roles( 1,0 );
+
 		self::$_roles = null;
+
+
 
 	}
 
@@ -114,7 +117,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 			$capabilities = call_user_func( array( $role['class_name'], 'capabilities' ) );
 
-			if ( ! isset( $option[ $role_slug ] ) ) {
+//			if ( ! isset( $option[ $role_slug ] ) ) {
 
 				$option[ $role_slug ] = array(
 
@@ -126,7 +129,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 
 				$dirty = true;
 
-			}
+//			}
 
 			$display_name = self::get_role_display_name( $role_slug );
 
@@ -135,7 +138,15 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 			/*
 			 * Get the capabilities
 			 */
-			if ( is_null( $current_capabilities = $wp_roles->role_objects[ $role_slug ]->capabilities ) ) {
+			if ( empty( $wp_roles->role_objects[ $role_slug ] ) ) {
+
+				$current_capabilities = array();
+
+			} else if ( ! property_exists( $wp_roles->role_objects[ $role_slug ], 'capabilities' ) ) {
+
+				$current_capabilities = array();
+
+			} else if ( is_null( $current_capabilities = $wp_roles->role_objects[ $role_slug ]->capabilities ) ) {
 
 				$current_capabilities = array();
 
@@ -236,7 +247,7 @@ abstract class WPLib_Role_Module_Base extends WPLib_Module_Base {
 				 */
 				remove_role( $role_slug );
 
-				call_user_func( $role_slug, $display_name, $capabilities );
+				add_role( $role_slug, $display_name, $capabilities );
 
 				$option[ $role_slug ]= array(
 					'prior_capabilities' => $capabilities,
