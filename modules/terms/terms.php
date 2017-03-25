@@ -355,7 +355,7 @@ class WPLib_Terms extends WPLib_Module_Base {
 
 	/**
 	 * @param array $args
-	 * @return object|null
+	 * @return WP_Term[]|array
 	 */
 	static function get_terms( $args = array() ) {
 
