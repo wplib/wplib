@@ -10,13 +10,15 @@
  *
  * @property WPLib_Post_Base $owner
  * @method void the_ID()
+ * @method void the_ID_attr()
  * @method void the_title()
+ * @method void the_title_attr()
  * @method void the_content()
  * @method void the_url()
  * @method void the_url_attr()
  * @method void the_permalink()
  *
- * @future Break out some of these more prescriptive methods into a helper module so they can be ommitted if desired.
+ * @future Break out some of these more prescriptive methods into a helper module so they can be omitted if desired.
  */
 abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 
