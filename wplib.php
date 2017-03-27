@@ -2084,8 +2084,7 @@ class WPLib {
 			 * to extract() here please add an issue so we can discuss the pros and
 			 * cons at https://github.com/wplib/wplib/issues
 			 */
-			$function = 'extract';
-			$function( $template->vars, EXTR_PREFIX_SAME, '_' );
+			extract( $template->vars, EXTR_PREFIX_SAME, '_' );
 
 			if ( $template->var_name ) {
 
@@ -2096,7 +2095,7 @@ class WPLib {
 				 * See a few lines above to explain	${'extract'}
 				 */
 
-				$function( array( $template->var_name => $item ) );
+				extract( array( $template->var_name => $item ) );
 
 			}
 
