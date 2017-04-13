@@ -101,7 +101,7 @@ abstract class WPLib_Base {
 	 */
 	static function remove_class_action( $action, $priority = 10 ) {
 
-		$hook = "_{$action}" . ( 10 !==  intval( $priority ) ? "_{$priority}" : '' );
+		$hook = "_{$action}" . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		remove_action( $action, array( get_called_class(), $hook ), $priority );
 
 	}
@@ -112,7 +112,7 @@ abstract class WPLib_Base {
 	 */
 	static function remove_class_filter( $filter, $priority = 10 ) {
 
-		$hook = "_{$filter}" . ( 10 !==  intval( $priority ) ? "_{$priority}" : '' );
+		$hook = "_{$filter}" . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		remove_filter( $filter, array( get_called_class(), $hook ), $priority );
 
 	}
