@@ -34,7 +34,7 @@ abstract class WPLib_Base {
 	 *
 	 * @not And array elements not found as properties will be assigned to the property array $this->extra_args.
 	 *
-	 * @param array|object $args
+	 * @param array|string|object $args
 	 */
 	function set_state( $args ) {
 
