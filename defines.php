@@ -18,6 +18,7 @@ if ( ! class_exists( 'WPLib_Enum' ) ) {
 		do {
 
 			$message = false;
+            $value   = null;
 
 			if ( 'WPLib_' !== substr( $enum_class, 0, 6 ) ) {
 
