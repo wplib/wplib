@@ -27,11 +27,11 @@ class WPLib_Post_List_Base extends WPLib_List_Base {
 			 */
 			$list_owner = $args['list_owner'];
 
-			if ( ! $list_owner ) {
+			if ( $list_owner ) {
 
 				foreach ($posts as $index => $post) {
 
-					$posts[$index] = $list_owner::make_new_item( $post, $args );
+					$posts[ $index ] = $list_owner::make_new_item( $post, $args );
 
 				}
 
@@ -40,7 +40,7 @@ class WPLib_Post_List_Base extends WPLib_List_Base {
 				foreach ($posts as $index => $post) {
 
 					$list_owner = $args['list_owner'] = WPLib_Posts::get_post_type_class( $post->post_type );
-					$posts[$index] = $list_owner::make_new_item( $post, $args );
+					$posts[ $index ] = $list_owner::make_new_item( $post, $args );
 
 				}
 

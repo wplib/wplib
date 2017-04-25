@@ -15,9 +15,9 @@ class WPLib_Posts extends WPLib_Module_Base {
 	private static $_default_labels;
 
 	/**
-	 * The post type labels
+	 * The labels for every post type
 	 *
-	 * @var string[]
+	 * @var array[]
 	 */
 	private static $_labels = array();
 
@@ -32,7 +32,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	/**
 	 * Value to limit the maximum posts per page requested for any given WP_Query
 	 *
-	 * @var array|null
+	 * @var int|null
 	 */
 	private static $_max_posts_per_page = 999;
 
@@ -298,7 +298,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 	/**
 	 * @param array|string|WPLib_Query $query
 	 * @param array $args
-	 * @return WPLib_Post_List_Default
+	 * @return WPLib_Post_List_Default|WPLib_List_Default
 	 */
 	static function get_list( $query = array(), $args = array() ) {
 

@@ -66,12 +66,12 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 
 				}
 
-				if ( method_exists( $class_name, 'make_new' ) ) {
+				if ( method_exists( $class_name, 'make_new_item' ) ) {
 					/*
 					 * If this class has a make_new() method.
-					 * A Class::make_new() method is needed when the class constructor has more than 1 parameter of $args.
+					 * A Class::make_new_item() method is needed when the class constructor has more than 1 parameter of $args.
 					 */
-					$this->{$property_name} = $class_name::make_new( $property_args );
+					$this->{$property_name} = $class_name::make_new_item( $property_args );
 
 				} else if ( class_exists( $class_name ) ) {
 
