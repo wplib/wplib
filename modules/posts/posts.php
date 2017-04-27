@@ -498,6 +498,9 @@ class WPLib_Posts extends WPLib_Module_Base {
 				case 'page':
 					$instance_class = 'WPLib_Page';
 					break;
+				default:
+					$instance_class = 'WPLib_Post_Default';
+					break;
 			}
 		}
 

@@ -56,26 +56,30 @@ class WPLib_Post_List_Base extends WPLib_List_Base {
 						continue;
 					}
 
-					if ( ! WPLib::can_call( 'make_new', $instance_class ) ) {
-
-						if ( ! WPLib::can_call( 'make_new_item', $instance_class ) ) {
-							/**
-							 * Method name make_new_item() is discouraged, supported here just for compatibility with existing projects.
-							 */
-							WPLib::trigger_error( sprintf( "Since class '%s' is being used as an item class, it should have make_new() callable!", $instance_class ) );
-							continue;
-						} else {
-							$posts[ $index ] = $instance_class::make_new_item( $post, $args );
-						}
-
-					} else {
+					if ( WPLib::can_call( 'make_new', $instance_class ) ) {
 						$posts[ $index ] = $instance_class::make_new( $post, $args );
+						continue;
 					}
 
+					if ( ! WPLib::can_call( 'make_new_item', $instance_class ) ) {
+						/**
+						 * Backwards compatibility for old projects that do not use the idiomatic method name "make_new()".
+						 */
+						$posts[ $index ] = $instance_class::make_new_item( $post, $args );
+						continue;
+					}
 
+					if( 'WPLib_Post_Default' == $instance_class ) {
+						/**
+						 * Most likely this is a post registered by other means than the standard WPLib-way.
+						 */
+						$posts[ $index ] = new $instance_class( $post );
+						continue;
+					}
+
+					WPLib::trigger_error( sprintf( "Since class '%s' is being used as an item class, it should have make_new() callable!", $instance_class ) );
 
 				}
-
 			}
 		}
 

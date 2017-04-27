@@ -571,9 +571,10 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		if( $this->has_posts() ) {
 			$_post = $this->post();
 			$item  = WPLib_Posts::make_new_item( $_post, "list_owner=" );
-			if( !$item ){
-				$item  = new WPLib_Post_Default( $_post );
-			}
+			/**
+			 * Note, $item will be instance of WPLib_Post_Default for posts where
+			 * post type is registered by other means than standard WPLib way.
+			 */
 		} else {
 			$item  = new WPLib_Post_Default( null );
 		}
