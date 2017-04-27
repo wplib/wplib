@@ -409,7 +409,7 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		$args = wp_parse_args( $args, array(
 			'instance_class' => false,
-			'list_owner' => 'WPLib_Posts',
+			'list_owner'     => 'WPLib_Posts',
 		));
 
 		if ( is_numeric( $_post ) ) {
@@ -418,16 +418,30 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		}
 
-		if ( ! $args[ 'instance_class' ] ) {
-
-			$args['instance_class'] = WPLib::get_constant( 'INSTANCE_CLASS', $args['list_owner'] );
-
+		if ( !$args[ 'instance_class' ] ) {
+			$args['instance_class'] = self::get_post_type_class( $_post->post_type );
 		}
 
 		if ( ! $args[ 'instance_class' ] ) {
 
-			$args['instance_class'] = self::get_post_type_class( $_post->post_type );
+			$args['instance_class'] = WPLib::get_constant( 'INSTANCE_CLASS', $args['list_owner'] );
 
+			if( $args['instance_class'] ) {
+
+				if ( ! empty( $_post->post_type ) && $_post->post_type !== WPLib::get_constant( 'POST_TYPE', $args[ 'instance_class' ] ) ) {
+					WPLib::trigger_error(
+						sprintf( "List owner `%s` is associated with '%s' post type and should not be used to instantiate posts of '%s' type!",
+							$args[ 'list_owner' ],
+							WPLib::get_constant( 'POST_TYPE', $args[ 'list_owner' ] ),
+							$_post->post_type
+						)
+					);
+				}
+
+			}
+			else {
+				//not a WPLib post type!
+			}
 		}
 
 		$instance_class = $args['instance_class'];
@@ -468,7 +482,26 @@ class WPLib_Posts extends WPLib_Module_Base {
 
 		$classes = self::post_type_classes();
 
-		return ! empty( $classes[ $post_type ] ) ? $classes[ $post_type ] : null;
+		$instance_class = isset( $classes[ $post_type ] ) ? $classes[ $post_type ] : null;
+
+		/**
+		 * Currently post_type_classes() do not include WPLib_Post and WPLib_Page,
+		 * therefore "post" and "page" types need to be checked separately.
+		 *
+		 * @todo investigate problem with autoload?
+		 */
+		if( ! $instance_class ){
+			switch( $post_type ){
+				case 'post':
+					$instance_class = 'WPLib_Post';
+					break;
+				case 'page':
+					$instance_class = 'WPLib_Page';
+					break;
+			}
+		}
+
+		return $instance_class ? $instance_class : null;
 
 	}
 

@@ -21,20 +21,20 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	private $_body_class = '';
 
 	/**
-	 * Return the site name as configured.
+	 * Output the site name as configured.
 	 *
-	 * @return string|void
+	 * @return void
 	 */
 	function the_site_url() {
 
-		return esc_url( $this->site_url() );
+		echo esc_url( $this->site_url() );
 
 	}
 
 	/**
 	 * Return the site name as configured.
 	 *
-	 * @return string|void
+	 * @return string
 	 */
 	function site_url() {
 
@@ -45,7 +45,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	/**
 	 * Return the site name as configured.
 	 *
-	 * @return string|void
+	 * @return string
 	 */
 	function site_name() {
 
@@ -54,20 +54,20 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	}
 
 	/**
-	 * Return the site description as configured.
+	 * Output the site description as configured.
 	 *
-	 * @return string|void
+	 * @return void
 	 */
 	function the_site_description_html() {
 
-		return wp_kses_post( $this->site_description() );
+		echo wp_kses_post( $this->site_description() );
 
 	}
 
 	/**
 	 * Return the site description as configured.
 	 *
-	 * @return string|void
+	 * @return string
 	 */
 	function site_description() {
 
@@ -76,7 +76,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	}
 
 	/**
-	 * Return the site name as configured.
+	 * Output the site name link as configured.
 	 *
 	 * @param array $args
 	 */
@@ -224,6 +224,17 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	}
 
 	/**
+	 * Check whether there is a menu associated with the specified location.
+	 *
+	 * @param string $location
+	 *
+	 * @return bool
+	 */
+	function has_menu( $location )	{
+		return has_nav_menu( $location );
+	}
+
+	/**
 	 * Generate the HTML for a nav menu.
 	 *
 	 * @param string $location  Defaults to 'primary' theme location.
@@ -248,7 +259,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	}
 
 	/**
-	 * Generate the HTML for a screen reader skip link.
+	 * Output the HTML for a screen reader skip link.
 	 *
 	 * @param array $args
 	 */
@@ -288,6 +299,9 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	}
 
+	/**
+	 * @param string $name
+	 */
 	function the_footer_html( $name = null ) {
 
 		/**
@@ -304,6 +318,9 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	}
 
+	/**
+	 * @param string $name
+	 */
 	function the_sidebar_html( $name = null ) {
 
 		/**
@@ -484,7 +501,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	}
 
 	/**
-	 * Return number of is use categories on posts.
+	 * Return the number of categories used on posts.
 	 *
 	 * @note Ignores 'Uncategorized'
 	 *
@@ -537,7 +554,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	}
 
 	/**
-	 * @return WP_Post
+	 * @return WP_Post|null
 	 */
 	function post() {
 
@@ -547,32 +564,51 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 	/**
 	 * @return WPLib_Post_Base
-	 *
-	 * @future Make work for non-posts?
 	 */
 	function item() {
 
-		return $this->has_posts() 
-			? WPLib_Posts::make_new_item( $this->post() ) 
-			: new WPLib_Post_Default( null );
+		$item = null;
+		if( $this->has_posts() ) {
+			$_post = $this->post();
+			$item  = WPLib_Posts::make_new_item( $_post, "list_owner=" );
+			if( !$item ){
+				$item  = new WPLib_Post_Default( $_post );
+			}
+		} else {
+			$item  = new WPLib_Post_Default( null );
+		}
+
+		return $item;
 
 	}
 
 	/**
-	 * @return WPLib_Page
+	 * @return WPLib_Page|WPLib_Post_Base
 	 */
 	function page_item() {
 
-		return new WPLib_Page( $this->post() );
+		$_post = $this->post();
+
+		if( $_post && 'page' !== $_post->post_type ){
+			WPLib::trigger_error( sprintf( "Current post is of '%s' post type and should not be requested via \$theme->page_item()", $_post->post_type) );
+		}
+
+		return $this->item();
 
 	}
 
 	/**
-	 * @return WPLib_Post
+	 * @return WPLib_Post|WPLib_Post_Base
 	 */
 	function post_item() {
 
-		return new WPLib_Post( $this->post() );
+		$_post = $this->post();
+
+		if( $_post && 'post' !== $_post->post_type ){
+			WPLib::trigger_error( sprintf( "Current post is of '%s' post type and should not be requested via \$theme->post_item()", $_post->post_type) );
+		}
+
+		return $this->item();
 
 	}
 
@@ -593,6 +629,15 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 
 		return isset( $q->posts ) && is_array( $q->posts ) ? count( $q->posts ) : 0;
 
+	}
+
+	/**
+	 * Returns a list of objects based on the queried object from $wp_the_query
+	 *
+	 * @return WPLib_Post_List_Default|WPLib_Post_Base[]
+	 */
+	function post_list() {
+		return self::get_post_list();
 	}
 
 	/**
@@ -644,6 +689,28 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		return (bool) $wp_the_query->is_front_page();
 
 	}
+
+	/**
+	 * Is the query for an existing single post?
+	 *
+	 * @param string $post
+	 * @return bool
+	 */
+	function is_single( $post = ''){
+		return is_single( $post );
+	}
+
+	/**
+	 * Is the query for an existing single post of any post type (post, attachment, page,
+	 * custom post types)?
+	 *
+	 * @param string $post
+	 * @return bool
+	 */
+	function is_singular( $post_types = ''){
+		return is_singular( $post_types );
+	}
+
 
 	/**
 	 * @return bool
@@ -1127,7 +1194,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	}
 
 	/**
-	 * @return WPLib_User_List
+	 * @return WPLib_Post_List_Default
 	 */
 	function queried_list() {
 
@@ -1275,7 +1342,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 * Useful for accessing the post prior to $wp_the_query
 	 * Similar to single_post_title() in concept
 	 *
-	 * @return WP_Post
+	 * @return WP_Post|null
 	 */
 	function single_post() {
 		$_post = get_queried_object();
@@ -1290,17 +1357,13 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 * Useful for accessing the post prior to $wp_the_query
 	 * Similar to single_post_title() in concept
 	 *
-	 * @return WPLib_Post_Base
+	 * @return WPLib_Post_Base|null
 	 */
 	function single_post_item() {
 
-		/**
-		 * @var WP_Post $_post
-		 */
-		return $_post = $this->single_post()
+		return ($_post = $this->single_post())
 			? WPLib_Posts::make_new_item( $_post )
 			: null;
-
 
 	}
 
@@ -1496,7 +1559,73 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 */
 	function get_pagination_html( $args = array() ) {
 
-		echo get_the_posts_pagination( $args );
+		get_the_posts_pagination( $args );
 	}
 
+	/**
+	 * Returns the navigation to next/previous set of posts, when applicable.
+	 *
+	 * @since WP 4.1.0
+	 *
+	 * @global WP_Query $wp_query WordPress Query object.
+	 *
+	 * @param array $args {
+	 *     Optional. Default posts navigation arguments. Default empty array.
+	 *
+	 *     @type string $prev_text          Anchor text to display in the previous posts link.
+	 *                                      Default 'Older posts'.
+	 *     @type string $next_text          Anchor text to display in the next posts link.
+	 *                                      Default 'Newer posts'.
+	 *     @type string $screen_reader_text Screen reader text for nav element.
+	 *                                      Default 'Posts navigation'.
+	 * }
+	 *
+	 * @return string Markup for posts links.
+	 */
+	function get_posts_navigation_html( $args = array() ){
+		return get_the_posts_navigation( $args );
+	}
+
+	/**
+ 	 * Outputs the navigation to next/previous set of posts, when applicable.
+	 *
+	 * @param array $args
+	 */
+	function the_posts_navigation_html( $args = array() ){
+		echo wp_kses_post( $this->get_posts_navigation_html( $args ) );
+	}
+
+
+	/**
+	 * Whether the site is being previewed in the Customizer.
+	 *
+	 * @return bool
+	 */
+	function is_customize_preview(){
+		return is_customize_preview();
+	}
+
+	/**
+	 * Return formatted list of pages.
+	 *
+	 * Outputs page links for paginated posts (i.e. includes the <!--nextpage-->.
+	 * Quicktag one or more times). This tag must be within The Loop.
+	 *
+	 * @param string|array $args
+	 */
+	function get_page_list_html( $args = array() ){
+		$args = wp_parse_args( $args );
+		$args['echo'] = false;
+
+		return wp_link_pages( $args );
+	}
+
+	/**
+	 * Output formatted list of pages.
+	 *
+	 * @param array $args
+	 */
+	function the_page_list_html( $args = array() ){
+		echo wp_kses_post( $this->get_page_list_html( $args ) );
+	}
 }

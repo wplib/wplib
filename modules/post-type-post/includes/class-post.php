@@ -22,7 +22,12 @@ class WPLib_Post extends WPLib_Post_Base {
 	 */
 	const POST_TYPE = 'post';
 
-
+	/**
+	 * Used by the_template() to assign an instance of this class to variable with this name.
+	 *
+	 * @var string
+	 */
+	const VAR_NAME = 'post_item';
 }
 
 

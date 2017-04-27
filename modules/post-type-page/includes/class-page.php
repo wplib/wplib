@@ -22,7 +22,12 @@ class WPLib_Page extends WPLib_Post_Base {
 	 */
 	const POST_TYPE = WPLib_Post_Type_Page::POST_TYPE;
 
-
+	/**
+	 * Used by the_template() to assign an instance of this class to variable with this name.
+	 *
+	 * @var string
+	 */
+	const VAR_NAME = 'page_item';
 }
 
 
