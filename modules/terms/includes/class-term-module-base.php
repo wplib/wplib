@@ -10,12 +10,12 @@ abstract class WPLib_Term_Module_Base extends WPLib_Module_Base {
 	const INSTANCE_CLASS = null;
 
 	/**
-	 * REgister the labels used for this taxonomy.
+	 * Register the labels used for this taxonomy.
 	 *
 	 * @param array $args
 	 * @future Allow taxonomy name to be passed optionally.
 	 *
-	 * @return object
+	 * @return array
 	 */
 	static function register_taxonomy_labels( $args = array() ) {
 

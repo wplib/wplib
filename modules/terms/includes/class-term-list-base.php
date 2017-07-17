@@ -21,6 +21,9 @@ class WPLib_Term_List_Base extends WPLib_List_Base {
 
 			foreach ( $terms as $index => $term ) {
 
+				/**
+				 * @todo This should probably be calling make_new_term().
+				 */
 				$terms[ $index ] = $list_owner::make_new_item( $term, $args );
 
 			}

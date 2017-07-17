@@ -45,7 +45,7 @@ abstract class WPLib_Module_Base extends WPLib {
 	 *      @type string $instance_class    The class for items in the list, i.e. WP_Post
 	 * }
 	 *
-	 * @return WPLib_List_Default[]
+	 * @return WPLib_List_Default
 	 *
 	 */
 	static function get_list( $query = array(), $args = array() ) {

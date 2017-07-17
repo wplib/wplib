@@ -152,7 +152,7 @@ abstract class WPLib_Post_Module_Base extends WPLib_Module_Base {
 	 *      @type string $queried             'local' or 'queried'
 	 * }
 	 *
-	 * @return WPLib_Post_List_Default[]
+	 * @return WPLib_Post_List_Default
 	 */
 	static function get_list( $query = array(), $args = array() ) {
 

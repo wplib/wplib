@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.13.4
+ * Version:     0.14.0
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -2108,6 +2108,29 @@ class WPLib {
 				$_module_class
 			);
 
+			/*
+			 * Make $theme available inside the template.
+			 */
+			$theme = WPLib::theme();
+
+			if ( WPLib::use_template_global_vars() ) {
+
+				/*
+				 * For compatibility with WordPress templates we need to
+				 * extract all the global variables into the current scope just
+				 * like WordPress does when it calls a template. Ironically
+				 * some code sniffers constantly flag extract() so it is easier to
+				 * hide it than to have to constantly see it flagged.
+				 *
+				 * OTOH if you are using WPLib and you think we should do a direct call
+				 * to extract() here please add an issue so we can discuss the pros and
+				 * cons at https://github.com/wplib/wplib/issues
+				 */
+
+				extract( $GLOBALS, EXTR_SKIP );
+
+			}
+
 			ob_start();
 
 			self::$_file_loading = $template->filename;
@@ -2730,7 +2753,9 @@ class WPLib {
 		if ( WPLib::get_constant( 'INSTANCE_CLASS', $class ) ) {
 
 			if ( self::class_declares_method( $class, 'make_new_item' ) ) {
-				
+				/*
+				 * @todo This almost certainly should be calling ::make_new()
+				 */
 				$item = $class::make_new_item( $item, $args );
 
 			} else if ( WPLib::is_development() ) {

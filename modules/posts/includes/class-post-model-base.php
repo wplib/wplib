@@ -248,7 +248,10 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		}
 
-		if ( $this->has_post() &&  $this->_post->post_type !== $post_type ) {
+		/**
+		 * When $post_type == 'any', that (most likely) means that post type was not created by WPLib.
+		 */
+		if ( $post_type != 'any' && $this->has_post() &&  $this->_post->post_type !== $post_type ) {
 
 			$message = __( "Post type mismatch: %s::POST_TYPE=='%s' while \$this->_post->post_type=='%s'.", 'wplib' );
 			WPLib::trigger_error( sprintf( $message, get_class( $this->owner ), $post_type, $this->_post->post_type ) );
