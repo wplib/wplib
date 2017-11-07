@@ -60,7 +60,7 @@ class WPLib_Post_List_Base extends WPLib_List_Base {
 						continue;
 					}
 
-					if ( ! WPLib::can_call( 'make_new_item', $instance_class ) ) {
+					if ( WPLib::can_call( 'make_new_item', $instance_class ) ) {
 						/**
 						 * @todo This should probably be calling make_new_post_item().
 						 *       Item is not implied because of different post types.
