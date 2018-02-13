@@ -342,7 +342,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 			$excerpt = apply_filters( 'the_excerpt',
 
-				apply_filters( 'get_the_excerpt', $this->get_field_value( 'post_excerpt' ) )
+				apply_filters( 'get_the_excerpt', $this->get_field_value( 'post_excerpt' ), $this->_post )
 
 			);
 
