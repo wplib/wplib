@@ -24,6 +24,14 @@ See the [Quick Start](http://wplib.org/quick-start) on wplib.org.
 That is because it is for PHP developers, not end-users. If you are a PHP developer see the [Quick Start](http://wplib.org/quick-start) to learn more.
 
 == Changelog ==
+= 0.14.2 =
+- Adding 2nd parameter (the $post object) to 'get_the_excerpt' hook inside Post_Model_Base->excerpt()
+
+= 0.14.1 =
+- Changed WPLib_Post_List_Base constructor to support items of disparate post types
+- Moved docs to a wiki repository
+- Added a screenshot
+
 = 0.14.0 =
 - Fixed lots of edge case bugs related to posts, terms and lists.
 
