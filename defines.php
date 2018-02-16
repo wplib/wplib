@@ -58,6 +58,10 @@ if ( ! class_exists( 'WPLib_Enum' ) ) {
 
 			}
 
+			$value = defined( $constant_ref = "{$enum_class}::{$setting}" )
+				? constant( $constant_ref )
+				: $enum_class::__default;
+
 			WPLib_Enum::set_enum( $enum_class, $value );
 
 		} while ( false );
