@@ -24,6 +24,9 @@ See the [Quick Start](http://wplib.org/quick-start) on wplib.org.
 That is because it is for PHP developers, not end-users. If you are a PHP developer see the [Quick Start](http://wplib.org/quick-start) to learn more.
 
 == Changelog ==
+= 0.14.3 =
+- Fixed wplib_define() to correctly set a non-default value
+
 = 0.14.2 =
 - Adding 2nd parameter (the $post object) to 'get_the_excerpt' hook inside Post_Model_Base->excerpt()
 
