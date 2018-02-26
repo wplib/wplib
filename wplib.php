@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.14.3
+ * Version:     0.14.4
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -2075,14 +2075,12 @@ class WPLib {
 			}
 
 			/*
-			 * This use of extract() is to support templates in the same way
-			 * that WordPress supports templates with variables that are accessible
-			 * in the namespace. However some code sniffers constantly flag extract()
-			 * so it is easier to hide it than to have to constantly see it flagged.
+			 * If you are a code reviewer please see the following
+			 * issue to understand and even discuss why this use of
+			 * extract() does not need to be "remediated":
 			 *
-			 * OTOH if you are using WPLib and you think we should do a direct call
-			 * to extract() here please add an issue so we can discuss the pros and
-			 * cons at https://github.com/wplib/wplib/issues
+			 *      https://github.com/wplib/wplib/issues/72
+			 *
 			 */
 			extract( $template->vars, EXTR_PREFIX_SAME, '_' );
 
@@ -2116,15 +2114,12 @@ class WPLib {
 			if ( WPLib::use_template_global_vars() ) {
 
 				/*
-				 * For compatibility with WordPress templates we need to
-				 * extract all the global variables into the current scope just
-				 * like WordPress does when it calls a template. Ironically
-				 * some code sniffers constantly flag extract() so it is easier to
-				 * hide it than to have to constantly see it flagged.
+				 * If you are a code reviewer please see the following
+				 * issue to understand and even discuss why this use of
+				 * extract() does not need to be "remediated":
 				 *
-				 * OTOH if you are using WPLib and you think we should do a direct call
-				 * to extract() here please add an issue so we can discuss the pros and
-				 * cons at https://github.com/wplib/wplib/issues
+				 *      https://github.com/wplib/wplib/issues/72
+				 *
 				 */
 
 				extract( $GLOBALS, EXTR_SKIP );

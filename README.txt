@@ -24,6 +24,9 @@ See the [Quick Start](http://wplib.org/quick-start) on wplib.org.
 That is because it is for PHP developers, not end-users. If you are a PHP developer see the [Quick Start](http://wplib.org/quick-start) to learn more.
 
 == Changelog ==
+= 0.14.4 =
+- Unmasked extract() that were previously hidden from code reviewers. See https://github.com/wplib/wplib/issues/72
+
 = 0.14.3 =
 - Fixed wplib_define() to correctly set a non-default value
 

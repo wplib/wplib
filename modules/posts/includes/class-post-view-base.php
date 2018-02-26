@@ -402,17 +402,14 @@ abstract class WPLib_Post_View_Base extends WPLib_View_Base {
 		global $page, $numpages, $multipage, $more;
 
 		/*
-		 * This use of extract() is to minimize the problems related to WordPress'
-		 * egregious use of global variables. However, ironically, some code
-		 * sniffers constantly flag extract() so it is easier to hide it than to
-		 * have to constantly see it flagged.
+		 * If you are a code reviewer please see the following
+		 * issue to understand and even discuss why this use of
+		 * extract() does not need to be "remediated":
 		 *
-		 * OTOH if you are using WPLib and you think we should do a direct call
-		 * to extract() here please add an issue so we can discuss the pros and
-		 * cons at https://github.com/wplib/wplib/issues
+		 *      https://github.com/wplib/wplib/issues/72
+		 *
 		 */
-		$function = 'extract';
-		$function( $globals );
+		extract( $globals );
 
 	}
 
