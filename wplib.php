@@ -12,7 +12,7 @@
  * Text Domain: wplib
  * License:     GPLv2 or later
  *
- * Copyright 2015 NewClarity Consulting LLC <wplib@newclarity.net>
+ * Copyright 2015-2018 NewClarity Consulting LLC <wplib@newclarity.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2, as
