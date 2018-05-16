@@ -56,40 +56,10 @@ That is because it is for PHP developers, not end-users. If you are a PHP develo
 = 0.13.1 =
 Had to disable object caching in WPLib::_find_autoload_files() because of difficult to track down bugs.  The next major release (probably 0.14.0) will correct this.
 
-= 0.13.0 =
-Fixed several bugs that could possibly break existing code and added a few enhancements:
+WPLib was designed for use by teams who build custom sites and need professional workflow. The library is a **thin layer** that provides a simple **Module System** and a lightweight **Model+View architecture**.
 
-- Fixed error checking logic in WPLib::on_load() designed to detect if a child class calls parent::on_load().
-- Fixed logic that did not include WPLib core classes from WPLib::site_classes()
-- Changed WPLib_Posts::get_list() to set $args['items'] to an array callable instead of a closure so it could be serialized.
-- Changed WPLib_Posts::get_posts() so that WPLib_Posts::get_list() could use it for $args['items'].
-- Updated WPLib class hook methods to accept colons (':') in hook names and to convert them to underscores for their in method names.
-- Added ::class_declares_method() and ::can_call() methods to WPLib.
-- Changed WPLib::make_new_item() to throw an error rather than infinite recursion if a module does not declare said named method.
-- Fixed numerous bugs in WPLib_Theme_Base caught by PhpStorm.
-- Make changes in WPLib_Post_List_Base::__construct() to support when post types are not homogeneous.
+WPLib is for those professionals who want their custom-developed WordPress sites to be both robust and easy to manage and maintain as site complexity grows.
 
-= 0.12.3 =
-Fixed bug that falsely through error "Cannot call WPLib::autoload_all_classes() prior to 'init' action, priority 9."
+## Documentation
 
-= 0.12.2 =
-Added WPLib::set_max_posts_per_page() to allow changing from default of 999.
-
-= 0.12.1 =
-Fixed WPLib::get_template() to return instead of echo.
-
-= 0.12.0 =
-Added concept of a "helped" class with WPLib::current_helped_class() to WPLib and also renamed WPLib::call_helper() to WPLib::_call_helper().
-Added a test in /wplib/defines.php for ! class_exists( 'WPLib_Enum' ) before requiring it and related classes, and before including wplib_define().
-
-= 0.11.18 =
-Moved ::maybe_make_abspath_relative() out of helper and into WPLib proper.
-Changed WPLib::put_contents() so it can more likely update a file with 644 permissions.
-
-= 0.11.17 =
-Fixed bug in regex in WPLib::_load_modules()
-
-= 0.11.16 and before =
-All earlier versions
-
-
+You will find documentation in its current state on the [**wiki**](https://github.com/wplib/wplib/wiki).  
