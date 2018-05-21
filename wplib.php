@@ -6,7 +6,7 @@
  * Plugin Name: WPLib
  * Plugin URI:  http://wordpress.org/plugins/wplib/
  * Description: A WordPress Website Foundation Library Agency and Internal Corporate Developers
- * Version:     0.14.4
+ * Version:     0.14.5
  * Author:      The WPLib Team
  * Author URI:  http://wplib.org
  * Text Domain: wplib
@@ -72,7 +72,7 @@ class WPLib {
 	private static $_module_classes = array();
 
 	/**
-	 * @var string[] Names of loaded classes
+	 * @var string[][] Names of loaded classes
 	 */
 	private static $_module_names = array();
 
@@ -269,8 +269,6 @@ class WPLib {
 
 	/**
 	 * Autoload all WPLib module classes to ensure they are available for 'init' hook.
-	 *
-	 * @return array
 	 */
 	static function _init_9() {
 
@@ -621,9 +619,9 @@ class WPLib {
 
 		if ( count( $latest_classes ) ) {
 
-			$class_key = implode( '|', $latest_classes );
+//			$class_key = implode( '|', $latest_classes );
 
-			$class_key = self::is_production() ? md5( $class_key ) : $class_key;
+//			$class_key = self::is_production() ? md5( $class_key ) : $class_key;
 
 //			$autoload_files = static::cache_get( $cache_key = "autoload_files[{$class_key}]" );
 
@@ -879,10 +877,9 @@ class WPLib {
 	 *
 	 * @param string $parent_class
 	 * @param string $child_class
-	 * @param array $mustload_classes
-	 * @param string[] $ordered_classes
+	 * @param array &$mustload_classes
+	 * @param string[] &$ordered_classes
 	 *
-	 * @return array
 	 */
 	private static function _flatten_array_dependency_order( $parent_class, $child_class, &$mustload_classes, &$ordered_classes ) {
 
@@ -1052,7 +1049,7 @@ class WPLib {
 	 */
 	static function add_class_action( $action, $priority = 10 ) {
 
-		$method = str_replace( ['-', ':' ], '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		$method = str_replace( [ '-', ':' , '.' ], '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		add_action( $action, array( get_called_class(), $method ), $priority, 99 );
 
 	}
@@ -1063,7 +1060,7 @@ class WPLib {
 	 */
 	static function add_class_filter( $filter, $priority = 10 ) {
 
-		$method = str_replace( ['-', ':' ], '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		$method = str_replace( [ '-', ':' , '.' ], '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		add_filter( $filter, array( get_called_class(), $method ), $priority, 99 );
 
 	}
@@ -1074,7 +1071,7 @@ class WPLib {
 	 */
 	static function remove_class_action( $action, $priority = 10 ) {
 
-		$method = str_replace( ['-', ':' ], '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		$method = str_replace( [ '-', ':' , '.' ], '_', "_{$action}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		remove_action( $action, array( get_called_class(), $method ), $priority );
 
 	}
@@ -1085,7 +1082,7 @@ class WPLib {
 	 */
 	static function remove_class_filter( $filter, $priority = 10 ) {
 
-		$method = str_replace( ['-', ':' ], '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
+		$method = str_replace( [ '-', ':' , '.' ], '_', "_{$filter}" ) . ( 10 !== intval( $priority ) ? "_{$priority}" : '' );
 		remove_filter( $filter, array( get_called_class(), $method ), $priority );
 
 	}
@@ -1132,7 +1129,7 @@ class WPLib {
 	 *
 	 *      WPLib::register_helper( $helper_class, $current_helped_class );
 	 *
-	 * @return array
+	 * @return string
 	 */
 	static function current_helped_class() {
 
@@ -1327,9 +1324,14 @@ class WPLib {
 
 		$filepath = '/' . ltrim( $filepath, '/' );
 
-		$reflector = new ReflectionClass( $class_name );
+		try {
+			$reflector = new ReflectionClass( $class_name );
+			$root_dir = realpath( dirname( $reflector->getFileName() ) . $filepath );
+		} catch( Exception $exception ) {
+			$root_dir = null;
+		}
 
-		return realpath( dirname( $reflector->getFileName() ) . $filepath );
+		return $root_dir;
 
 	}
 
@@ -1397,8 +1399,6 @@ class WPLib {
 	 *
 	 * @param string $asset_path
 	 * @param bool|string $class_name Name of class to return the root dir.
-	 *
-	 * @return string
 	 */
 	static function the_asset_url( $asset_path, $class_name = false ) {
 
@@ -1502,25 +1502,28 @@ class WPLib {
 			$item_class = get_class( $item_class );
 		}
 
-		$reflector = new ReflectionClass( $item_class );
-
-		$filepath = self::maybe_make_abspath_relative( $reflector->getFileName() );
-
-		$app_class = self::app_class();
-
 		$module_dir = null;
 
-		foreach ( self::get_module_classes( $app_class ) as $module_class => $module_filepath ) {
+		try {
 
-			if ( 0 === strpos( $filepath, $module_filepath ) ) {
+			$reflector = new ReflectionClass( $item_class );
 
-				$module_dir = self::maybe_make_absolute_path( $module_filepath, ABSPATH );
+			$filepath = self::maybe_make_abspath_relative( $reflector->getFileName() );
 
-				break;
+			$app_class = self::app_class();
+
+			foreach ( self::get_module_classes( $app_class ) as $module_class => $module_filepath ) {
+
+				if ( 0 === strpos( $filepath, $module_filepath ) ) {
+
+					$module_dir = self::maybe_make_absolute_path( $module_filepath, ABSPATH );
+
+					break;
+
+				}
 
 			}
-
-		}
+		} catch ( Exception $exception ) {}
 
 		return $module_dir;
 
@@ -1813,8 +1816,6 @@ class WPLib {
 
 	/**
 	 * Register all templates for WPLib, an App or a module.
-	 *
-	 * @return array
 	 */
 	static function _register_templates() {
 
@@ -2166,8 +2167,6 @@ class WPLib {
 	 * @param string|object $model
 	 * @param string $method_name
 	 * @param array $args
-	 *
-	 * @return mixed
 	 */
 	static function do_the_methods( $view, $model, $method_name, $args ) {
 
@@ -2584,14 +2583,15 @@ class WPLib {
 	 */
 	static function class_declares_method( $class_name, $method_name ) {
 
-		if ( ! class_exists( $class_name ) || ! method_exists( $class_name, $method_name ) ) {
+		$class_declares_method = false;
 
-			$class_declares_method = false;
+		if ( class_exists( $class_name ) && method_exists( $class_name, $method_name ) ) {
 
-		} else {
+			try{
+				$reflector = new ReflectionMethod( $class_name, $method_name );
+				$class_declares_method = $class_name === $reflector->getDeclaringClass()->name;
+			} catch ( Exception $exception ) {}
 
-			$reflector = new ReflectionMethod( $class_name, $method_name );
-			$class_declares_method = $class_name === $reflector->getDeclaringClass()->name;
 		}
 
 		return $class_declares_method;
@@ -2755,7 +2755,7 @@ class WPLib {
 
 			} else if ( WPLib::is_development() ) {
 
-				$err_msg = __ ( 'Cannot make new item. Class %s does not have make_new_item method', 'wplib' );
+				$err_msg = __( 'Cannot make new item. Class %s does not have make_new_item method', 'wplib' );
 				WPLib::trigger_error( sprintf( $err_msg, $class ), E_USER_ERROR );
 
 			}

@@ -3,7 +3,7 @@ Contributors: newclarity, mikeschinkel
 Tags: library, mvc
 Requires at least: 4.9.x
 Tested up to: 4.9.5
-Stable tag: 0.14.4
+Stable tag: 0.14.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,11 @@ See the [docs to come soon].
 That is because it is for PHP developers, not end-users. If you are a PHP developer see the [docs to come soon] to learn more.
 
 == Changelog ==
+= 0.14.5 =
+- Allowed add_class_action() and add_class_filter() to transform periods in hook names to underscores in hook methods.
+- Changed from esc_attr() to sanitize_html_class() for class sanitization in _WPLib_Html_Helpers::get_link().
+- Wrapped numerous reflection calls with try {} catch {}.
+
 = 0.14.4 =
 - Unmasked extract() that were previously hidden from code reviewers. See https://github.com/wplib/wplib/issues/72
 
