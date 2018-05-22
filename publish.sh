@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+function add_changed_files() {
+    local changed_files="$(svn status "$1"/* | grep "^?" | awk '{print $2}')"
+    if [ "" != "${changed_files}" ] ; then
+        svn add "${changed_files}"
+    fi
+}
+
+
 SVN_URL="https://plugins.svn.wordpress.org/wplib/"
 
 # Capture space-trimmed version of first parameter
@@ -32,7 +40,7 @@ cd svn
 rm -rf assets
 mkdir -p assets
 cp ../assets/images/* assets
-svn add `svn status assets/* | grep "^?" | awk '{print $2}'`
+add_changed_files assets
 
 rm -rf trunk
 mkdir -p trunk
@@ -46,9 +54,10 @@ cp ../composer.json trunk
 cp -R ../enums trunk
 cp -R ../includes trunk
 cp -R ../modules trunk
-svn add `svn status trunk/* | grep "^?" | awk '{print $2}'`
+add_changed_files trunk
 
 svn cp trunk "tags/${VERSION}"
+add_changed_files "tags/${VERSION}"
 
 svn status
 
