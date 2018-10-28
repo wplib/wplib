@@ -449,7 +449,7 @@ HTML;
 
 		}
 
-		$elements_html .=<<<HTML
+		$elements_html =<<<HTML
 {$args['before']}<li{$attributes} class="{$args['class']}">{$before_text}{$element_text}{$after_text}</li>{$args['after']}
 HTML;
 
@@ -482,7 +482,7 @@ HTML;
 
 		$attributes = self::sanitize_html_attributes( $attributes );
 
-		return implode( ' ', array_map(
+		return ' ' . implode( ' ', array_map(
 
 			function( $name ) use ( $attributes ) {
 
