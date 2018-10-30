@@ -813,7 +813,14 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 			'link_text' => esc_html__( 'Newer posts', 'wplib' ),
 		) );
 
-		$link = get_previous_posts_link( $args[ 'label' ] );
+		/**
+		 * for backwards compat
+		 */
+		$args['link_text'] = empty( $args['label'] )
+			? $args['link_text']
+			: $args['label'];
+
+		$link = get_previous_posts_link( $args[ 'link_text' ] );
 
 		return $link ? str_replace( '%link', $link, $args[ 'format' ] ) : '';
 
@@ -832,7 +839,14 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 			'max_page'  => 0,
 		) );
 
-		$link = get_next_posts_link( $args[ 'label' ], $args[ 'max_page' ] );
+		/**
+		 * for backwards compat
+		 */
+		$args['link_text'] = empty( $args['label'] )
+			? $args['link_text']
+			: $args['label'];
+
+		$link = get_next_posts_link( $args[ 'link_text' ], $args[ 'max_page' ] );
 
 		return $link ? str_replace( '%link', $link, $args[ 'format' ] ) : '';
 
