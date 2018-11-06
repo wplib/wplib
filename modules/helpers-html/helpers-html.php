@@ -92,8 +92,10 @@ class _WPLib_Html_Helpers extends WPLib_Helper_Base {
 				$args['title_text'] = esc_attr( $args['title_text'] );
 				$args['title_text'] = " title=\"{$args['title_text']}\"";
 			}
-			if ( $class = sanitize_html_class( $args['class'] ) ) {
-				$args['class'] = " class=\"{$class}\"";
+			if ( $class = $args['class'] ) {
+				if ( $sanitized_class = implode( ' ', array_map( 'sanitize_html_class', array_filter( explode( ' ', $class ) ) ) ) ) {
+					$args[ 'class' ] = " class=\"{$sanitized_class}\"";
+				}
 			}
 			if ( $args['target'] ) {
 				$args['target'] = esc_attr( $args['target'] );
