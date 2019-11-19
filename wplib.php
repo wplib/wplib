@@ -1950,12 +1950,18 @@ class WPLib {
 	 */
 	static function the_template( $template_slug, $_template_vars = array(), $item = null ) {
 
+		$item_class = '';
+
+		if ( ! is_null( $item ) ) {
+			$item_class = get_class( $item );
+		}
+
 		/*
 		 * Calculate the md5 value for caching this template filename
 		 */
 		if ( ! self::is_development() ) {
 
-			$_md5 = md5( serialize( array( $template_slug, $_template_vars, get_class( $item ) ) ) );
+			$_md5 = md5( serialize( array( $template_slug, $_template_vars, $item_class ) ) );
 
 		} else {
 
@@ -2029,7 +2035,7 @@ class WPLib {
 
 					$template->found = true;
 
-					$template->var_name = self::get_constant( 'VAR_NAME', get_class( $item ) );
+					$template->var_name = self::get_constant( 'VAR_NAME', $item_class );
 
 					$template->comments = "<!--[TEMPLATE: {$template->filename}] -->";
 
