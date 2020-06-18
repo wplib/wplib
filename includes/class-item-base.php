@@ -173,9 +173,9 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 
 		if ( is_wp_error( $value ) ) {
 
-			$message = $value->get_error_message();
+			$message = __( 'ERROR: %s in method %s for class %s.', 'wplib' );
 
-			trigger_error( sprintf( $message, $method_name, get_class( $this ) ) );
+			trigger_error( sprintf( $message, $value->get_error_message(), $method_name, get_class( $this ) ) );
 
 		}
 
