@@ -271,4 +271,24 @@ abstract class WPLib_List_Base
 		return $output;
 
 	}
+
+    /**
+     * @return array
+     */
+    function __serialize(): array {
+
+        $this->serialize();
+
+    }
+
+    /**
+     * @param array $data
+     * @return void
+     */
+    function __unserialize(array $data): void{
+
+        $this->unserialize( $this->serialize() );
+
+    }
+
 }
