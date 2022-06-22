@@ -120,7 +120,9 @@ class WPLib_Theme extends WPLib_Module_Base {
 
 			}
 
-			include( $template );
+            if ( $template ) {
+                include( $template );
+            }
 
 		}
 		return null;
