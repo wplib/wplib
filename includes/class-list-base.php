@@ -42,7 +42,7 @@ abstract class WPLib_List_Base
 	/**
 	 * @return ArrayIterator
 	 */
-	function getIterator() {
+	function getIterator(): Traversable {
 
 		return new ArrayIterator( $this->_elements );
 
@@ -53,7 +53,7 @@ abstract class WPLib_List_Base
 	 *
 	 * @return bool
 	 */
-	function offsetExists( $offset ) {
+	function offsetExists( $offset ): bool {
 
 		return isset( $this->_elements[ $offset ] );
 
@@ -64,7 +64,7 @@ abstract class WPLib_List_Base
 	 *
 	 * @return null
 	 */
-	function offsetGet( $offset ) {
+	function offsetGet( $offset ): mixed {
 
 		return $this->offsetExists( $offset ) ? $this->_elements[ $offset ] : null;
 
@@ -74,7 +74,7 @@ abstract class WPLib_List_Base
 	 * @param mixed $offset
 	 * @param mixed $value
 	 */
-	function offsetSet( $offset, $value ) {
+	function offsetSet( $offset, $value ): void {
 
 		if ( is_null( $offset ) ) {
 
@@ -91,7 +91,7 @@ abstract class WPLib_List_Base
 	/**
 	 * @param mixed $offset
 	 */
-	function offsetUnset( $offset ) {
+	function offsetUnset( $offset ): void {
 
 		if ( $this->offsetExists( $offset ) ) {
 
@@ -122,7 +122,7 @@ abstract class WPLib_List_Base
 	/**
 	 * @return int
 	 */
-	function count() {
+	function count(): int {
 
 		return count( $this->_elements );
 
