@@ -660,7 +660,7 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 	 * @return WPLib_Post_List_Default|WPLib_Post_Base[]
 	 */
 	function post_list() {
-		return self::get_post_list();
+		return $this->get_post_list();
 	}
 
 	/**
