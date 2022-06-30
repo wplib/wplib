@@ -1404,7 +1404,9 @@ abstract class WPLib_Theme_Base extends WPLib_Base {
 		/**
 		 * @var WP_Post $_post
 		 */
-		return $_post = $this->single_post()
+        $_post = $this->single_post();
+
+		return $_post
 			? WPLib_Posts::make_new_item( $_post )
 			: null;
 
