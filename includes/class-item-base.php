@@ -41,7 +41,7 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 
 			if ( is_object( $args[ $property_name ] ) ) {
 				/*
-				 * If it was an object, just assign is.
+				 * If it was an object, just assign as is.
 				 */
 				$this->{$property_name} = $args[ $property_name ];
 
@@ -64,7 +64,10 @@ abstract class WPLib_Item_Base extends WPLib_Base {
 					$class_name    = $this->_get_property_class( $property_name );
 					$property_args = $args[ $property_name ];
 
-				}
+				} else {
+                    $class_name = '';
+                    $property_args = array();
+                }
 
 				if ( method_exists( $class_name, 'make_new' ) ) {
 					/*
