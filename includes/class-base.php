@@ -223,15 +223,13 @@ abstract class WPLib_Base {
 	 * @param string $method_name
 	 * @param array  $args
 	 *
-	 * @return mixed
+	 * @return null
 	 */
 	function __call( $method_name, $args ) {
 
-		$value = null;
-
 		if ( preg_match( '#^the_#', $method_name ) && is_callable( array( $this, $method_name ) ) ) {
 
-			$value = WPLib::do_the_methods( $this, $this, $method_name, $args );
+			WPLib::do_the_methods( $this, $this, $method_name, $args );
 
 		} else {
 
@@ -248,7 +246,7 @@ abstract class WPLib_Base {
 
 		}
 
-		return $value;
+		return null;
 
 	}
 
