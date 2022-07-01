@@ -2299,12 +2299,12 @@ class WPLib {
 
 			case '_attr':
 
-				echo $value = esc_attr( $value );
+				echo esc_attr( $value );
 				break;
 
 			case '_url':
 
-				echo $value = esc_url( $value );
+				echo esc_url( $value );
 				break;
 
 			case '_html':
@@ -2315,7 +2315,7 @@ class WPLib {
 
 			default:
 
-				echo $value = esc_html( $value );
+				echo esc_html( $value );
 
 		}
 
