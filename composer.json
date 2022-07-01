@@ -30,7 +30,8 @@
 	"require-dev": {
 		"composer/installers": "^1.4",
 		"johnpbloch/wordpress-core-installer": "*",
-		"johnpbloch/wordpress-core": "*"
+		"johnpbloch/wordpress-core": "*",
+		"phpunit/phpunit": "^9.5"
 	},
 	"autoload": {
 		"psr-0": { "WPLib_": "includes/" }
