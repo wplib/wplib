@@ -778,7 +778,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function datetime() {
 
-		return $this->has_post()
+		return $this->has_post() && is_string( get_option( 'date_format' ) )
 			? get_post_time( get_option( 'date_format' ), false, $this->_post, true )
 			: false;
 
@@ -789,7 +789,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 	 */
 	function modified_datetime() {
 
-		return $this->has_post()
+		return $this->has_post() && is_string( get_option( 'date_format' ) )
 			? get_post_modified_time( get_option( 'date_format' ), true, $this->_post, true )
 			: false;
 
