@@ -17,6 +17,11 @@
 			"email": "mike@newclarity.net",
 			"homepage" : "http://about.me/mikeschinkel",
 			"role" :  "Architect and Developer"
+		},
+		{
+			"name": "Daryl Lozupone",
+			"email": "daryl@clubdeuce.net",
+			"role": "Developer"
 		}
 	],
 	"require": {
