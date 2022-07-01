@@ -562,7 +562,7 @@ class WPLib {
 	 */
 	static function _shutdown() {
 
-		if ( self::$_file_loading ) {
+		if ( is_string( self::$_file_loading ) ) {
 
 			$message = __( 'File failed to load: %s.', 'wplib' );
 			self::trigger_error( sprintf( $message, self::$_file_loading ), E_USER_ERROR, true );
