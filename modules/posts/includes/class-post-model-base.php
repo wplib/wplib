@@ -539,7 +539,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 		if ( ! $this->has_post() ) {
 
-			$value = parent::__call( $method_name, $args );
+			parent::__call( $method_name, $args );
 
 		} else {
 			/**
