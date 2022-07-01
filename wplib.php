@@ -1268,7 +1268,7 @@ class WPLib {
 
 			$container->callable = null;
 
-		} else if ( ! $parent_called ) {
+		} else if ( ! $parent_called && $container->callable ) {
 
 			/*
 			 * A helper was found so call it.
