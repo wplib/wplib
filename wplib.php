@@ -447,7 +447,11 @@ class WPLib {
 	 */
 	static function _find_files_autoloader( $class_name ) {
 
-		$dirpath = dirname( self::$_file_loading );
+        $dirpath = '';
+
+        if ( is_string( self::$_file_loading ) ) {
+            $dirpath = dirname( self::$_file_loading );
+        }
 
 		$parts = explode( '_', strtolower( $class_name ) );
 		array_shift( $parts );
