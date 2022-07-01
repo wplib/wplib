@@ -33,9 +33,7 @@ class _WPLib_WP_Helpers extends WPLib_Helper_Base {
 
 		$page = get_post( $page_id );
 
-		return  $page
-			? WPLib_Page::POST_TYPE === $page->post_type
-			: false;
+		return $page && WPLib_Page::POST_TYPE === $page->post_type;
 
 	}
 
