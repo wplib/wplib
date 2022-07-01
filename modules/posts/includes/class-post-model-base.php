@@ -621,7 +621,7 @@ abstract class WPLib_Post_Model_Base extends WPLib_Model_Base {
 
 			if ( ! $property_name ) {
 
-				$value = parent::__call( $method_name, $args );
+				parent::__call( $method_name, $args );
 
 			} else {
 
