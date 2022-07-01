@@ -18,22 +18,6 @@ tasks:
       mysql -e "CREATE DATABASE wordpress;"
       mysql -e "CREATE USER 'wordpress'@'localhost' IDENTIFIED by 'wordpress';"
       mysql -e "GRANT ALL ON wordpress.* to 'wordpress'@'localhost';"
-      bunzip2 < sql/provision.sql.bz2 | mysql wordpress
-  - name: nginx
-    command: >
-      nginx &&
-      multitail /var/log/nginx/access.log -I /var/log/nginx/error.log
-  - name: php8.1-fpm
-    command: sudo service php8.1-fpm start
-  - name: Redis
-    command: redis-server
-  - name: Mailhog
-    init: docker pull mailhog/mailhog
-    command: docker run -p 8025:8025 -p 1025:1025 mailhog/mailhog
-  - name: npm
-    init: cd www/wp-content/themes/anika && npm install
-    command: www/wp-content/themes/anika && npm run watch
-
 vscode:
   extensions:
     - ms-azuretools.vscode-docker
