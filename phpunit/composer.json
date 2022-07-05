@@ -1,0 +1,5 @@
+{
+    "require": {
+        "yoast/phpunit-polyfills": "^1.0"
+    }
+}
