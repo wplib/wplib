@@ -1,14 +1,5 @@
 image:
   file: .gitpod.Dockerfile
-ports:
-  - port: 8002
-    onOpen: open-browser
-  - port: 3306
-    onOpen: ignore
-  - port: 1025
-    onOpen: ignore
-  - port: 8025
-    onOpen: open-browser
 tasks:
   - name: composer
     init: composer install && exit
@@ -18,6 +9,8 @@ tasks:
       mysql -e "CREATE DATABASE wordpress;"
       mysql -e "CREATE USER 'wordpress'@'localhost' IDENTIFIED by 'wordpress';"
       mysql -e "GRANT ALL ON wordpress.* to 'wordpress'@'localhost';"
+  - name: wp-tests
+    init: svn co https://develop.svn.wordpress.org ./wp-tests
 vscode:
   extensions:
     - ms-azuretools.vscode-docker
