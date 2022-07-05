@@ -4,7 +4,7 @@ namespace Tests\WPLib\UnitTests {
 	use Tests\WPLib\WPLib_Test_Case;
 	use \WPLib_Base;
 
-	require_once WPLIB_TESTS_WORKING_DIR . '/includes/class-base.php';
+	require_once WPLIB_SRC_DIR . '/includes/class-base.php';
 
 	/**
 	 * Class Test_Base
@@ -43,7 +43,7 @@ namespace Tests\WPLib\UnitTests {
 		 */
 		private $_sut;
 
-		function setUp() {
+		function setUp(): void {
 
 			$this->_sut = new Test_Base( array( 'foo' => 'foobar', 'bar' => 'barbaz', 'baz' => 'foobaz' ) );
 

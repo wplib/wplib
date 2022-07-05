@@ -36,7 +36,7 @@ namespace Tests\WPLib\UnitTests {
         /**
          * Set up the system under test
          */
-        function setUp() {
+        function setUp(): void {
 
             $this->_sut         = new Enum_Test();
             $this->_sut_class   = get_class($this->_sut);
