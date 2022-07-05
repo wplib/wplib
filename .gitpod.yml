@@ -10,7 +10,11 @@ tasks:
       mysql -e "CREATE USER 'wordpress'@'localhost' IDENTIFIED by 'wordpress';"
       mysql -e "GRANT ALL ON wordpress.* to 'wordpress'@'localhost';"
   - name: wp-tests
-    init: svn co https://develop.svn.wordpress.org ./wp-tests
+    init: |
+      svn co https://develop.svn.wordpress.org/tags/5.9 ./wp-tests/tags/5.9
+      svn co https://develop.svn.wordpress.org/tags/6.0 ./wp-tests/tags/6.0
+      cp wp-tests/tags/5.9/wp-tests-config-sample.php wp-tests/tags/5.9/wp-tests-config.php
+      cp wp-tests/tags/6.0/wp-tests-config-sample.php wp-tests/tags/6.0/wp-tests-config.php
 vscode:
   extensions:
     - ms-azuretools.vscode-docker
