@@ -234,6 +234,10 @@ abstract class WPLib_Enum {
 	 */
 	static function has_enum_value( $value ) {
 
+		if ( is_object( $value ) ) {
+			$value = (string)$value;
+		}
+		
 		return array_key_exists( $value, self::get_enum_consts( get_called_class() ) );
 
 	}

@@ -4,7 +4,7 @@ namespace Tests\WPLib\UnitTests {
     use Tests\WPLib\WPLib_Test_Case;
     use \WPLib_Model_Base;
 
-    require_once WPLIB_TESTS_WORKING_DIR . '/includes/class-model-base.php';
+    require_once WPLIB_SRC_DIR . '/includes/class-model-base.php';
 
     /**
      * Class Model_Base
@@ -31,7 +31,7 @@ namespace Tests\WPLib\UnitTests {
         /**
          *
          */
-        function setUp() {
+        function setUp(): void {
 
             $this->_sut = new Model_Base();
 
