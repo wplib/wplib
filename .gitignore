@@ -3,3 +3,4 @@ svn/
 vendor/
 wp/
 wp-tests/
+*.cache
