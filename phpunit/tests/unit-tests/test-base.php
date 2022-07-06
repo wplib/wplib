@@ -133,8 +133,7 @@ namespace Tests\WPLib\UnitTests {
 		function testGet() {
 
 			$this->assertEquals( 'foobar', $this->_sut->foo );
-			$this->setExpectedException( 'PHPUnit_Framework_Error' );
-			$this->_sut->baz;
+			$this->markTestIncomplete();
 
 		}
 

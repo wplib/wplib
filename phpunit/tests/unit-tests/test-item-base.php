@@ -87,8 +87,8 @@ namespace Tests\WPLib\UnitTests {
 
             $item = new Item();
 
-            $this->assertAttributeInstanceOf( '\Tests\WPLib\UnitTests\Item_Model', 'model', $item, 'Model is not properly set.' );
-            $this->assertAttributeInstanceOf( '\Tests\WPLib\UnitTests\Item_View', 'view', $item, 'View is not properly set.' );
+            $this->assertInstanceOf( '\Tests\WPLib\UnitTests\Item_Model', $this->getReflectionPropertyValue( $item, 'model' ), 'Model is not properly set.' );
+            $this->assertInstanceOf( '\Tests\WPLib\UnitTests\Item_View', $this->getReflectionPropertyValue( $item, 'view' ), 'View is not properly set.' );
 
             unset( $item );
 
@@ -124,8 +124,8 @@ namespace Tests\WPLib\UnitTests {
                 'view'  => '\Tests\WPLib\UnitTests\Item_View',
             ) );
 
-            $this->assertAttributeInstanceOf( '\Tests\WPLib\UnitTests\Item_Model', 'model', $item, 'Model is not properly set.' );
-            $this->assertAttributeInstanceOf( '\Tests\WPLib\UnitTests\Item_View', 'view', $item, 'View is not properly set.' );
+            $this->assertInstanceOf( '\Tests\WPLib\UnitTests\Item_Model', $this->getReflectionPropertyValue( $item, 'model' ), 'Model is not properly set.' );
+            $this->assertInstanceOf( '\Tests\WPLib\UnitTests\Item_View', $this->getReflectionPropertyValue( $item, 'view' ), 'View is not properly set.' );
 
             unset( $item );
 
@@ -184,7 +184,7 @@ namespace Tests\WPLib\UnitTests {
          */
         function testCallForError() {
 
-            $this->setExpectedException( 'PHPUnit_Framework_Exception' );
+            $this->expectError();
             $this->_sut->foobar();
 
         }

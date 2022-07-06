@@ -86,7 +86,7 @@ namespace Tests\WPLib\UnitTests {
          */
         function testGetValue() {
 
-            $this->assertEquals(2,$this->_sut->get_value());
+            $this->assertEquals(2, $this->_sut->get_value());
 
         }
 
@@ -98,7 +98,7 @@ namespace Tests\WPLib\UnitTests {
 
             $this->markTestIncomplete();
             $this->_sut->set_value('BAR');
-            $this->assertEquals(2,$this->_sut->get_value());
+            $this->assertEquals(2, $this->_sut->get_value());
 
         }
 
@@ -133,6 +133,11 @@ namespace Tests\WPLib\UnitTests {
             $reflection = new ReflectionClass($this->_sut_class);
             $class      = $this->_sut_class;
             $expected   = $reflection->getConstants();
+
+            $values = $class::get_enum_values();
+
+            $this->assertIsArray($values);
+            $this->assertGreaterThanOrEqual(1, $values);
 
             foreach($class::get_enum_values() as $key => $value) {
 
@@ -209,7 +214,7 @@ namespace Tests\WPLib\UnitTests {
          */
         function testToString() {
 
-            $this->assertInternalType('string', $this->_sut->__toString(2));
+            $this->assertIsString($this->_sut->__toString(2));
 
         }
 
