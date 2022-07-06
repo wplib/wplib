@@ -1,8 +1,15 @@
 image:
   file: .gitpod.Dockerfile
+ports:
+  - port: 8002
+    onOpen: open-browser
 tasks:
   - name: composer
     init: composer install && exit
+  - name: nginx
+    command: >
+      nginx &&
+      multitail /var/log/nginx/access.log -I /var/log/nginx/error.log
   - name: mysql
     init: |
       gp await-port 3306
@@ -20,6 +27,7 @@ vscode:
     - ms-azuretools.vscode-docker
     - johnbillion.vscode-wordpress-hooks
     - felixfbecker.php-debug
+    - bmewburn.vscode-intelephense-client
 github:
   prebuilds:
     # enable for the default branch (defaults to true)

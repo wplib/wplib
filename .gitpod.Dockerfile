@@ -26,5 +26,7 @@ RUN sudo install-packages \
     php8.1-pspell \
     php8.1-redis \
     php8.1-xdebug \
-    php8.1-zip
+    php8.1-zip \
+    nginx
 
+ENV NGINX_DOCROOT_IN_REPO="www"
