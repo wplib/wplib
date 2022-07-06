@@ -121,15 +121,6 @@ namespace Tests\WPLib\UnitTests {
 
         }
 
-        /**
-         * @covers ::__call
-         */
-        function testCall() {
-
-            $this->markTestIncomplete();
-
-        }
-
     }
 
 }

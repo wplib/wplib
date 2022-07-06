@@ -84,20 +84,8 @@ namespace Tests\WPLib\UnitTests {
         /**
          * @covers ::get_value
          */
-        function testGetValue() {
+        function testGetValueDefault() {
 
-            $this->assertEquals(2, $this->_sut->get_value());
-
-        }
-
-        /**
-         * @covers ::set_value
-         * @uses   is_valid
-         */
-        function testSetValue() {
-
-            $this->markTestIncomplete();
-            $this->_sut->set_value('BAR');
             $this->assertEquals(2, $this->_sut->get_value());
 
         }
@@ -105,8 +93,7 @@ namespace Tests\WPLib\UnitTests {
         /**
          * @covers :: set_enum
          * @uses    set_value
-         * @depends testGetValue
-         * @depends testSetValue
+         * @depends testGetValueDefault
          */
         function testSetEnum() {
 
@@ -161,15 +148,6 @@ namespace Tests\WPLib\UnitTests {
 
         }
 
-        /**
-         * @covers ::get_enum_const
-         */
-        function testGetEnumConst() {
-
-            $this->markTestIncomplete();
-            $this->assertEquals('FOO',$this->_sut->get_enum_const(1));
-
-        }
 
         /**
          * @covers ::get_enum_consts

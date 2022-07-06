@@ -29,6 +29,12 @@ namespace Tests\WPLib\UnitTests {
 
 		}
 
+		static function _pre_get_posts() {
+			
+			return 'foo';
+
+		}
+
 	}
 
 	/**
@@ -94,29 +100,6 @@ namespace Tests\WPLib\UnitTests {
 		}
 
 		/**
-		 * @covers ::add_class_action
-		 */
-		function testAddClassAction() {
-
-			$this->markTestIncomplete( 'has_action is not working as expected.');
-
-			Test_Base::add_class_action( 'pre_get_posts' );
-			$this->assertEquals( 10, has_action( 'pre_get_posts', array( 'Test_Base', '_pre_get_posts' ) ) );
-
-		}
-
-		/**
-		 * @covers ::add_clss_action
-		 */
-		function testAddClassActionSpecifyPriority() {
-
-			$this->markTestIncomplete( 'has_action is not working as expected.');
-			$this->_sut->add_class_action( 'pre_get_posts', 22 );
-			$this->assertEquals( 22, has_action( 'pre_get_posts' ) );
-
-		}
-
-		/**
 		 * @covers ::__isset
 		 * @depends testConstructor
 		 */
@@ -133,7 +116,6 @@ namespace Tests\WPLib\UnitTests {
 		function testGet() {
 
 			$this->assertEquals( 'foobar', $this->_sut->foo );
-			$this->markTestIncomplete();
 
 		}
 
@@ -141,7 +123,6 @@ namespace Tests\WPLib\UnitTests {
 		 * @covers ::__set
 		 */
 		function testSet() {
-
 			$this->_sut->foo = 'asdf';
 			$this->assertEquals( 'asdf', $this->_sut->foo );
 		}
@@ -149,10 +130,9 @@ namespace Tests\WPLib\UnitTests {
 		/**
 		 * @covers ::__call
 		 */
-		function testCall() {
-
-			$this->markTestIncomplete( 'Not yet implemented' );
-
+		function testCall()
+		{
+			$this->assertEquals('foobar', $this->_sut->foo());
 		}
 
 	}
