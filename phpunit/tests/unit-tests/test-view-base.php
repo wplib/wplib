@@ -83,7 +83,7 @@ namespace Tests\WPLib\UnitTests {
         }
 
         /**
-         * @covers  ::setItem
+         * @covers  ::set_item
          * @depends testItem
          */
         function testSetItem() {

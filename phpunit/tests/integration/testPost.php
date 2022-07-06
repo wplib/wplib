@@ -31,14 +31,15 @@ class testPost extends WPLib_Test_Case {
 
     /**
      * @covers ::__construct
+     * @covers ::__call
+     * @covers \WPLib_Post_Model_Base::post
      */
     public function testWplibPost() {
 
-        $this->assertClassHasAttribute('model', 'WPLib_Post');
-        $this->assertClassHasAttribute('view', 'WPLib_Post');
-        // $this->assertInstanceOf( 'WPlib_Post_Model', $this->_sut->model());
-        // $this->assertInstanceOf( 'WPLib_Post_View', $this->_sut->view());
+        $this->assertInstanceOf('\WP_Post', $this->_sut->post());
+        $this->assertEquals(get_post($this->_post_id), $this->_sut->post());
 
     }
+
 
 }

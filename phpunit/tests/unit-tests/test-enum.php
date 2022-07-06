@@ -91,8 +91,7 @@ namespace Tests\WPLib\UnitTests {
         }
 
         /**
-         * @covers :: set_enum
-         * @uses    set_value
+         * @covers ::set_enum
          * @depends testGetValueDefault
          */
         function testSetEnum() {
@@ -179,7 +178,6 @@ namespace Tests\WPLib\UnitTests {
 
         /**
          * @covers ::is_valid
-         * @uses   has_enum_value
          */
         function testIsValid() {
 
