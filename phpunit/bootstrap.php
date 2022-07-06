@@ -31,3 +31,5 @@ require WPLIB_SRC_DIR . '/defines.php';
 
 wplib_define( 'WPLib_Runmode', 'DEVELOPMENT' );
 wplib_define( 'WPLib_Stability', 'EXPERIMENTAL' );
+
+WPLib::initialize();
