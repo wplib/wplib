@@ -284,4 +284,195 @@ class testPost extends WPLib_Test_Case {
         $this->assertTrue($post->is_modified());
     }
 
+    /**
+     * 
+     * @todo add additional assertions to cover all paths
+     * 
+     * @covers ::__call
+     * @return void
+     */
+    function testCall() {
+
+        $test = $this->_sut;
+        $post = get_post($this->_post_id);
+
+        $this->assertEquals($this->_post_id, $test->ID());
+        $this->assertEquals($post->menu_order, $test->menu_order());
+        $this->markTestIncomplete();
+
+    }
+
+    /**
+     * @covers ::is_single
+     * @return void
+     */
+    function testIsSingle() {
+
+        $this->markTestIncomplete();
+
+    }
+
+    /**
+     * @covers ::unix_timestamp
+     *
+     * @return void
+     */
+    function testUnixTimestamp() {
+
+        /**
+         * @var \WP_Post $post
+         */
+        $time = $this->_sut->unix_timestamp();
+        $post = $this->_sut->post();
+
+        $this->assertIsInt($time);
+        $this->assertMatchesRegularExpression('#^[0-9]*$#', $time);
+
+    }
+
+    /**
+     * @covers ::unix_timestamp_gmt
+     *
+     * @return void
+     */
+    function testUnixTimestampGMT() {
+
+        $time = $this->_sut->unix_timestamp_gmt();
+
+        $this->assertIsInt($time);
+        $this->assertMatchesRegularExpression('#^[0-9]*$#', $time);
+
+    }
+
+    /**
+     * @covers ::modified_unix_timestamp
+     *
+     * @return void
+     */
+    function testModifiedUnixTimestamp() {
+
+        $time = $this->_sut->modified_unix_timestamp();
+
+        $this->assertIsInt($time);
+        $this->assertMatchesRegularExpression('#^[0-9]*$#', $time);
+
+    }
+
+    /**
+     * @covers ::modified_unix_timestamp_gmt
+     *
+     * @return void
+     */
+    function testModifiedUnixTimestampGMT() {
+
+        $time = $this->_sut->modified_unix_timestamp_gmt();
+
+        $this->assertIsInt($time);
+        $this->assertMatchesRegularExpression('#^[0-9]*$#', $time);
+
+    }
+
+    /**
+     * @covers ::iso_8601_date
+     *
+     * @return void
+     */
+    function testIso8601Date() {
+
+        $time = $this->_sut->iso8601_date();
+
+        $this->assertIsString($time);
+        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[123]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
+
+    }
+
+    /**
+     * @covers ::iso_8601_date_gmt
+     *
+     * @return void
+     */
+    function testIso8601DateGMT() {
+
+        $time = $this->_sut->iso8601_date_gmt();
+
+        $this->assertIsString($time);
+        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[123]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
+
+    }
+
+    /**
+     * @covers ::iso_8601_modified_date
+     *
+     * @return void
+     */
+    function testIso8601ModifiedDate() {
+
+        $time = $this->_sut->iso8601_modified_date();
+
+        $this->assertIsString($time);
+        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[123]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
+
+    }
+
+    /**
+     * @covers ::iso_8601_modified_date_gmt
+     *
+     * @return void
+     */
+    function testIso8601ModifiedDateGMT() {
+
+        $time = $this->_sut->iso8601_modified_date_gmt();
+
+        $this->assertIsString($time);
+        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[123]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
+
+    }
+
+    /**
+     * @covers ::date_time
+     *
+     * @return void
+     */
+    function testDateTime() {
+
+        $dtm = $this->_sut->datetime();
+
+        $this->assertIsString($dtm);
+        $this->assertNotEmpty($dtm);
+        $this->assertMatchesRegularExpression('#^(January|February|March|April|May|June|July|August|September|October|November|December)\s(\d|[12]\d|[3[01]),\s\d{4}$#', $dtm);
+
+    }
+
+    /**
+     * @covers ::modified_datetime
+     *
+     * @return void
+     */
+    function testModifiedDateTime() {
+
+        $dtm = $this->_sut->modified_datetime();
+
+        $this->assertIsString($dtm);
+        $this->assertNotEmpty($dtm);
+        $this->assertMatchesRegularExpression('#^(January|February|March|April|May|June|July|August|September|October|November|December)\s(\d|[12]\d|[3[01]),\s\d{4}$#', $dtm);
+
+    }
+
+    /**
+     * @covers ::posted_on_values
+     *
+     * @return void
+     */
+    function testPostedOnValues() {
+
+        $values = $this->_sut->posted_on_values();
+
+        $this->assertIsObject($values);
+        $this->assertObjectHasAttribute('iso8601_date', $values);
+        $this->assertObjectHasAttribute('iso8601_modified_date', $values);
+        $this->assertObjectHasAttribute('datetime', $values);
+        $this->assertObjectHasAttribute('modified_datetime', $values);
+
+    }
+
 }
