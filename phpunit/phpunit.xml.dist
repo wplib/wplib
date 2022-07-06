@@ -8,5 +8,15 @@
 		<testsuite name="unit">
 			<directory suffix=".php">./tests/unit-tests/</directory>
 		</testsuite>
+		<testsuite name="integration">
+			<directory suffix=".php">./tests/integration/</directory>
+		</testsuite>
 	</testsuites>
+	<coverage>
+        <include>
+            <directory suffix=".php">../includes</directory>
+            <directory suffix=".php">../modules</directory>
+			<file>../wplib.php</file>
+        </include>
+    </coverage>
 </phpunit>
