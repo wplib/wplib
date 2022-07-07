@@ -1,0 +1,47 @@
+name: PHP Composer
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+    
+    - name: Checkout WP
+      run: |
+        svn co https://develop.svn.wordpress.org/tags/6.0 ./wp-tests/tags/6.0
+        cp ./wp-tests/tags/6.0/wp-tests-config-sample.php ./wp-tests/tags/6.0/wp-tests-config.php
+        sed -i 's/youremptytestdbnamehere/wordpress/g' ./wp-tests/tags/6.0/wp-tests-config.php
+        sed -i 's/yourusernamehere/wordpress/g' ./wp-tests/tags/6.0/wp-tests-config.php
+        sed -i 's/yourpasswordhere/wordpress/g' ./wp-tests/tags/6.0/wp-tests-config.php
+
+    - name: Start MySQL
+      run: |
+        sudo /etc/init.d/mysql start
+        mysql -e "CREATE DATABASE wordpress;" -u root -proot
+        mysql -e "CREATE USER 'wordpress'@'localhost' IDENTIFIED by 'wordpress';" -u root -proot
+        mysql -e "GRANT ALL ON wordpress.* to 'wordpress'@'localhost';" -u root -proot
+
+    - name: Run test suite
+      run: export WP_TESTS_DIR=$PWD/wp-tests/tags/6.0 && cd phpunit && ../vendor/bin/phpunit

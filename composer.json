@@ -4,7 +4,7 @@
 	"description": "A PHP Library that Adds Modules and Applications to WordPress",
 	"keywords": [ "wordpress", "php", "library", "mvc", "wplib", "modules" ],
 	"homepage": "http://github.com/wplib/wplib",
- 	"license": "GPL-2.0+",
+ 	"license": "GPL-2.0-or-later",
 	"authors": [
 		{
 			"name": "The WPLib Team",
