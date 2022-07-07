@@ -409,7 +409,7 @@ class testPost extends WPLib_Test_Case {
         $time = $this->_sut->iso8601_date();
 
         $this->assertIsString($time);
-        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[123]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
+        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
 
     }
 
@@ -423,7 +423,7 @@ class testPost extends WPLib_Test_Case {
         $time = $this->_sut->iso8601_date_gmt();
 
         $this->assertIsString($time);
-        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[123]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
+        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
 
     }
 
@@ -437,7 +437,7 @@ class testPost extends WPLib_Test_Case {
         $time = $this->_sut->iso8601_modified_date();
 
         $this->assertIsString($time);
-        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[123]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
+        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
 
     }
 
@@ -451,7 +451,7 @@ class testPost extends WPLib_Test_Case {
         $time = $this->_sut->iso8601_modified_date_gmt();
 
         $this->assertIsString($time);
-        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[123]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
+        $this->assertMatchesRegularExpression('#^\d{4}-(0[0-9]|1[012])-([012][1-9]|3[01])T([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])\+\d{2}:\d{2}$#', $time);
 
     }
 
