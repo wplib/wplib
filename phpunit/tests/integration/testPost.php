@@ -2,6 +2,7 @@
 namespace Tests\WPLib\Tests\Integration;
 
 use Tests\WPLib\WPLib_Test_Case;
+use WPLib_Page;
 use WPLib_Post;
 
 /**
@@ -12,7 +13,7 @@ class testPost extends WPLib_Test_Case {
     /**
      * @var \WP_Post
      */
-    protected $_post_id;
+    protected $_post_id = 0;
 
     /**
      * @var WPLib_Post
@@ -24,7 +25,7 @@ class testPost extends WPLib_Test_Case {
      */
     function setUp(): void {
 
-        $this->_post_id = $this->factory()->post->create();
+        $this->_post_id = $this->factory()->post->create(['post_author' => 2]);
         $this->_sut     = new WPLib_Post(get_post($this->_post_id));
 
     }
@@ -124,21 +125,47 @@ class testPost extends WPLib_Test_Case {
     }
 
     /**
-     * @covers ::permalink
-     */
-    function testPermalink() {
-
-        $this->assertEquals(get_the_permalink($this->_post_id), $this->_sut->permalink());
-
-    }
-
-    /**
      * @covers ::post_type
      */
     function testPostType() {
 
         $this->assertEquals('post', $this->_sut->post_type());
+    
+    }
+
+    /**
+     * @covers ::post_type
+     *
+     * @return void
+     * 
+     * @todo WPLIB::trigger_error is being called, why does this test not catch it?
+     */
+    function testPostTypeMismatch() {
         
+        $this->markTestIncomplete();
+
+        $post = $this->factory()->post->create_and_get(['post_type' => 'page']);
+        $page = new WPLib_Post($post);
+        
+        $this->assertEquals('page', get_post_type($post));
+        $this->expectNotice();
+        $page->post_type();
+        
+    }
+
+    /**
+     * @covers ::permalink
+     * @covers ::url
+     * 
+     * @depends testPostType
+     */
+    function testPermalink() {
+
+        $this->assertEquals(get_the_permalink($this->_post_id), $this->_sut->permalink());
+
+        $post = new WPLib_Post(null);
+        $this->assertNull($post->permalink());
+
     }
 
     /**
@@ -214,7 +241,7 @@ class testPost extends WPLib_Test_Case {
     }
 
     /**
-     * @civers is_published
+     * @covers ::is_published
      */
     function testIsPublishedFalse() {
 
@@ -373,7 +400,7 @@ class testPost extends WPLib_Test_Case {
     }
 
     /**
-     * @covers ::iso_8601_date
+     * @covers ::iso8601_date
      *
      * @return void
      */
@@ -387,7 +414,7 @@ class testPost extends WPLib_Test_Case {
     }
 
     /**
-     * @covers ::iso_8601_date_gmt
+     * @covers ::iso8601_date_gmt
      *
      * @return void
      */
@@ -401,7 +428,7 @@ class testPost extends WPLib_Test_Case {
     }
 
     /**
-     * @covers ::iso_8601_modified_date
+     * @covers ::iso8601_modified_date
      *
      * @return void
      */
@@ -415,7 +442,7 @@ class testPost extends WPLib_Test_Case {
     }
 
     /**
-     * @covers ::iso_8601_modified_date_gmt
+     * @covers ::iso8601_modified_date_gmt
      *
      * @return void
      */
@@ -429,7 +456,7 @@ class testPost extends WPLib_Test_Case {
     }
 
     /**
-     * @covers ::date_time
+     * @covers ::datetime
      *
      * @return void
      */
@@ -474,5 +501,20 @@ class testPost extends WPLib_Test_Case {
         $this->assertObjectHasAttribute('modified_datetime', $values);
 
     }
+
+    /**
+     * @covers ::author_id
+     *
+     * @return void
+     */
+    function testAuthorId() {
+
+        $post = get_post($this->_post_id);
+        $this->assertGreaterThan(0, $post->post_author);
+        $this->assertNotFalse($this->_sut->author_id());
+        $this->assertEquals($post->post_author, $this->_sut->author_id());
+
+    }
+
 
 }
