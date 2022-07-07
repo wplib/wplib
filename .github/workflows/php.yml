@@ -44,4 +44,13 @@ jobs:
         mysql -e "GRANT ALL ON wordpress.* to 'wordpress'@'localhost';" -u root -proot
 
     - name: Run test suite
-      run: export WP_TESTS_DIR=$PWD/wp-tests/tags/6.0 && cd phpunit && ../vendor/bin/phpunit
+      run: |
+        export WP_TESTS_DIR=$PWD/wp-tests/tags/6.0
+        export XDEBUG_MODE=coverage
+        vendor/bin/phpunit --coverage-clover build/logs/clover.xml --coverage-text -c phpunit/phpunit.xml.dist
+
+    - name: Upload coverage results to Coveralls
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      run: |
+        ./vendor/bin/coveralls --coverage_clover=build/logs/clover.xml -v

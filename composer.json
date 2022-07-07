@@ -32,7 +32,9 @@
 		"composer/installers": "^1.4",
 		"johnpbloch/wordpress-core-installer": "*",
 		"johnpbloch/wordpress-core": "*",
-		"phpunit/phpunit": "^9.5"
+		"phpunit/phpunit": "^9.5",
+		"php-coveralls/php-coveralls": "^2.5",
+		"phpunit/phpcov": "^8.2"
 	},
 	"autoload": {
 		"psr-0": { "WPLib_": "includes/" }
