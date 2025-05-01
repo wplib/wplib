@@ -58,7 +58,7 @@ class WPLib_Administrators extends WPLib_Administrator_Module_Base {
 
 		} else {
 
-			$capabilities = call_user_func( array( get_parent_class(), 'get_capabilities' ), $class_name );
+			$capabilities = call_user_func( array( parent::class, 'get_capabilities' ), $class_name );
 
 			$capabilities = array_merge( $parent_capabilities, $capabilities );
 
